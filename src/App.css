@@ -1,0 +1,14 @@
+.app {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+@media (max-width: 600px) {
+  .sidebar.open {
+    width: 100px;
+  }
+}

@@ -1,0 +1,7 @@
+.calendar-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+/* Add any custom styles here to override defaults if needed */

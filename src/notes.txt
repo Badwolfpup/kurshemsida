@@ -1,0 +1,22 @@
+Ikoner när menyn är stängd för notiser
+Kalender där vi kan lägga till händelser - koppla autmatiska inlägg i flödet
+    react-calendar
+    react-datepicker
+    @fullcalendar/react @fullcalendar/daygrid
+Flöde där vi kan lägga upp händelser (gruppchat)
+Meddelandetjänst, grupper och individuellt. (Bara vi som kan skapa??)
+Kurskatalog
+    Vi låser upp kurser 
+Övningssida
+    övningar har taggar för vad mna kan träna
+    övningar har lösningar HTML/CSS/KOD som vi kan låsa upp 1 eller fler
+    Filtrera övningarVi låser upp tillgång till taggar (alla måste vara upplåsta för att visas?)
+
+Adminsida
+    Tillägg/borttag av deltagare
+    Skapa inlägg i flödet
+    Lägg till händelser i kalendern
+    Styra tillgång till i pripcip alla funktioner
+
+
+Skapa mobilapp för samma sida
