@@ -1,91 +1,102 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
-import { useUser } from '../context/UserContext'; // Import the hook
+import { useUser } from '../context/UserContext';
+import './Login.css';
 
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background-color: #f0f0f0;
-`;
 
-const Banner = styled.h1`
-  font-size: 2.5rem;
-  color: #333;
-  margin-bottom: 2rem;
-  text-align: center;
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 300px;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.75rem;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-`;
-
-const Button = styled.button`
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
 
 const Login: React.FC = () => {
-  const [inputValue, setInputValue] = useState(''); // Changed to inputValue for clarity
+  const [inputValue, setInputValue] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
-  const { login } = useUser(); // Get login function from Context
+  const [email, setEmail] = useState('');
+  const { login } = useUser();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate user type check: if input is 'admin', set as admin, else regular
-    const userType = inputValue.trim().toLowerCase() === 'admin' ? 'admin' : 'regular';
-    login(userType); // This will update the Context and navigate to main app
-  };
+    if (!showPassword) 
+    {
+      const response = await fetch('https://localhost:5001/api/email-validation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inputValue })
+      });
+      if (!response.ok) {
+        const mailinput = document.getElementById("email-instructions")
+        if (mailinput) mailinput.innerText = "Ogiltig email. Försök igen."
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.passcode > 0) {
+        setEmail(inputValue);
+        // console.log(data.passcode);
+        setPassword(data.passcode.toString());
+        setShowPassword(true);
+      } else {
+        alert("Ogiltig e-postadress. Försök igen.");
+      }
+    }
+    else {
+      const response = await fetch('https://localhost:5001/api/passcode-validation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, passcode: password })
+      });
+      if (!response.ok) {
+        const passcodeInput = document.getElementById("passcode-instructions");
+        if (passcodeInput) passcodeInput.innerText = "Lösenkoden är felaktig eller för gammal. Försök igen.";
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-  return (
-    <Container>
-      <Banner>Välkommen till CUL programmeringskurs</Banner>
-      <Form onSubmit={handleSubmit}>
-        <Input
-          type="text" // Changed to text input
-          placeholder="Enter 'admin' or anything else" // Updated placeholder
+      const data = await response.json();
+      // console.log("test")
+      // console.log(data.token);
+      if (data.token) login(data.token);
+      else alert("Ogiltig lösenkod. Försök igen.");
+    }
+  }
+
+  const showEmail = () => {
+    return (
+      <div>
+      <h3 id="email-instructions" className="login-instructions">Ange din e-post för att logga in</h3>
+        <input
+          type="email"
+          className="login-input"
+          id="email"
+          autoComplete='email'
+          placeholder="Skriv din e-post här för att logga in"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           required
-        />
-        <Input
+        /> 
+      </div>
+      )
+  }
+
+  const showPasswordInput = () => {
+    return (
+      <div>
+         <h3 id="passcode-instructions" className="login-instructions">Ange det engångslösenord som skickades till din e-post</h3>
+          <input
           type="password"
-          placeholder="Password"
+          className="login-input"
+          placeholder="Enter the pass"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <Button type="submit">Logga in</Button>
-      </Form>
-    </Container>
+      </div>
+    )
+  }
+
+  return (
+    <div className="login-container">
+      <h1 className="login-banner">Välkommen till CUL programmeringskurs</h1>
+      <form className="login-form" autoComplete='on' onSubmit={handleSubmit}>
+        {showPassword ? showPasswordInput() : showEmail()}
+        <button className="login-button" type="submit">Logga in</button>
+      </form>
+    </div>
   );
 };
 

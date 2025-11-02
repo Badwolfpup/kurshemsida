@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import {jwtDecode} from 'jwt-decode';
 
-type UserType = 'regular' | 'admin' | null;
+
+type UserType = 'Regular' | 'Admin' | null;
 
 interface UserContextType {
   isLoggedIn: boolean;
   userType: UserType;
-  login: (type: 'regular' | 'admin') => void;
+  login: (type: string) => void;
   logout: () => void;
 }
 
@@ -17,23 +19,35 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Load from localStorage on mount
   useEffect(() => {
-    const storedType = localStorage.getItem('userType');
-    if (storedType === 'regular' || storedType === 'admin') {
-      setUserType(storedType);
-      setIsLoggedIn(true);
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+       const decoded: any = jwtDecode(token);
+        const role = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'regular';
+        if (role === 'admin' || role === 'regular') {
+          setUserType(role);
+          setIsLoggedIn(true);
+        } 
+      } catch (error) {
+          console.error('Invalid token:', error);
+        logout();
+        }
     }
   }, []); // Empty dependency array ensures this runs only once
 
-  const login = (type: 'regular' | 'admin') => {
+  const login = (token: string) => {
+    localStorage.setItem('token', token)
+    const decoded: any = jwtDecode(token);
+    const role = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+    console.log('User role decoded from token:', role);
+    setUserType(role);
     setIsLoggedIn(true);
-    setUserType(type);
-    localStorage.setItem('userType', type);
   };
 
   const logout = () => {
+    localStorage.removeItem('token');
     setIsLoggedIn(false);
     setUserType(null);
-    localStorage.removeItem('userType');
   };
 
   return (
