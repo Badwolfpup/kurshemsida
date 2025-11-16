@@ -23,6 +23,43 @@
   overflow: hidden; /* For border-radius on table */
 }
 
+.header-section {
+  width: 100%;
+  position: relative; 
+  text-align: center;  
+  margin: 0 auto 20px auto;
+}
+
+
+
+.add-new-user-btn {
+  position: absolute;
+  right: 5%;  /* Positions the button at the far right */
+  top: 30%;
+  /* transform: translateY(-50%);   */
+}
+
+.add-user-name-inputs {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 10px;
+}
+
+.add-user-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.add-user-name-inputs input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  font-family: sans-serif;
+}
+
 .user-table th,
 .user-table td {
   padding: 15px;
@@ -66,16 +103,7 @@
   transition: background-color 0.2s ease;
 }
 
-.user-button {
-  background-color: #666; /* Gray button */
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
-  font-weight: bold;
-}
+
 
 .user-button:hover {
   background-color: #444; /* Darker gray on hover */

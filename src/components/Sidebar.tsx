@@ -14,7 +14,6 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, logout, onAdminClick }) => {
   const [menuExpanded, setMenuExpanded] = useState(false);
-  const [messagesExpanded, setMessagesExpanded] = useState(false);
   const { userType } = useUser();
   return (
     <div className={`sidebar ${isOpen ? 'open' : ''}`}>
@@ -29,21 +28,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, logout, onAdminCli
         <Link to="/timeline">Nyheter</Link>
       </div>
       <div className="menu">
-        <div className="menu-item" onClick={() => setMessagesExpanded(!messagesExpanded)}>
-          Meddelanden {messagesExpanded ? '-' : '+'}
-        </div>
-        {messagesExpanded && (
-          <ul className="submenu">
-            <li><Link to="/messages">Adam</Link></li>
-            <li><Link to="/messages">Victoria</Link></li>
-          </ul>
-        )}
         <div className="menu-item" onClick={() => setMenuExpanded(!menuExpanded)}>
-          Kurser {menuExpanded ? '-' : '+'}
+           {menuExpanded ? '-' : '+'} Kurser
         </div>
         {menuExpanded && (
           <ul className="submenu">
-            <li><Link to="/courses">Datatyper</Link></li>
+            <li><Link to="/courses/HtmlCourse">HTML</Link></li>
+            <li><Link to="/courses/CssCourse">CSS</Link></li>
+            <li><Link to="/courses/JavascriptCourse">JavaScript</Link></li>
           </ul>
         )}
       </div>

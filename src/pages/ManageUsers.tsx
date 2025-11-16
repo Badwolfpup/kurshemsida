@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './ManageUsers.css';
+import '../styles/button.css'
 
 interface User {
   firstName: string;
@@ -13,6 +14,7 @@ const ManageUsers: React.FC = () => {
   const [inactiveUsers, setInactiveUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [addNewUserForm, setAddNewUserForm] = useState(false);
 
   const fetchUsers = async () => {
     const token = localStorage.getItem('token');
@@ -32,6 +34,7 @@ const ManageUsers: React.FC = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data: User[] = await response.json();
+      data.sort((a, b) => a.firstName.localeCompare(b.firstName));
       setActiveUsers(data.filter(user => user.isActive));
       setInactiveUsers(data.filter(user => !user.isActive));
     } catch (err) {
@@ -70,19 +73,77 @@ const ManageUsers: React.FC = () => {
     }
   };
 
+  const addUser = async ({firstName, lastName, email}: {firstName: string, lastName: string, email: string}) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('No authentication token found.');
+      return;
+    }
+
+    try {
+      const response = await fetch('https://localhost:5001/api/add-user', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ FirstName: firstName, LastName: lastName, Email: email })
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to add user: ${response.status}`);
+      }
+      // Refetch users after adding a new user
+      await fetchUsers();
+      setAddNewUserForm(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    }
+  };
+
+  const getNewUserInputs = () => {
+    const firstNameInput = (document.querySelector('.add-user-name-inputs input[placeholder="Förnamn"]') as HTMLInputElement).value;
+    const lastNameInput = (document.querySelector('.add-user-name-inputs input[placeholder="Efternamn"]') as HTMLInputElement).value;
+    const emailInput = (document.querySelector('.add-user-name-inputs input[placeholder="Email"]') as HTMLInputElement).value;
+    return { firstName: firstNameInput, lastName: lastNameInput, email: emailInput };
+  }
+
+  const showAdddNewUserForm = () => {
+    if (addNewUserForm) {
+      return (
+        <div className="add-user-form">
+          <div className="add-user-name-inputs">
+            <input type="text" placeholder="Förnamn"  required/>
+            <input type="text" placeholder="Efternamn" required/>
+            <input type="email" placeholder="Email" required/>
+          </div>
+          <div className="add-user-buttons">
+            <button className='user-button' onClick={() => addUser(getNewUserInputs())}>Lägg till</button>
+            <button className='user-button' onClick={() => setAddNewUserForm(false)}>Avbryt</button>
+          </div>
+        </div>
+      )
+    }
+    else return (
+      <button className='user-button' onClick={() => setAddNewUserForm(!addNewUserForm)}>Lägg till ny</button>
+      )
+  }
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="manage-users-container">
+    <div className="header-section">
       <h2>Aktiva deltagare</h2>
+      {showAdddNewUserForm()}
+    </div>
       <div className="table-wrapper">
         <table className="user-table">
           <thead>
             <tr>
-              <th>Name</th>
+              <th>Namn</th>
               <th>Email</th>
-              <th>Action</th>
+              <th>Åtgärd</th>
             </tr>
           </thead>
           <tbody>
@@ -110,9 +171,9 @@ const ManageUsers: React.FC = () => {
         <table className="user-table">
           <thead>
             <tr>
-              <th>Name</th>
+              <th>Namn</th>
               <th>Email</th>
-              <th>Action</th>
+              <th>Åtgärd</th>
             </tr>
           </thead>
           <tbody>
