@@ -6,6 +6,7 @@ interface User {
   firstName: string;
   lastName: string;
   email: string;
+  course: number;
   isActive: boolean;
 }
 
@@ -67,6 +68,33 @@ const ManageUsers: React.FC = () => {
         throw new Error(`Failed to ${(user.isActive ? "inactivate" : "activate")} user: ${response.status}`);
       }
       // Refetch users after status change
+      await fetchUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    }
+  };
+
+  const deleteUser = async (user: User) => {
+    const prompt = window.confirm(`Är du säker på att du vill ta bort användaren ${user.firstName} ${user.lastName}? Detta kan inte ångras.`);
+    if (!prompt) return;
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('No authentication token found.');
+      return;
+    }
+    try {
+      const response = await fetch('https://localhost:5001/api/delete-user', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ Email: user.email })
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to delete user: ${response.status}`);
+      }
+      // Refetch users after deletion
       await fetchUsers();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -143,6 +171,7 @@ const ManageUsers: React.FC = () => {
             <tr>
               <th>Namn</th>
               <th>Email</th>
+              <th>Kurs</th>
               <th>Åtgärd</th>
             </tr>
           </thead>
@@ -156,8 +185,9 @@ const ManageUsers: React.FC = () => {
                 <tr key={index}>
                   <td>{user.firstName} {user.lastName}</td>
                   <td>{user.email}</td>
-                  <td>
-                    <button className="user-button" onClick={() => changeActiveStatus(user)}>Inaktivera</button>
+                  <td>{user.course}</td>
+                  <td className='list-buttons'>
+                    <button className="user-button" onClick={() => changeActiveStatus(user)}>Inaktivera</button>                    
                   </td>
                 </tr>
               ))
@@ -173,6 +203,7 @@ const ManageUsers: React.FC = () => {
             <tr>
               <th>Namn</th>
               <th>Email</th>
+              <th>Kurs</th>
               <th>Åtgärd</th>
             </tr>
           </thead>
@@ -186,8 +217,10 @@ const ManageUsers: React.FC = () => {
                 <tr key={index}>
                   <td>{user.firstName} {user.lastName}</td>
                   <td>{user.email}</td>
-                  <td>
+                  <td>{user.course}</td>
+                  <td className='list-buttons'>
                     <button className="user-button" onClick={() => changeActiveStatus(user)}>Aktivera</button>
+                    <button className="delete-button" onClick={() => deleteUser(user)}>✕</button>
                   </td>
                 </tr>
               ))

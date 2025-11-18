@@ -8,3 +8,8 @@
   transition: background-color 0.3s, transform 0.2s;
   font-weight: bold;
 }
+
+.user-button:hover {
+  background-color: #444; /* Darker gray on hover */
+  transform: scale(1.05); /* Slight scale for modern effect */
+}

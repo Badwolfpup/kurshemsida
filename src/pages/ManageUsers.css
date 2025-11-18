@@ -104,8 +104,26 @@
 }
 
 
+.delete-button {
+  background-color: #c0392b; /* Red button */
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  font-weight: bold;
+}
 
-.user-button:hover {
-  background-color: #444; /* Darker gray on hover */
-  transform: scale(1.05); /* Slight scale for modern effect */
+.delete-button:hover {
+  background-color: #610606; 
+  transform: scale(1.05); 
+}
+
+.list-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+  margin-right: 10px;
 }
