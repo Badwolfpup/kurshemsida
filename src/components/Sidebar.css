@@ -1,13 +1,24 @@
 .sidebar {
   position: relative;
   width: 60px;
-  height: 100%;
+  height: 100vh; /* Ensure full viewport height */
   background-color: lightgray;
   transition: width 0.3s ease;
   z-index: 999;
+  padding: 0; /* Remove padding from sidebar, add to content */
+  box-sizing: border-box;
+}
+
+.sidebar.open {
+  width: 25vw;
+  min-width: 100px;
+}
+
+.sidebar .sidebar-content {
   padding: 20px;
   box-sizing: border-box;
-  overflow: visible;
+  height: 100%;
+  overflow-y: auto; /* Scroll the content if it overflows */
 }
 
 .sidebar h2,
@@ -18,11 +29,6 @@
 .sidebar.open h2,
 .sidebar.open ul {
   display: block;
-}
-
-.sidebar.open {
-  width: 25vw;
-  min-width: 100px;
 }
 
 .sidebar .calendar-container {
@@ -115,4 +121,11 @@
 
 .hamburger.open .line:nth-child(3) {
   transform: rotate(45deg) translate(-5px, -6px);
+}
+
+.sidebar .menu-item .expand-icon {
+  font-size: 18px;
+  font-weight: bold;
+  margin-right: 8px;
+  color: #555;
 }

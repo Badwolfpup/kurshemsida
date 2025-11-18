@@ -1,0 +1,69 @@
+.course-page {
+  font-family: Inter, system-ui, sans-serif;
+  margin: 40px auto;
+  max-width: 1000px;
+  padding: 28px;
+  overflow-y: auto; /* Move scrollbar here */
+  max-height: 80vh; /* Set height to enable scrolling */
+}
+
+.course-page h1 {
+  color: #333;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.course-page h2 {
+  color: #555;
+  margin-top: 30px;
+}
+
+.course-page p {
+  margin-bottom: 15px;
+}
+
+.course-page pre {
+  background-color: #f4f4f4;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  overflow-x: auto;
+  margin: 15px 0;
+}
+
+.course-page code {
+  font-family: 'Courier New', monospace;
+  background-color: #f9f9f9;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.course-page ul {
+  margin: 15px 0;
+  padding-left: 20px;
+}
+
+.course-page li {
+  margin-bottom: 5px;
+}
+
+.article {
+  background: rgba(255,255,255,0.02);
+  padding: 22px;
+  border-radius: 14px;
+}
+
+.card {
+  background: rgba(255,255,255,0.01);
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.code-block {
+  background: #021426;
+  padding: 12px;
+  border-radius: 8px;
+  overflow: auto;
+  color: #d2f1ff;
+}
