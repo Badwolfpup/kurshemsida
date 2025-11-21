@@ -17,7 +17,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, logout, onAdminCli
   const [jsExpanded, setJsExpanded] = useState(false);
   const { userType, userPermissions, loading } = useUser();
   // const [error, setError] = useState<string | null>(null);
-  console.log('User', userPermissions);
 
   return (
     <div className={`sidebar ${isOpen ? 'open' : ''}`}>

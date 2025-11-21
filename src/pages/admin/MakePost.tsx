@@ -4,31 +4,39 @@ import QuillResizeImage from 'quill-resize-image';
 import 'quill/dist/quill.snow.css';
 import './MakePost.css';
 import '../../styles/button.css';
+import {jwtDecode} from 'jwt-decode';
 
 Quill.register('modules/imageResize', QuillResizeImage);
 const MakePost: React.FC = () => {
   const editorRef = useRef<HTMLDivElement>(null);
   const quillInstanceRef = useRef<Quill | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false); // Flag to prevent double init
+  const initializedRef = useRef(false); // Flag to prevent double init
 
-  useEffect(() => {
-    if (editorRef.current && !quillInstanceRef.current && !isInitialized) {
-      setIsInitialized(true); // Set flag immediately
+useEffect(() => {
+    if (editorRef.current && !quillInstanceRef.current && !initializedRef.current) {
+      initializedRef.current = true; // Set once
+      editorRef.current.innerHTML = ''; // Clear any existing content
+      if (editorRef.current.querySelector('.ql-editor')) {
+      return; // Already has Quill, skip
+    }
       quillInstanceRef.current = new Quill(editorRef.current, {
         theme: 'snow',
         placeholder: 'Write your post here...',
         modules: {
+
           toolbar: [
-            [{ header: [1, 2, false] }],
+            [{ header: [1, 2,3,4,5,false] }],
+            // [{ 'size': ['10px', '12px', '14px', '16px', '18px', '20px'] }], // Custom numerical sizes
             ['bold', 'italic', 'underline'],
             ['link', 'image', 'video'],
             [{ list: 'ordered' }, { list: 'bullet' }],
             ['clean'],
           ],
+
           imageResize: {
             parchment: Quill.import('parchment'),
             modules: ['Resize', 'DisplaySize', 'Toolbar'],
-            },
+          },
         },
       });
     }
@@ -37,7 +45,7 @@ const MakePost: React.FC = () => {
       // Cleanup
       if (quillInstanceRef.current) {
         quillInstanceRef.current = null;
-        setIsInitialized(false);
+        initializedRef.current = false;
       }
     };
   }, []); // Empty deps to run once
@@ -70,7 +78,7 @@ const MakePost: React.FC = () => {
         body: JSON.stringify({ image: base64Data }),
         });
         const result = await response.json();
-        console.log('Image uploaded:', result.url);
+        // console.log('Image uploaded:', result.url);
         return result.url; // e.g., "https://yourserver.com/images/123.png"
     } catch (error) {
         console.error('Image upload failed:', error);
@@ -107,29 +115,35 @@ const Publish = async () => {
       quillInstanceRef.current?.setContents(processedDelta);
       // Now save the processed delta (or HTML) to your server
       const html = quillInstanceRef.current?.root.innerHTML; // Or use processedDelta for JSON
-      console.log('Publishing processed content:', processedDelta);
 
     const token = localStorage.getItem('token'); // Get the stored token
-    console.log('Auth token:', token);
     if (!token) {
       console.error('No auth token found. Please log in.');
       return;
     }
 
-    await fetch('https://localhost:5001/api/add-post', {
+    const decoded: any = jwtDecode(token);
+    const email = decoded.sub;
+
+    const response = await fetch('https://localhost:5001/api/add-post', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`, // Add this
       },
-      body: JSON.stringify({ content: html, delta: processedDelta }),
+      body: JSON.stringify({ email: email,  html: html, delta: processedDelta }),
     });
 
-      // Optional: Clear draft after publishing
-      sessionStorage.removeItem('draftPost');
-      quillInstanceRef.current?.setContents([]);
-    } catch (error) {
-      console.error('Failed to publish:', error);
+    if (!response.ok) {
+      console.error('Failed to publish post:', response.statusText);
+      return;
+    }
+    console.log('Post published successfully!');
+    // Optional: Clear draft after publishing
+    sessionStorage.removeItem('draftPost');
+    quillInstanceRef.current?.setContents([]);
+  } catch (error) {
+    console.error('Failed to publish:', error);
     }
   };
 
