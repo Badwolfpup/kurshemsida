@@ -16,6 +16,7 @@ import JsObjects from '../pages/courses/javascript/objects';
 import ManageUsers from '../pages/admin/ManageUsers';
 import './MainContent.css';
 import UserPermissions from '../pages/admin/UserPermissions';
+import MakePost from '../pages/admin/MakePost';
 import AdminSettings from '../pages/AdminSettings';
 
 const MainContent: React.FC = () => {
@@ -38,6 +39,7 @@ const MainContent: React.FC = () => {
         <Route path="/settings" element={<Settings />} />
         <Route path="/manageusers" element={<ManageUsers />} />
         <Route path="/userpermissions" element={<UserPermissions />} />
+        <Route path="/makepost" element={<MakePost />} />
         <Route path="/adminsettings" element={<AdminSettings />} />
       </Routes>
     </div>

@@ -11,7 +11,7 @@ export const useFetchUserPermissions = (
 
   useEffect(() => {
     if (!triggerFetch) {
-      console.log('triggerFetch is false, setting loading false');
+      // console.log('triggerFetch is false, setting loading false');
       setLoading(false);
       return;
     }
@@ -22,7 +22,6 @@ export const useFetchUserPermissions = (
     }
 
     const fetchPermissions = async () => {
-      console.log('Fetching permissions for:', selectedEmail);
       setLoading(true);
       if (setError)setError(null);
       const token = localStorage.getItem('token');

@@ -28,7 +28,6 @@ const Login: React.FC = () => {
       const data = await response.json();
       if (data.passcode > 0) {
         setEmail(inputValue);
-        // console.log(data.passcode);
         setPassword(data.passcode.toString());
         setShowPassword(true);
       } else {
@@ -48,8 +47,7 @@ const Login: React.FC = () => {
       }
 
       const data = await response.json();
-      // console.log("test")
-      // console.log(data.token);
+
       if (data.token) login(data.token);
       else alert("Ogiltig lösenkod. Försök igen.");
     }

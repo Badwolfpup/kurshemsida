@@ -46,10 +46,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem('token', token);
     const decoded: any = jwtDecode(token);
     const role = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-    console.log('User role decoded from token:', role);
     setUserType(role);
     setIsLoggedIn(true);
-    console.log('User', userPermissions);
   };
 
   const logout = () => {
