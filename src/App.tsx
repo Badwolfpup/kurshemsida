@@ -1,5 +1,5 @@
 import './App.css'
-import React, { useState} from 'react';
+import React, { useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import Login from './pages/Login';
 import { useUser } from './context/UserContext';
@@ -14,6 +14,12 @@ const App: React.FC = () => {
   const [showAdmin, setShowAdmin] = useState(false);
   const navigate = useNavigate();
   
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate('/');
+    }
+  }, [isLoggedIn]);
+
   if (!isLoggedIn) {
     return <Login />;
   }

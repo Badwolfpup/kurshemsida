@@ -4,53 +4,68 @@ import QuillResizeImage from 'quill-resize-image';
 import 'quill/dist/quill.snow.css';
 import './MakePost.css';
 import '../../styles/button.css';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
+  
 
+
+// Also register imageResize if not already
 Quill.register('modules/imageResize', QuillResizeImage);
+
 const MakePost: React.FC = () => {
   const editorRef = useRef<HTMLDivElement>(null);
   const quillInstanceRef = useRef<Quill | null>(null);
-  const initializedRef = useRef(false); // Flag to prevent double init
+  const initializedRef = useRef(false);
 
-useEffect(() => {
-    if (editorRef.current && !quillInstanceRef.current && !initializedRef.current) {
-      initializedRef.current = true; // Set once
-      editorRef.current.innerHTML = ''; // Clear any existing content
-      if (editorRef.current.querySelector('.ql-editor')) {
-      return; // Already has Quill, skip
-    }
-      quillInstanceRef.current = new Quill(editorRef.current, {
-        theme: 'snow',
-        placeholder: 'Write your post here...',
-        modules: {
 
-          toolbar: [
-            [{ header: [1, 2,3,4,5,false] }],
-            // [{ 'size': ['10px', '12px', '14px', '16px', '18px', '20px'] }], // Custom numerical sizes
-            ['bold', 'italic', 'underline'],
-            ['link', 'image', 'video'],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            ['clean'],
-          ],
+  useEffect(() => {
+    if (typeof window === 'undefined' || !editorRef.current || initializedRef.current) return;
 
-          imageResize: {
-            parchment: Quill.import('parchment'),
-            modules: ['Resize', 'DisplaySize', 'Toolbar'],
-          },
-        },
-      });
-    }
+    const loadQuill = async () => {
+      try {
+        const { default: Quill } = await import('quill');
+        const { default: QuillResizeImage } = await import('quill-resize-image');
+        Quill.register('modules/imageResize', QuillResizeImage);
+
+        if (!quillInstanceRef.current && editorRef.current) {
+          initializedRef.current = true;
+          editorRef.current.innerHTML = '';
+          quillInstanceRef.current = new Quill(editorRef.current, {
+            theme: 'snow',
+            placeholder: 'Write your post here...',
+            modules: {
+            toolbar: [
+              [{ header: [1, 2, 3, 4, 5, false] }],
+              [{ font: [] }, { size: [] }],
+              ['bold', 'italic', 'underline', 'strike'],
+              [{ color: [] }, { background: [] }],
+              [{ list: 'ordered' }, { list: 'bullet' }],
+              [{ align: [] }],
+              ['link', 'image', 'video', 'blockquote', 'code-block'],
+              ['clean'],
+            ],
+              imageResize: {
+                parchment: Quill.import('parchment'),
+                modules: ['Resize', 'DisplaySize', 'Toolbar'],
+              },
+            },
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load Quill:', error);
+      }
+    };
+
+    loadQuill();
 
     return () => {
-      // Cleanup
       if (quillInstanceRef.current) {
         quillInstanceRef.current = null;
         initializedRef.current = false;
       }
     };
-  }, []); // Empty deps to run once
+  }, []);
 
-  const saveDraft = () => { 
+    const saveDraft = () => { 
     const draft = JSON.stringify(quillInstanceRef.current?.getContents());
     sessionStorage.setItem('draftPost', draft);
   };
@@ -68,7 +83,7 @@ useEffect(() => {
 
   }
 
-  // Helper: Upload base64 image and return server URL
+    // Helper: Upload base64 image and return server URL
   const uploadImage = async (base64Data: string): Promise<string> => {
     try {
             
@@ -151,11 +166,12 @@ const Publish = async () => {
   return (
     <div>
       <h1>Skapa inlägg</h1>
-      <div ref={editorRef} style={{ height: '400px', width: '800px', zIndex: 1001 }} />
-      <div className='draft-btns'>
-        <button className='user-button' onClick={saveDraft}>Spara utkast</button>
-        <button className='user-button' onClick={loadDraft}>Ladda utkast</button>
-        <button className='user-button' onClick={Publish}>Publicera</button>
+      <div ref={editorRef} style={{ height: '400px' }} />
+      <div className="draft-btns">
+        <button className="user-button" onClick={saveDraft}>Spara utkast</button>
+        <button className="user-button" onClick={loadDraft}>Ladda utkast</button>
+        <button className="user-button" onClick={Publish}>Publicera</button>
+        <button className="user-button" onClick={() => quillInstanceRef.current?.setContents([])}>Rensa</button>
       </div>
     </div>
   );

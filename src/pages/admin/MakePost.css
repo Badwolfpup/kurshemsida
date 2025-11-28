@@ -4,12 +4,57 @@
     gap: 10px;
 }
 
+.draft-btns button:last-child {
+    margin-left: auto;
+}
+
 .editor {
     border: 1px solid #ccc;
     border-radius: 4px;
     height: 400px;
-    margin-top: 10px;
     background-color: #fff;
-    width: 800px;
 };
+
+
+
+/* Push the editor down */
+.ql-container {
+  margin-top: 42px; /* Adjust for toolbar height */
+  position: relative;
+  /* z-index: 1; */
+}
+
+/* Editor content stays below */
+.ql-editor {
+  position: relative;
+  /* z-index: 1; */
+}
+
+.ql-editor * {
+  /* z-index: 1 !important; */
+}
+
+/* Force images and resize handles low */
+.ql-editor img,
+.ql-editor .ql-image-resize,
+.ql-editor .ql-image-resize * {
+  /* z-index: 1 !important; */
+  position: relative !important;
+}
+
+/* Dropdowns: Open upwards, fully opaque, and overlay everything */
+.ql-toolbar .ql-picker-options {
+
+  top: auto !important;
+  z-index: 10001 !important;
+  background: white !important; /* Solid background to hide text/images */
+  border: 1px solid #ccc !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important; /* Optional: Add shadow for visibility */
+  opacity: 1 !important; /* Ensure full opacity */
+}
+
+/* Increase z-index for Quill tooltips (link, image, etc.) */
+.ql-tooltip {
+  z-index: 2000 !important;  /* Higher than sidebar (usually 1000+) */
+}
 

@@ -87,6 +87,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, logout, onAdminCli
           <Link to="/exercises">Övningar</Link>
         </div>
         <div className="menu-link">
+          <Link to="/portfolio">Portfolio</Link>
+        </div>
+        <div className="menu-link">
           <Link to="/settings">Inställningar</Link>
         </div>
         {userType === 'Admin' && (

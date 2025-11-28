@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import Timeline from '../pages/Timeline';
 import Exercises from '../pages/Exercises';
 import Settings from '../pages/Settings';
+import Portfolio from '../pages/Portfolio';
 import HtmlCourse from '../pages/courses/HtmlCourse';
 import CssCourse from '../pages/courses/CssCourse';
 import JavascriptCourse from '../pages/courses/JavascriptCourse';
@@ -36,6 +37,7 @@ const MainContent: React.FC = () => {
         <Route path="courses/javascript/objects" element={<JsObjects />} />
         <Route path="/timeline" element={<Timeline />} />
         <Route path="/exercises" element={<Exercises />} />
+        <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/manageusers" element={<ManageUsers />} />
         <Route path="/userpermissions" element={<UserPermissions />} />
