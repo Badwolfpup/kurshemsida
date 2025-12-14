@@ -26,6 +26,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen, onBack }
         <Link to="/userpermissions">Deltagares permissions</Link>
       </div>
       <div className="menu-link">
+        <Link to="/managecoaches">Hantera coacher</Link>
+      </div>
+      <div className="menu-link">
         <Link to="/makepost">Skapa inlägg</Link>
       </div>
       <div className="menu-link">

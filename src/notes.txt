@@ -2,7 +2,6 @@ Kalender där vi kan lägga till händelser - koppla autmatiska inlägg i flöde
     react-calendar
     react-datepicker
     @fullcalendar/react @fullcalendar/daygrid
-Flöde där vi kan lägga upp händelser (gruppchat)
 Kurskatalog
     Vi låser upp kurser 
         varje delkurs har övningar kopplade till sig
@@ -18,7 +17,18 @@ Adminsida
     Lägg till händelser i kalendern
     Styra tillgång till i pripcip alla funktioner
     För närvaro
+        - lägg till table närvaro i db - (array med elev id för varje dag?) **KLAR**
+        - lägg till funktion för att add/remove coacher
+        - lägg til coachdropdown för lägga till nya elever
+        - lägga till närvarosida
+            - dropdown med år / veckor
+            - elever i lista  + toggles för varje dag (grön närvarande, grå (default) ej närvarande
+                - spara/avbryt knapp
 
 
 Inbyggd kodyta vid förklaringar och ?övningar?
 Skapa mobilapp för samma sida
+
+**TODO**
+Visa coacher bredvid user
+Testa att lägga till o deleta allt

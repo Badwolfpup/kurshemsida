@@ -15,6 +15,7 @@ import JsFunctions from '../pages/courses/javascript/functions';
 import JsArrays from '../pages/courses/javascript/arrays';
 import JsObjects from '../pages/courses/javascript/objects';
 import ManageUsers from '../pages/admin/ManageUsers';
+import ManageCoaches from '../pages/admin/ManageCoaches';
 import './MainContent.css';
 import UserPermissions from '../pages/admin/UserPermissions';
 import MakePost from '../pages/admin/MakePost';
@@ -40,6 +41,7 @@ const MainContent: React.FC = () => {
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/manageusers" element={<ManageUsers />} />
+        <Route path="/managecoaches" element={<ManageCoaches />} />
         <Route path="/userpermissions" element={<UserPermissions />} />
         <Route path="/makepost" element={<MakePost />} />
         <Route path="/adminsettings" element={<AdminSettings />} />

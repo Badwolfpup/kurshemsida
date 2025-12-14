@@ -8,6 +8,14 @@ interface User {
   email: string;
   course: number;
   isActive: boolean;
+  coach?: string;
+}
+
+interface Coach {
+  firstName: string;
+  lastName: string;
+  email: string;
+  isActive: boolean;
 }
 
 const ManageUsers: React.FC = () => {
@@ -16,6 +24,7 @@ const ManageUsers: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [addNewUserForm, setAddNewUserForm] = useState(false);
+  const [activeCoaches, setActiveCoaches] = useState<Coach[]>([]);
 
   const fetchUsers = async () => {
     const token = localStorage.getItem('token');
@@ -101,7 +110,7 @@ const ManageUsers: React.FC = () => {
     }
   };
 
-  const addUser = async ({firstName, lastName, email}: {firstName: string, lastName: string, email: string}) => {
+  const addUser = async ({firstName, lastName, email, coachEmail}: {firstName: string, lastName: string, email: string, coachEmail: string}) => {
     const token = localStorage.getItem('token');
     if (!token) {
       setError('No authentication token found.');
@@ -115,7 +124,7 @@ const ManageUsers: React.FC = () => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ FirstName: firstName, LastName: lastName, Email: email })
+        body: JSON.stringify({ FirstName: firstName, LastName: lastName, Email: email, Coach: coachEmail})
       });
       if (!response.ok) {
         throw new Error(`Failed to add user: ${response.status}`);
@@ -129,10 +138,55 @@ const ManageUsers: React.FC = () => {
   };
 
   const getNewUserInputs = () => {
-    const firstNameInput = (document.querySelector('.add-user-name-inputs input[placeholder="Förnamn"]') as HTMLInputElement).value;
-    const lastNameInput = (document.querySelector('.add-user-name-inputs input[placeholder="Efternamn"]') as HTMLInputElement).value;
-    const emailInput = (document.querySelector('.add-user-name-inputs input[placeholder="Email"]') as HTMLInputElement).value;
-    return { firstName: firstNameInput, lastName: lastNameInput, email: emailInput };
+    const firstNameInput = (document.querySelector('.add-user-name-inputs input[placeholder="Förnamn"]') as HTMLInputElement).value.trim();
+    const lastNameInput = (document.querySelector('.add-user-name-inputs input[placeholder="Efternamn"]') as HTMLInputElement).value.trim();
+    const emailInput = (document.querySelector('.add-user-name-inputs input[placeholder="Email"]') as HTMLInputElement).value.trim();
+    const coachemailInput = (document.querySelector('.coach-combobox') as HTMLSelectElement).value;
+    console.log("coach email: ", coachemailInput);
+    return { firstName: firstNameInput, lastName: lastNameInput, email: emailInput, coachEmail: coachemailInput };
+  }
+
+const fetchCoaches = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('No authentication token found. Please log in.');
+      return;
+    }
+
+    try {
+      const response = await fetch('https://localhost:5001/api/fetch-coaches', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        console.log("här")
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data: Coach[] = await response.json();
+      data.sort((a, b) => a.firstName.localeCompare(b.firstName));
+      setActiveCoaches(data.filter(coach => coach.isActive));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    }
+  };
+
+  const addComboBox = (): React.ReactNode => {
+        return (
+          <div className="combobox-wrapper">
+            <select className="coach-combobox">
+              <option value="">Välj coach (valfritt)</option>
+              {activeCoaches.length > 0 ? (
+                activeCoaches.map((coach) => (
+                  <option key={coach.email} value={coach.email}>
+                    {`${coach.firstName} ${coach.lastName}`}
+                  </option>
+                ))
+              ) : null}
+            </select>
+          </div>
+        );
   }
 
   const showAdddNewUserForm = () => {
@@ -143,6 +197,7 @@ const ManageUsers: React.FC = () => {
             <input type="text" placeholder="Förnamn"  required/>
             <input type="text" placeholder="Efternamn" required/>
             <input type="email" placeholder="Email" required/>
+            {addComboBox()}
           </div>
           <div className="add-user-buttons">
             <button className='user-button' onClick={() => addUser(getNewUserInputs())}>Lägg till</button>
@@ -152,7 +207,10 @@ const ManageUsers: React.FC = () => {
       )
     }
     else return (
-      <button className='user-button' onClick={() => setAddNewUserForm(!addNewUserForm)}>Lägg till ny</button>
+      <button className='user-button' onClick={ async () =>  { 
+        await fetchCoaches();
+        setAddNewUserForm(!addNewUserForm)}
+      }>Lägg till ny</button>
       )
   }
 
@@ -186,6 +244,7 @@ const ManageUsers: React.FC = () => {
                   <td>{user.firstName} {user.lastName}</td>
                   <td>{user.email}</td>
                   <td>{user.course}</td>
+                  <td>{user.coach}</td>
                   <td className='list-buttons'>
                     <button className="user-button" onClick={() => changeActiveStatus(user)}>Inaktivera</button>                    
                   </td>
@@ -218,6 +277,7 @@ const ManageUsers: React.FC = () => {
                   <td>{user.firstName} {user.lastName}</td>
                   <td>{user.email}</td>
                   <td>{user.course}</td>
+                  <td>{user.coach}</td>
                   <td className='list-buttons'>
                     <button className="user-button" onClick={() => changeActiveStatus(user)}>Aktivera</button>
                     <button className="delete-button" onClick={() => deleteUser(user)}>✕</button>
