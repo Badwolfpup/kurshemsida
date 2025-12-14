@@ -1,0 +1,39 @@
+.week-picker {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.week-select {
+    width: 250px;
+    text-align: center;
+}
+
+table tbody tr:nth-child(odd) {
+    background-color: #f2f2f2;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #ffffff;
+}
+
+table tbody tr td {
+    padding: 10px;
+}
+
+.attended {
+    width: 30px;
+    height: 30px;
+    background-color: green;
+    display: inline-block;
+    border-radius: 4px;
+}
+
+.absent {
+    width: 30px;
+    height: 30px;
+    background-color: gray;
+    display: inline-block;
+    border-radius: 4px;
+}

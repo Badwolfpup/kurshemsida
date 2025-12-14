@@ -32,6 +32,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen, onBack }
         <Link to="/makepost">Skapa inlägg</Link>
       </div>
       <div className="menu-link">
+        <Link to="/attendance">Närvarohantering</Link>
+      </div>
+      <div className="menu-link">
         <Link to="/adminsettings">Allmäna Inställningar</Link>
       </div>
       <div className="menu-link">
