@@ -1,10 +1,11 @@
 import React from 'react';
+import pageunderconstruction from '../assets/images/pageunderconstruction.jpg';
+
 
 const Settings: React.FC = () => {
   return (
-    <div>
-      <h1>Inställningar</h1>
-      <p>This is the Settings page.</p>
+    <div className="portfolio">
+        <img src={pageunderconstruction} alt="Portfolio" />
     </div>
   );
 };

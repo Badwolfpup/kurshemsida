@@ -6,22 +6,30 @@ import { useUser } from './context/UserContext';
 import Sidebar from './components/Sidebar';
 import AdminSidebar from './components/AdminSidebar';
 import MainContent from './components/MainContent';
+import AboutCourse from './pages/AboutCourse';
 
 
 const App: React.FC = () => {
-  const { isLoggedIn, logout, userType } = useUser();
-  const [isOpen, setIsOpen] = useState(false);
+  const { isLoggedIn, logout: contextLogout, userType } = useUser();
+  const [isOpen, setIsOpen] = useState(true);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showAboutPage, setShowAboutPage] = useState(true);
   const navigate = useNavigate();
   
   useEffect(() => {
     if (isLoggedIn) {
-      navigate('/');
+      if (!showAdmin) navigate('/timeline');
+      else navigate('/manageusers');
     }
-  }, [isLoggedIn]);
+    else if (!showAboutPage) {
+      navigate('/login');
+    }
+  }, [isLoggedIn, showAboutPage]);
 
-  if (!isLoggedIn) {
-    return <Login />;
+  const logout = () => {
+    contextLogout();
+    setShowAboutPage(true);
+    navigate('/');
   }
 
   const handleAdminClick = () => {
@@ -31,15 +39,24 @@ const App: React.FC = () => {
 
   const handleAdminBack = () => {
     setShowAdmin(false);
-    navigate('/'); // Navigate back to home or timeline
+    navigate('/timeline'); // Navigate back to home or timeline
   };
 
-  return (
-    <div className="app">
-      {showAdmin && userType === "Admin" ? (<AdminSidebar isOpen={isOpen} setIsOpen={setIsOpen} onBack={handleAdminBack} />) : (<Sidebar isOpen={isOpen} setIsOpen={setIsOpen} logout={logout} onAdminClick={handleAdminClick}/>)}
-      <MainContent />
-    </div>
-  );
+  if (isLoggedIn && !showAboutPage) {
+    return (
+      <div className="app">
+        {showAdmin && userType === "Admin" ? (<AdminSidebar isOpen={isOpen} setIsOpen={setIsOpen} onBack={handleAdminBack} />) : (<Sidebar isOpen={isOpen} setIsOpen={setIsOpen} logout={logout} onAdminClick={handleAdminClick}/>)}
+        <MainContent setShowAboutPage={setShowAboutPage} />
+      </div>
+    );
+  }
+
+  if (showAboutPage) return <AboutCourse setShowAboutPage={setShowAboutPage} />;
+
+  return <Login />;
+
+
+
 
 }
 

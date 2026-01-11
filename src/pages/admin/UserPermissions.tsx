@@ -1,74 +1,131 @@
 
 import React, { useState, useEffect} from 'react';
-import { useFetchUserPermissions } from '../../hooks/useFetchUserPermissions';
-import { useFetchActiveUsers } from '../../hooks/useFetchActiveUsers';
+import getPermissions from '../../data/FetchPermissions';
 import '../../styles/button.css'
 import './UserPermissions.css';
 
+interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  authLevel: number;  // Role as number
+  isActive: boolean;
+  course: number;
+  coachId?: number | null;
+}
+
+interface Permissions {
+  userId: number;
+  html: boolean;
+  css: boolean;
+  javascript: boolean;
+  variable: boolean;
+  conditionals: boolean;
+  loops: boolean;
+  functions: boolean;
+  arrays: boolean;
+  objects: boolean;
+}
+
+const defaultPermissions: Permissions = {
+  userId: 0,
+  html: false,
+  css: false,
+  javascript: false,
+  variable: false,
+  conditionals: false,
+  loops: false,
+  functions: false,
+  arrays: false,
+  objects: false
+};
 
 const UserPermissions: React.FC = () => {
-  const [selectedEmail, setSelectedEmail] = useState<string>('');
-  const [error, setError] = useState<string | null>(null);
-  const activeUsers = useFetchActiveUsers(setError);
-  const {userPermissions, loading, } = useFetchUserPermissions(selectedEmail, true, setError);
-  const [newPermissions, setNewPermissions] = useState<Record<string, boolean>>({});
+  const [activeUsers, setActiveUsers] = useState<User[]>([]);
+  const [userPermissions, setUserPermissions] = useState<Permissions>(defaultPermissions);
 
 
   useEffect(() => {
-    setNewPermissions({...userPermissions});
-  }, [userPermissions]);
+    fetchUsers();
+  }, []);
 
- 
-  const checkboxChanged = ( e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, checked } = e.target;
-    setNewPermissions(prev => ({...prev, [id]: checked }));
+  const fetchPermissions = async (email: string) => {
+    if (!email) {
+      setUserPermissions(defaultPermissions);
+      return;
+    }
+    try {
+      const data: Permissions = await getPermissions(email) as Permissions;
+      if (!data) {
+        setUserPermissions(defaultPermissions);
+        return;
+      }
+      setUserPermissions(data);
+      console.log(`Email: ${email}`, data);
+    } catch (err) {
+      console.log(err instanceof Error ? err.message : 'An error occurred');
+    }
   }
 
-  const savePermissions = async () => {
-    const changedKeys = Object.keys(newPermissions).filter(key => newPermissions[key] !== userPermissions[key]);
-    if (changedKeys.length === 0) return; // No changes detected
-
-    const dropdown = document.getElementById("user-dropdown") as HTMLSelectElement;
-    if (!dropdown) return;
-    const selectedEmail = dropdown.value;
+  const fetchUsers = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
-      setError('No authentication token found.');
+      console.log('No authentication token found. Please log in.');
       return;
     }
 
-    const changedPermissions = Object.fromEntries(changedKeys.map(key => [key, newPermissions[key]]));
-
     try {
-      const response = await fetch(`https://localhost:5001/api/update-user-permissions`, {
-        method: 'PATCH',
+      const response = await fetch(`/api/fetch-users`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ Permissions: changedPermissions, Email: selectedEmail })
+        }
       });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      let data = await response.json() as User[];
+      data.sort((a, b) => a.firstName.localeCompare(b.firstName));
+      data = data.filter(user => user.isActive && user.authLevel === 4);
+      setActiveUsers(data);
     }
-};
-
-const undoPermissions = () => {
-  setNewPermissions({...userPermissions});
-}
-  
-
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;  
+    catch (err) {
+      console.log(err instanceof Error ? err.message : 'An error occurred');
+    }
+  }
+ 
+  const checkboxChanged = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, checked } = e.target;
+    const newPermissions = { ...userPermissions, [id]: checked };
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.log('No authentication token found.');
+      return;
+    }
+    try {
+      const response = await fetch(`/api/update-user-permissions`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newPermissions)
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      console.log('Permissions updated successfully');
+      fetchPermissions(activeUsers.find(user => user.id === newPermissions.userId)?.email || '');
+    } catch (err) {
+      console.log(err instanceof Error ? err.message : 'An error occurred');
+    }
+  }
 
   return (
-    <div>
+    <div className='permission-main-container'>
       <div className='navbar'>
-        <select id="user-dropdown" value={selectedEmail} onChange={(e) => setSelectedEmail(e.target.value)}>
+        <select id="user-dropdown" onChange={(e) => fetchPermissions(e.target.value)}>
           <option value="">Välj användare</option>
           {activeUsers.map(user => (
             <option key={user.email} value={user.email}>
@@ -76,35 +133,30 @@ const undoPermissions = () => {
             </option>
           ))}
         </select>
-        {loading && <p>Loading...</p>}
-        {error && <p>Error: {error}</p>}
-
-        <button className="user-button" onClick={savePermissions}>Spara</button>
-        <button className="user-button" onClick={undoPermissions}>Ångra</button>
       </div>
-      {selectedEmail && (
+      {userPermissions.userId !== 0 && (
         <div className='permissions-container'>
           <h3>Kurser</h3>
           <div className='courses-list'>
-            <label>HTML </label> <input id="html" type="checkbox" checked={newPermissions.hasOwnProperty("html") ? newPermissions["html"] : true} onChange={checkboxChanged} />
-            <label>CSS</label> <input id="css" type="checkbox" checked={newPermissions.hasOwnProperty("css") ? newPermissions["css"] : true} onChange={checkboxChanged} />
-            <label>JavaScript</label><input id="javascript" type="checkbox" checked={newPermissions.hasOwnProperty("javascript") ? newPermissions["javascript"] : true} onChange={checkboxChanged} />
+            <label>HTML </label> <input id="html" type="checkbox" checked={userPermissions.html} onChange={checkboxChanged} />
+            <label>CSS</label> <input id="css" type="checkbox" checked={userPermissions.css} onChange={checkboxChanged} />
+            <label>JavaScript</label><input id="javascript" type="checkbox" checked={userPermissions.javascript} onChange={checkboxChanged} />
           </div>
         </div>
       )}
       <br/>
-      {selectedEmail && (
+      {userPermissions.userId !== 0 && (
         <div className='permissions-container'>
           <h3>JavaScript Moduler</h3>
           <div className='courses-list'>
-            {newPermissions.hasOwnProperty("javascript") && newPermissions["javascript"] && (
+            {userPermissions.hasOwnProperty("javascript") && userPermissions["javascript"] && (
               <>
-                <label>Variabler</label> <input id="variable" type="checkbox" checked={newPermissions.hasOwnProperty("variable") ? newPermissions["variable"] : true} onChange={checkboxChanged} />
-                <label>Villkor</label> <input id="conditionals" type="checkbox" checked={newPermissions.hasOwnProperty("conditionals") ? newPermissions["conditionals"] : true} onChange={checkboxChanged} />
-                <label>Loopar</label> <input id="loops" type="checkbox" checked={newPermissions.hasOwnProperty("loops") ? newPermissions["loops"] : true} onChange={checkboxChanged} />
-                <label>Funktioner</label> <input id="functions" type="checkbox" checked={newPermissions.hasOwnProperty("functions") ? newPermissions["functions"] : true} onChange={checkboxChanged} />
-                <label>Arrayer</label> <input id="arrays" type="checkbox" checked={newPermissions.hasOwnProperty("arrays") ? newPermissions["arrays"] : true} onChange={checkboxChanged} />
-                <label>Objekt</label> <input id="objects" type="checkbox" checked={newPermissions.hasOwnProperty("objects") ? newPermissions["objects"] : true} onChange={checkboxChanged} />
+                <label>Variabler</label> <input id="variable" type="checkbox" checked={userPermissions.hasOwnProperty("variable") ? userPermissions["variable"] : true} onChange={checkboxChanged} />
+                <label>Villkor</label> <input id="conditionals" type="checkbox" checked={userPermissions.hasOwnProperty("conditionals") ? userPermissions["conditionals"] : true} onChange={checkboxChanged} />
+                <label>Loopar</label> <input id="loops" type="checkbox" checked={userPermissions.hasOwnProperty("loops") ? userPermissions["loops"] : true} onChange={checkboxChanged} />
+                <label>Funktioner</label> <input id="functions" type="checkbox" checked={userPermissions.hasOwnProperty("functions") ? userPermissions["functions"] : true} onChange={checkboxChanged} />
+                <label>Arrayer</label> <input id="arrays" type="checkbox" checked={userPermissions.hasOwnProperty("arrays") ? userPermissions["arrays"] : true} onChange={checkboxChanged} />
+                <label>Objekt</label> <input id="objects" type="checkbox" checked={userPermissions.hasOwnProperty("objects") ? userPermissions["objects"] : true} onChange={checkboxChanged} />
               </>
             )}
           </div>

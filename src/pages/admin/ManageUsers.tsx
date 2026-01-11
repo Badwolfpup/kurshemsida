@@ -1,84 +1,81 @@
 import React, { useState, useEffect } from 'react';
 import './ManageUsers.css';
 import '../../styles/button.css'
-
+import { useUser } from '../../context/UserContext';
+import getUsers from '../../data/FetchUsers';
 interface User {
+  id: number;
   firstName: string;
   lastName: string;
   email: string;
+  authLevel: number;  // Role as number
+  isActive: boolean;
   course: number;
-  isActive: boolean;
-  coach?: string;
-}
-
-interface Coach {
-  firstName: string;
-  lastName: string;
-  email: string;
-  isActive: boolean;
+  coachId?: number | null;
 }
 
 const ManageUsers: React.FC = () => {
   const [activeUsers, setActiveUsers] = useState<User[]>([]);
   const [inactiveUsers, setInactiveUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [addNewUserForm, setAddNewUserForm] = useState(false);
-  const [activeCoaches, setActiveCoaches] = useState<Coach[]>([]);
+  const [isStudent, setIsStudent] = useState(true);
+  const [btnText, setBtnText] = useState("Lägg till");
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string>("4");
+  const [selectedRoleName, setSelectedRoleName] = useState<string>("deltagare");
+  const [selectedCoach, setSelectedCoach] = useState<string>("");
+  const [userList, setUserList] = useState<User[]>([]);
+  const [isNewUser, setIsNewUser] = useState<boolean>(true);
 
-  const fetchUsers = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setError('No authentication token found. Please log in.');
-      return;
-    }
-
-    try {
-      const response = await fetch('https://localhost:5001/api/fetch-users', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data: User[] = await response.json();
+  const fetchUsers = async (role: number) => {
+    const data:  User[] | undefined = await getUsers();
+    if (data) {
       data.sort((a, b) => a.firstName.localeCompare(b.firstName));
-      setActiveUsers(data.filter(user => user.isActive));
-      setInactiveUsers(data.filter(user => !user.isActive));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setUserList(data);
+      setActiveUsers(data.filter(user => user.isActive && user.authLevel === role));
+      setInactiveUsers(data.filter(user => !user.isActive && user.authLevel === role));
     }
-  };
+  }
 
   useEffect(() => {
-    fetchUsers();
-    setLoading(false);
+    fetchUsers(4);
   }, []);
 
-  const changeActiveStatus = async (user: User) => {
+  const updateUser = async (user: User) => {
     const token = localStorage.getItem('token');
     if (!token) {
       setError('No authentication token found.');
       return;
     }
-
+    console.log(user);
     try {
-      const response = await fetch(`https://localhost:5001/api/${(user.isActive ? "inactivate-user" : "activate-user")}`, {
-        method: 'POST',
+      const updateData = {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          authLevel: user.authLevel,
+          isActive: user.isActive,
+          course: user.course,
+          coachId: user.coachId
+};
+      console.log('Sending:', JSON.stringify(updateData));
+      const response = await fetch(`/api/update-user`, {
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ Email: user.email })
+        body: JSON.stringify(updateData)
       });
       if (!response.ok) {
         throw new Error(`Failed to ${(user.isActive ? "inactivate" : "activate")} user: ${response.status}`);
       }
       // Refetch users after status change
-      await fetchUsers();
-    } catch (err) {
+      await fetchUsers(user.authLevel);
+    } 
+    catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
@@ -92,25 +89,25 @@ const ManageUsers: React.FC = () => {
       return;
     }
     try {
-      const response = await fetch('https://localhost:5001/api/delete-user', {
+      const response = await fetch('/api/delete-user', {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ Email: user.email })
+        body: JSON.stringify({ id: user.id })
       });
       if (!response.ok) {
         throw new Error(`Failed to delete user: ${response.status}`);
       }
       // Refetch users after deletion
-      await fetchUsers();
+      await fetchUsers(user.authLevel);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
 
-  const addUser = async ({firstName, lastName, email, coachEmail}: {firstName: string, lastName: string, email: string, coachEmail: string}) => {
+  const addUser = async ({firstName, lastName, email,  authLevel, coachId, course}: {firstName: string, lastName: string, email: string, authLevel: number, coachId: number | null,  course: number | null}) => {
     const token = localStorage.getItem('token');
     if (!token) {
       setError('No authentication token found.');
@@ -118,68 +115,66 @@ const ManageUsers: React.FC = () => {
     }
 
     try {
-      const response = await fetch('https://localhost:5001/api/add-user', {
+      const response = await fetch('/api/add-user', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ FirstName: firstName, LastName: lastName, Email: email, Coach: coachEmail})
+        body: JSON.stringify({ FirstName: firstName, LastName: lastName, Email: email, CoachId: coachId, AuthLevel: authLevel, Course: course})
       });
+
       if (!response.ok) {
+        console.log(response);
         throw new Error(`Failed to add user: ${response.status}`);
       }
       // Refetch users after adding a new user
-      await fetchUsers();
+      await fetchUsers(authLevel);
       setAddNewUserForm(false);
+      changeToAddedUserView(authLevel);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
+
+  const changeToAddedUserView = (role: number) => {
+    var authLevel = role === 2 ? "teacher" : role === 3 ? "coach" : "student";
+    var selectedBtn = document.querySelector('.role-button-selected') as HTMLButtonElement;
+    if (selectedBtn && !selectedBtn.id.includes(authLevel)) {
+      selectedBtn.classList.remove('role-button-selected');
+      selectedBtn.classList.add('role-button');
+      var newSelectedBtn = document.getElementById(`${authLevel}-button`) as HTMLButtonElement;
+      newSelectedBtn.classList.remove('role-button');
+      newSelectedBtn.classList.add('role-button-selected');
+
+    }
+  }
 
   const getNewUserInputs = () => {
     const firstNameInput = (document.querySelector('.add-user-name-inputs input[placeholder="Förnamn"]') as HTMLInputElement).value.trim();
     const lastNameInput = (document.querySelector('.add-user-name-inputs input[placeholder="Efternamn"]') as HTMLInputElement).value.trim();
     const emailInput = (document.querySelector('.add-user-name-inputs input[placeholder="Email"]') as HTMLInputElement).value.trim();
-    const coachemailInput = (document.querySelector('.coach-combobox') as HTMLSelectElement).value;
-    console.log("coach email: ", coachemailInput);
-    return { firstName: firstNameInput, lastName: lastNameInput, email: emailInput, coachEmail: coachemailInput };
+    const authLevelEl = (document.querySelector('.role-combobox') as HTMLSelectElement);
+    const authLevelInput = authLevelEl ? parseInt(authLevelEl.value) : 4;
+
+    const coachIdEl = document.querySelector('.coach-combobox') as HTMLSelectElement;
+    const coachIdInput = coachIdEl && coachIdEl.value ? parseInt(coachIdEl.value) : null;
+    const courseEl = document.querySelector('.course-combobox') as HTMLSelectElement;
+    const courseInput = courseEl && courseEl.value ? parseInt(courseEl.value) : null;
+    console.log(firstNameInput, lastNameInput, emailInput, authLevelInput, coachIdInput, courseInput);
+    return { firstName: firstNameInput, lastName: lastNameInput, email: emailInput, authLevel: authLevelInput, coachId: coachIdInput,  course: courseInput };
   }
 
-const fetchCoaches = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setError('No authentication token found. Please log in.');
-      return;
-    }
 
-    try {
-      const response = await fetch('https://localhost:5001/api/fetch-coaches', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      if (!response.ok) {
-        console.log("här")
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data: Coach[] = await response.json();
-      data.sort((a, b) => a.firstName.localeCompare(b.firstName));
-      setActiveCoaches(data.filter(coach => coach.isActive));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    }
-  };
-
-  const addComboBox = (): React.ReactNode => {
+  const addCoachComboBox = (): React.ReactNode => {
+    console.log('Rendering course combobox');
         return (
           <div className="combobox-wrapper">
-            <select className="coach-combobox">
+            <select name='coachId' id="coachId" value={selectedUser?.coachId || selectedCoach} onChange={handleInputChange} className="coach-combobox">
               <option value="">Välj coach (valfritt)</option>
-              {activeCoaches.length > 0 ? (
-                activeCoaches.map((coach) => (
-                  <option key={coach.email} value={coach.email}>
+              {userList.length > 0 ? (
+                userList.filter(user => user.authLevel === 3 && user.isActive).map((coach) => (
+                  <option key={coach.email} value={coach.id || ""}>
                     {`${coach.firstName} ${coach.lastName}`}
                   </option>
                 ))
@@ -189,40 +184,153 @@ const fetchCoaches = async () => {
         );
   }
 
-  const showAdddNewUserForm = () => {
-    if (addNewUserForm) {
-      return (
-        <div className="add-user-form">
-          <div className="add-user-name-inputs">
-            <input type="text" placeholder="Förnamn"  required/>
-            <input type="text" placeholder="Efternamn" required/>
-            <input type="email" placeholder="Email" required/>
-            {addComboBox()}
+    const addCourseComboBox = (): React.ReactNode => {
+      console.log('Rendering course combobox');
+        return (
+          <div className="combobox-wrapper">
+            <select name='course' id="course" value={selectedUser?.course} onChange={handleInputChange} className="course-combobox">
+              <option value="">Välj spår</option>
+              <option value="1">Spår 1</option>
+              <option value="2">Spår 2</option>
+              <option value="3">Spår 3</option>
+            </select>
           </div>
-          <div className="add-user-buttons">
-            <button className='user-button' onClick={() => addUser(getNewUserInputs())}>Lägg till</button>
-            <button className='user-button' onClick={() => setAddNewUserForm(false)}>Avbryt</button>
-          </div>
-        </div>
-      )
-    }
-    else return (
-      <button className='user-button' onClick={ async () =>  { 
-        await fetchCoaches();
-        setAddNewUserForm(!addNewUserForm)}
-      }>Lägg till ny</button>
-      )
+        );
   }
 
-  if (loading) return <div>Loading...</div>;
+    const addRoleComboBox = (): React.ReactNode => {
+        return (
+          <div className="combobox-wrapper" >
+            <select name='authLevel' id="authLevel" className="role-combobox" required value={selectedUser?.authLevel || selectedRole} onChange={(e) => { handleInputChange(e); showStudentCombobox(e.target.value);}}>
+              <option value="" disabled>Välj roll</option>
+              {useUser().userType === "Admin" ? <option value="1">Admin</option> : null}
+              <option value="2">Lärare</option>
+              <option value="3">Coach</option>
+              <option value="4">Deltagare</option>
+            </select>
+          </div>
+        );
+  }
+
+  const showStudentCombobox = (value: string) => {
+    console.log(value);
+    setSelectedRole(value);
+    if (value === "4" )  setIsStudent(true);
+    else setIsStudent(false);
+    console.log(isStudent);
+  }
+
+
+  const showAddNewUserForm = () => {
+    setIsNewUser(true);
+    setSelectedUser(null);
+    setAddNewUserForm(true);
+    setBtnText("Lägg till");
+  }
+
+  const getCoachName = (coachId?: number | null): string => {
+    if (!coachId) return '';
+    const coach = userList.find(user => user.id === coachId);
+    return coach ? `${coach.firstName} ${coach.lastName}` : '';
+  }
+
+  const getRole =(authLevel: number): string => {
+    switch(authLevel) {
+      case 1: return "Admin";
+      case 2: return "Lärare";
+      case 3: return "Coach";
+      case 4: return "Deltagare";
+      case 5: return "Gäst";
+      default: return "Okänd";
+    }
+  }
+
+
   if (error) return <div>Error: {error}</div>;
+
+  function showUpdateUser(user: User): void {
+    setIsNewUser(false);
+    setAddNewUserForm(true);
+    setBtnText("Uppdatera");
+    setSelectedUser(user);
+    setSelectedRole(user.authLevel.toString());
+    if (user.authLevel === 4) setIsStudent(true);
+    else setIsStudent(false);      
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      const { name, value, type } = e.target;
+      let parsedValue: any = value;
+      if (name === 'coachId') {
+        setSelectedCoach(userList.find(user => user.id === parseInt(value)) ? value : "");
+      }
+      if (type === 'number' || name === 'authLevel' || name === 'course' || name === 'coachId') {
+          parsedValue = value ? parseInt(value) : null;
+      }
+      console.log(value);
+      if (selectedUser !== null) setSelectedUser(selectedUser ? { ...selectedUser, [name]: parsedValue } : null);
+  };
+
+  const changeRole = (e: React.MouseEvent<HTMLButtonElement>, role: number) => {
+    const prevBtnEl = document.querySelector('.role-button-selected') as HTMLButtonElement
+    const btnEl = e.target as HTMLButtonElement
+    if (prevBtnEl && prevBtnEl !== btnEl) {
+      prevBtnEl.classList.remove('role-button-selected');
+      prevBtnEl.classList.add('role-button');
+      btnEl.classList.remove('role-button');
+      btnEl.classList.add('role-button-selected'); 
+    }
+    else if (!prevBtnEl) {
+      btnEl.classList.remove('role-button');
+      btnEl.classList.add('role-button-selected'); 
+    }
+    setSelectedRoleName(btnEl.textContent ? (btnEl.textContent === 'Coach' ? 'coacher' : btnEl.textContent.toLowerCase()) : "");
+    fetchUsers(role);
+  }
+
+  const showTeacherUsers = () => {
+    if (useUser().userType === "Admin") return true;
+    return false;
+  }
+
+  const addOrUpdateUser = () => {
+    if (isNewUser) {
+      addUser(getNewUserInputs());
+    }
+    else {
+      if (selectedUser) updateUser(selectedUser);
+    }
+  }
 
   return (
     <div className="manage-users-container">
-    <div className="header-section">
-      <h2>Aktiva deltagare</h2>
-      {showAdddNewUserForm()}
-    </div>
+      <div className="header-section">
+        <div className='filter-buttons'>
+          {showTeacherUsers() && <button id="teacher-button" className='role-button user-button' onClick={async (e) => {changeRole(e, 2)}}>Lärare</button>}
+          <button id="coach-button" className='role-button user-button' onClick={async (e) => {changeRole(e, 3)}}>Coach</button>
+          <button id="student-button" className='role-button-selected user-button' onClick={async (e) => {changeRole(e, 4)}}>Deltagare</button>
+        </div>
+        <h2>{`Aktiva ${selectedRoleName}`}</h2>
+        {addNewUserForm ? 
+        (
+          <div className="add-user-form">
+            <div className="add-user-name-inputs">
+              <input type="text" name='firstName' id="firstName" placeholder="Förnamn"  required value={selectedUser?.firstName} onChange={handleInputChange}/>
+              <input type="text" name='lastName' id="lastName" placeholder="Efternamn" required value={selectedUser?.lastName} onChange={handleInputChange}/>
+              <input type="email" name='email' id="email" placeholder="Email" required value={selectedUser?.email} onChange={handleInputChange}/>
+              {addRoleComboBox()}
+              {isStudent && addCourseComboBox()}
+              {isStudent && addCoachComboBox()}
+            </div>
+            <div className="add-user-buttons">
+              <button className='user-button' onClick={() => {addOrUpdateUser(); setSelectedCoach(""); setSelectedRole("4"); setAddNewUserForm(false);}}>{btnText}</button>
+              <button className='user-button' onClick={() => {setAddNewUserForm(false); setSelectedCoach(""); setSelectedRole("4")}}>Avbryt</button>
+            </div>
+          </div>
+        ) :
+          (<button className='user-button' onClick={ async () => {showAddNewUserForm()}}>Lägg till ny</button>)        
+        }
+      </div>
       <div className="table-wrapper">
         <table className="user-table">
           <thead>
@@ -230,6 +338,8 @@ const fetchCoaches = async () => {
               <th>Namn</th>
               <th>Email</th>
               <th>Kurs</th>
+              <th>Roll</th>
+              <th>Coach</th>
               <th>Åtgärd</th>
             </tr>
           </thead>
@@ -241,12 +351,14 @@ const fetchCoaches = async () => {
             ) : (
               activeUsers.map((user, index) => (
                 <tr key={index}>
-                  <td>{user.firstName} {user.lastName}</td>
+                        <td>{user.firstName} {user.lastName}</td>
                   <td>{user.email}</td>
                   <td>{user.course}</td>
-                  <td>{user.coach}</td>
+                  <td>{getRole(user.authLevel)}</td>
+                  <td>{getCoachName(user.coachId)}</td>
                   <td className='list-buttons'>
-                    <button className="user-button" onClick={() => changeActiveStatus(user)}>Inaktivera</button>                    
+                    <button className="user-button" onClick={() => showUpdateUser(user)}>✏️</button>
+                    <button className="user-button" onClick={() => {user.isActive = !user.isActive; updateUser(user)}}>Inaktivera</button>                    
                   </td>
                 </tr>
               ))
@@ -255,7 +367,7 @@ const fetchCoaches = async () => {
         </table>
       </div>
       <br /><br />
-      <h2>Inaktiva deltagare</h2>
+      <h2>{`Inaktiva ${selectedRoleName}`}</h2>
       <div className="table-wrapper">
         <table className="user-table">
           <thead>
@@ -263,6 +375,8 @@ const fetchCoaches = async () => {
               <th>Namn</th>
               <th>Email</th>
               <th>Kurs</th>
+              <th>Roll</th>
+              <th>Coach</th>
               <th>Åtgärd</th>
             </tr>
           </thead>
@@ -277,9 +391,10 @@ const fetchCoaches = async () => {
                   <td>{user.firstName} {user.lastName}</td>
                   <td>{user.email}</td>
                   <td>{user.course}</td>
-                  <td>{user.coach}</td>
+                  <td>{getRole(user.authLevel)}</td>
+                  <td>{getCoachName(user.coachId)}</td>
                   <td className='list-buttons'>
-                    <button className="user-button" onClick={() => changeActiveStatus(user)}>Aktivera</button>
+                    <button className="user-button" onClick={() => {user.isActive = !user.isActive; updateUser(user)}}>Aktivera</button>
                     <button className="delete-button" onClick={() => deleteUser(user)}>✕</button>
                   </td>
                 </tr>

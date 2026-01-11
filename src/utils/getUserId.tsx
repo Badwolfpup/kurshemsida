@@ -8,19 +8,19 @@ function decodeJWT(token: string) {
   }
 }
 
-const getUserEmail = (token: string | null): string => {
+const getUserId = (token: string | null): string => {
   if (!token) {
     console.log('No token, returning empty string');
     return '';
   }
   try {
     const decoded = decodeJWT(token);
-    const email = decoded?.email || '';  // Correct claim
-    return email;
+    const id = decoded?.sub || '';
+    return id;
   } catch (error) {
     console.log('Error decoding token:', error);
     return '';
   }
 };
 
-export default getUserEmail;
+export default getUserId;

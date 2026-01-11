@@ -20,19 +20,22 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen, onBack }
       <h2>Admin menu</h2>
       <Calendar />
       <div className="menu-link">
-        <Link to="/manageusers">Hantera deltagare</Link>
+        <Link to="/manageusers">Hantera användare</Link>
       </div>
       <div className="menu-link">
         <Link to="/userpermissions">Deltagares permissions</Link>
-      </div>
-      <div className="menu-link">
-        <Link to="/managecoaches">Hantera coacher</Link>
       </div>
       <div className="menu-link">
         <Link to="/makepost">Skapa inlägg</Link>
       </div>
       <div className="menu-link">
         <Link to="/attendance">Närvarohantering</Link>
+      </div>
+      <div className="menu-link">
+        <Link to="/manage-projects">Projekt</Link>
+      </div>
+      <div className="menu-link">
+        <Link to="/manage-exercises">Övningar</Link>
       </div>
       <div className="menu-link">
         <Link to="/adminsettings">Allmäna Inställningar</Link>

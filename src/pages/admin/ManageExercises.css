@@ -1,0 +1,19 @@
+.exercise-preview {
+    width: 99% !important;
+    margin-top: 10px;
+    height: auto !important;
+    min-height: 0px !important;
+    overflow-y: auto;
+}
+
+.exercise-page {
+    width: 50vw !important;
+}
+
+.exercise-editor {
+    flex: 0 !important;
+}
+
+.exercise-javascript-section textarea {
+    min-height: 175px !important;
+}

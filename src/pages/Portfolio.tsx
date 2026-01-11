@@ -1,10 +1,11 @@
 import './Portfolio.css';
 import React from 'react';
+import pageunderconstruction from '../assets/images/pageunderconstruction.jpg';
 
 const Portfolio: React.FC = () => {
   return (
     <div className="portfolio">
-        <h2>Portfolio Page</h2>
+        <img src={pageunderconstruction} alt="Portfolio" />
     </div>
     );
 };

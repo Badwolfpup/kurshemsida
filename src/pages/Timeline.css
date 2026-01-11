@@ -1,0 +1,121 @@
+/* Import Roboto font if not already */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap');
+
+.timeline-main {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  padding: 25px;
+  font-family: 'Roboto', sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;  /* Back to column */
+  align-items: center;  /* Center posts horizontally */
+  overflow-y: auto;
+  align-items: flex-start; 
+}
+
+.timeline-post-container {
+  width: 80%;
+  max-width: 1000px;
+  min-width: 50vw;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  height: auto;
+  max-height: 70vh;
+  overflow-y: auto;
+  flex: 0 0 auto;
+}
+
+.post-info {
+  font-size: 12px;
+  color: #777;
+  margin-top: 15px;
+  text-align: right;
+  font-weight: 500;
+}
+
+.cancel-edit {
+  margin-top: 15px;
+}
+
+.admin-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+  justify-content: flex-end;
+}
+
+.edit-button {
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.edit-button:hover {
+  background: linear-gradient(135deg, #f57c00 0%, #e65100 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.delete-button {
+  background: linear-gradient(135deg, #e53935 0%, #d32f2f 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.delete-button:hover {
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.unpublished {
+  opacity: 0.6;
+  border: 2px dotted #999;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+}
+
+hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, #e0e0e0 0%, #1976d2 50%, #e0e0e0 100%);
+  margin: 20px 0;
+}
+
+.edit-form {
+  margin-top: 15px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .timeline-main {
+    flex-direction: column;
+    padding: 15px;
+  }
+  .timeline-post-container {
+    width: 100%;
+    min-width: 300px;
+    padding: 20px;
+  }
+  .admin-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

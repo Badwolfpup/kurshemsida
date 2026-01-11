@@ -1,15 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import getUserEmail from '../utils/getUserEmail';
-import { useFetchUserPermissions } from '../hooks/useFetchUserPermissions';
 
-type UserType = 'Regular' | 'Admin' | null;
+
+type UserType = 'Admin' | 'Teacher' | 'Coach' | 'Student' | 'Guest' | null;
+
 
 interface UserContextType {
   isLoggedIn: boolean;
   userType: UserType;
-  userPermissions: Record<string, boolean>;
-  loading: boolean;
+  userId: number | null;
+  userEmail: string | null;
   login: (type: string) => void;
   logout: () => void;
 }
@@ -19,10 +19,8 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userType, setUserType] = useState<UserType>(null);
-  const { userPermissions, loading } = useFetchUserPermissions(
-    getUserEmail(localStorage.getItem('token')),
-    isLoggedIn,
-  );
+  const [userId, setUserId] = useState<number | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -31,9 +29,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const decoded: any = jwtDecode(token);
         const role = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'regular';
-        if (role === 'admin' || role === 'regular') {
+        if (role === 'Admin' || role === 'Teacher' || role === 'Coach' || role === 'Student' || role === 'Guest') {
           setUserType(role);
           setIsLoggedIn(true);
+          setUserEmail(decoded['sub'] || null);
+          setUserId(decoded['id'] ? Number(decoded['id']) : null);
         }
       } catch (error) {
         console.error('Invalid token:', error);
@@ -48,19 +48,25 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const role = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
     setUserType(role);
     setIsLoggedIn(true);
+    setUserEmail(decoded['sub'] || null);
+    setUserId(decoded['id'] ? Number(decoded['id']) : null);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     setIsLoggedIn(false);
     setUserType(null);
+    setUserEmail(null);
+    setUserId(null);
   };
 
   return (
-    <UserContext.Provider value={{ isLoggedIn, userType, userPermissions, loading, login, logout }}>
+    <UserContext.Provider value={{ isLoggedIn, userType, userId, userEmail, login, logout }}>
       {children}
     </UserContext.Provider>
   );
+
+
 };
 
 export const useUser = () => {

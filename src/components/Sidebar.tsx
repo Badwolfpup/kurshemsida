@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Calendar from './Calendar';
 import './Sidebar.css';
 import { useUser } from '../context/UserContext';
+import getPermissions from '../data/FetchPermissions';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -11,12 +12,51 @@ interface SidebarProps {
   onAdminClick: () => void;
 }
 
+interface Permissions {
+  userId: number;
+  html: boolean;
+  css: boolean;
+  javascript: boolean;
+  variable: boolean;
+  conditionals: boolean;
+  loops: boolean;
+  functions: boolean;
+  arrays: boolean;
+  objects: boolean;
+}
+
+const defaultPermissions: Permissions = {
+  userId: 0,
+  html: false,
+  css: false,
+  javascript: false,
+  variable: false,
+  conditionals: false,
+  loops: false,
+  functions: false,
+  arrays: false,
+  objects: false
+};
+
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, logout, onAdminClick }) => {
   const [htmlExpanded, setHtmlExpanded] = useState(false);
   const [cssExpanded, setCssExpanded] = useState(false);
   const [jsExpanded, setJsExpanded] = useState(false);
-  const { userType, userPermissions, loading } = useUser();
-  // const [error, setError] = useState<string | null>(null);
+  const [userPermissions, setUserPermissions] = useState<Permissions>(defaultPermissions);
+  const { userType, userEmail } = useUser();
+  const isStudent= userType === 'Student';
+  const isCoach= userType === 'Coach';
+
+useEffect(() => {
+  const fetchPermissions = async () => {
+    if (userType !== 'Student') return;
+    if (userEmail) {
+      const permissions = await getPermissions(userEmail);
+      setUserPermissions(permissions || defaultPermissions);
+    }
+  };
+  fetchPermissions();
+}, []);
 
   return (
     <div className={`sidebar ${isOpen ? 'open' : ''}`}>
@@ -32,7 +72,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, logout, onAdminCli
           <Link to="/timeline">Nyheter</Link>
         </div>
         <div className="menu">
-          {userPermissions.hasOwnProperty("html") && userPermissions.html && (
+          {(userPermissions.hasOwnProperty("html") && userPermissions.html) || !isStudent && (
           <>
             <div className="menu-item" onClick={() => setHtmlExpanded(!htmlExpanded)}>
               <span className="expand-icon">{htmlExpanded ? '-' : '+'}</span> HTML
@@ -46,7 +86,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, logout, onAdminCli
             )}
           </>
           )}
-          {userPermissions.hasOwnProperty("css") && userPermissions.css && (
+          {(userPermissions.hasOwnProperty("css") && userPermissions.css) || !isStudent && (
           <>
             <div className="menu-item" onClick={() => setCssExpanded(!cssExpanded)}>
               <span className="expand-icon">{cssExpanded ? '-' : '+'}</span> CSS
@@ -61,7 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, logout, onAdminCli
           </>
           )}
 
-          {userPermissions.hasOwnProperty("javascript") && userPermissions.javascript && (
+          {(userPermissions.hasOwnProperty("javascript") && userPermissions.javascript) || !isStudent && (
           <>
             <div className="menu-item" onClick={() => setJsExpanded(!jsExpanded)}>
               <span className="expand-icon">{jsExpanded ? '-' : '+'}</span> JavaScript
@@ -69,19 +109,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, logout, onAdminCli
             {jsExpanded && (
               <ul className="submenu">
               <li><Link to="/courses/javascript/introduktion">Introduktion till javascript</Link></li>
-              {userPermissions.hasOwnProperty("variable") && userPermissions.variable && <li><Link to="/courses/javascript/variables">Variabler</Link></li>}
-              {userPermissions.hasOwnProperty("conditionals") && userPermissions.conditionals && <li><Link to="/courses/javascript/conditionals">Villkorssatser</Link></li>}
-              {userPermissions.hasOwnProperty("loops") && userPermissions.loops && <li><Link to="/courses/javascript/loops">Loopar</Link></li>}
-              {userPermissions.hasOwnProperty("functions") && userPermissions.functions && <li><Link to="/courses/javascript/functions">Funktioner</Link></li>}
-              {userPermissions.hasOwnProperty("arrays") && userPermissions.arrays && <li><Link to="/courses/javascript/arrays">Arrayer</Link></li>}
-              {userPermissions.hasOwnProperty("objects") && userPermissions.objects && <li><Link to="/courses/javascript/objects">Objekt</Link></li>}
+              {(userPermissions.hasOwnProperty("variable") && userPermissions.variable) || !isStudent && <li><Link to="/courses/javascript/variables">Variabler</Link></li>}
+              {(userPermissions.hasOwnProperty("conditionals") && userPermissions.conditionals) || !isStudent && <li><Link to="/courses/javascript/conditionals">Villkorssatser</Link></li>}
+              {(userPermissions.hasOwnProperty("loops") && userPermissions.loops) || !isStudent && <li><Link to="/courses/javascript/loops">Loopar</Link></li>}
+              {(userPermissions.hasOwnProperty("functions") && userPermissions.functions) || !isStudent && <li><Link to="/courses/javascript/functions">Funktioner</Link></li>}
+              {(userPermissions.hasOwnProperty("arrays") && userPermissions.arrays) || !isStudent && <li><Link to="/courses/javascript/arrays">Arrayer</Link></li>}
+              {(userPermissions.hasOwnProperty("objects") && userPermissions.objects) || !isStudent && <li><Link to="/courses/javascript/objects">Objekt</Link></li>}
               {/* Add more sub-items here if needed */}
             </ul>
             )}
           </>
           )}
-          {loading && <p>Loading...</p>}
-          {/* {error && <p>Error: {error}</p>} */}
+        </div>
+        <div className="menu-link">
+          <Link to="/projects">Projekt</Link>
         </div>
         <div className="menu-link">
           <Link to="/exercises">Övningar</Link>
@@ -89,8 +130,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, logout, onAdminCli
         <div className="menu-link">
           <Link to="/portfolio">Portfolio</Link>
         </div>
+        {isCoach && (
+          <div className="menu-link">
+            <Link to="/coach-narvaro">Närvaro</Link>
+          </div>
+        )}
         <div className="menu-link">
-          <Link to="/settings">Inställningar</Link>
+          <Link to="/settings">Preferenser</Link>
         </div>
         {userType === 'Admin' && (
           <div className="menu-link">
@@ -99,6 +145,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, logout, onAdminCli
         )}
         <div className="menu-link">
           <a href="#" onClick={(e) => { e.preventDefault(); logout(); }}>Logout</a>
+        </div>
+        <div className="sidebar-footer">
+          <p>Webmaster: <a href='mailto:adam.folke@hudiksvall.se'>Adam Folke</a></p>
+          <p>Kommunens <a href='https://hudiksvall.se/Sidor/Kommun-och-politik/Om-personuppgifter.html' target='_blank' rel="noopener noreferrer">GDPR-policy</a></p>
+          <p>GDRP-ansvarig: <a href='mailto:adam.folke@hudiksvall.se'>Adam Folke</a></p>
         </div>
       </div>
     </div>

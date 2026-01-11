@@ -13,9 +13,10 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("test");
     if (!showPassword) 
     {
-      const response = await fetch('https://localhost:5001/api/email-validation', {
+      const response = await fetch('/api/email-validation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: inputValue })
@@ -26,16 +27,21 @@ const Login: React.FC = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      if (data.passcode > 0) {
+      console.log(data);
+      if (data > 0) {
         setEmail(inputValue);
-        setPassword(data.passcode.toString());
+        setPassword(data);
         setShowPassword(true);
-      } else {
+      } else if (data == 0) {
+        setEmail(inputValue);
+        setShowPassword(true);
+      }
+      else  {
         alert("Ogiltig e-postadress. Försök igen.");
       }
     }
     else {
-      const response = await fetch('https://localhost:5001/api/passcode-validation', {
+      const response = await fetch('/api/passcode-validation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email, passcode: password })

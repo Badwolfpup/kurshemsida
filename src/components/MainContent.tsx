@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Timeline from '../pages/Timeline';
-import Exercises from '../pages/Exercises';
+import Projects from '../pages/Projects';
 import Settings from '../pages/Settings';
 import Portfolio from '../pages/Portfolio';
 import HtmlCourse from '../pages/courses/HtmlCourse';
@@ -15,18 +15,27 @@ import JsFunctions from '../pages/courses/javascript/functions';
 import JsArrays from '../pages/courses/javascript/arrays';
 import JsObjects from '../pages/courses/javascript/objects';
 import ManageUsers from '../pages/admin/ManageUsers';
-import ManageCoaches from '../pages/admin/ManageCoaches';
 import Attendance from '../pages/admin/Attendance';
 import './MainContent.css';
 import UserPermissions from '../pages/admin/UserPermissions';
 import MakePost from '../pages/admin/MakePost';
-import AdminSettings from '../pages/AdminSettings';
+import AdminSettings from '../pages/admin/AdminSettings';
+import CoachAttendance from '../pages/CoachAttendance';
+import ManageProjects from '../pages/admin/ManageProjects';
+import AboutCourse from '../pages/AboutCourse';
+import Login from '../pages/Login';
+import Exercises from '../pages/Exercises';
+import ManageExercises from '../pages/admin/ManageExercises';
 
-const MainContent: React.FC = () => {
+interface MainContentProps {
+  setShowAboutPage: (value: boolean) => void;
+}
+
+const MainContent: React.FC<MainContentProps> = ({ setShowAboutPage }) => {
   return (
     <div className="main-content">
       <Routes>
-        <Route path="/" element={<Timeline />} />
+        <Route path="/" element={<AboutCourse setShowAboutPage={setShowAboutPage} />} />
         <Route path="courses/HtmlCourse" element={<HtmlCourse />} />
         <Route path="courses/CssCourse" element={<CssCourse />} />
         <Route path="courses/JavascriptCourse" element={<JavascriptCourse />} />
@@ -37,17 +46,22 @@ const MainContent: React.FC = () => {
         <Route path="courses/javascript/functions" element={<JsFunctions />} />
         <Route path="courses/javascript/arrays" element={<JsArrays />} />
         <Route path="courses/javascript/objects" element={<JsObjects />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/timeline" element={<Timeline />} />
-        <Route path="/exercises" element={<Exercises />} />
+        <Route path="/projects" element={<Projects />} />
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/manageusers" element={<ManageUsers />} />
-        <Route path="/managecoaches" element={<ManageCoaches />} />
         <Route path="/userpermissions" element={<UserPermissions />} />
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/makepost" element={<MakePost />} />
         <Route path="/adminsettings" element={<AdminSettings />} />
+        <Route path='/coach-narvaro' element={<CoachAttendance />} />
+        <Route path='/manage-projects' element={<ManageProjects />} />
+        <Route path='/exercises' element={<Exercises />} />
+        <Route path='/manage-exercises' element={<ManageExercises />} />
       </Routes>
+
     </div>
   );
 };

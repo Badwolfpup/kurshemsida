@@ -1,41 +1,55 @@
+/* Import Roboto font if not already (or keep Inter, but Roboto matches the site) */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap');
+
 .course-page {
-  font-family: Inter, system-ui, sans-serif;
-  margin: 40px auto;
-  max-width: 1000px;
-  padding: 28px;
-  overflow-y: auto; /* Move scrollbar here */
-  max-height: 80vh; /* Set height to enable scrolling */
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  height: 100vh;
+  padding: 25px;
+  font-family: 'Roboto', sans-serif;  /* Changed to Roboto for consistency */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
 }
 
 .course-page h1 {
-  color: #333;
-  border-bottom: 2px solid #ddd;
+  color: #424242;
+  font-weight: 600;
+  margin-bottom: 25px;
+  text-align: center;
+  border-bottom: 2px solid #e0e0e0;
   padding-bottom: 10px;
-}
-
-.course-page h2 {
-  color: #555;
-  margin-top: 30px;
 }
 
 .course-page p {
   margin-bottom: 15px;
+  color: #424242;
 }
 
-.course-page pre {
-  background-color: #f4f4f4;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 10px;
-  overflow-x: auto;
-  margin: 15px 0;
+.article {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 1000px;
+  margin-bottom: 25px;
 }
 
-.course-page code {
-  font-family: 'Courier New', monospace;
-  background-color: #f9f9f9;
-  padding: 2px 4px;
-  border-radius: 3px;
+.course-page h2 {
+  color: #424242;
+  font-weight: 600;
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+
+.card {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  border-left: 4px solid #1976d2;  /* Blue accent */
 }
 
 .course-page ul {
@@ -44,26 +58,56 @@
 }
 
 .course-page li {
-  margin-bottom: 5px;
-}
-
-.article {
-  background: rgba(255,255,255,0.02);
-  padding: 22px;
-  border-radius: 14px;
-}
-
-.card {
-  background: rgba(255,255,255,0.01);
-  padding: 14px;
-  border-radius: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+  color: #424242;
 }
 
 .code-block {
-  background: #021426;
-  padding: 12px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);  /* Light blue gradient */
+  color: #1565c0;  /* Darker blue text for contrast */
+  padding: 15px;
   border-radius: 8px;
-  overflow: auto;
-  color: #d2f1ff;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  border: 1px solid #1976d2;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.course-page pre {
+  margin: 15px 0;
+}
+
+.course-page code {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(25, 118, 210, 0.1);
+  color: #1565c0;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.aside {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 1000px;
+  margin-top: 25px;
+  border-left: 4px solid #1976d2;
+}
+
+.aside h3 {
+  color: #424242;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .course-page {
+    padding: 15px;
+  }
+  .article, .aside {
+    padding: 20px;
+  }
 }

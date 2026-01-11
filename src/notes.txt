@@ -12,8 +12,9 @@ Kurskatalog
     Vi låser upp tillgång till taggar (alla måste vara upplåsta för att visas?)
 
 Adminsida
-    Tillägg/borttag av deltagare
-    Skapa inlägg i flödet
+    ***Tillägg/borttag av deltagare
+    ***Skapa inlägg i flödet
+            Styra när inlägget ska visas
     Lägg till händelser i kalendern
     Styra tillgång till i pripcip alla funktioner
     För närvaro
@@ -30,5 +31,11 @@ Inbyggd kodyta vid förklaringar och ?övningar?
 Skapa mobilapp för samma sida
 
 **TODO**
-Visa coacher bredvid user
-Testa att lägga till o deleta allt
+Koppla inlägg till kalender
+Hjälp för övningar?
+    flera steg?
+Fixa UI för deltagare att visa/filtrara övningar
+Fixa Toast för alla db händelser
+
+VIKTIGT
+
