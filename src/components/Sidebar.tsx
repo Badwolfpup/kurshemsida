@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Calendar from './Calendar';
+// import Calendar from './Calendar';
 import './Sidebar.css';
 import { useUser } from '../context/UserContext';
 import getPermissions from '../data/FetchPermissions';
@@ -67,10 +67,10 @@ useEffect(() => {
       </button>
       <div className="sidebar-content">
         <h2>Menu</h2>
-        <Calendar />
+        {/* <Calendar />
         <div className="menu-link">
           <Link to="/timeline">Nyheter</Link>
-        </div>
+        </div> */}
         <div className="menu">
           {(userPermissions.hasOwnProperty("html") && userPermissions.html) || !isStudent && (
           <>

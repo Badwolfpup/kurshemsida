@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import Toast from "../../utils/toastMessage";
 import './ManageExercises.css';
+import '../../styles/spinner.css';
 
 interface Exercise {
     id: number;
@@ -11,6 +12,7 @@ interface Exercise {
     tags: string[] | null;
     difficulty: number;
     lightbulbs: boolean[];
+    clues: string[];
 }
 
 
@@ -29,6 +31,9 @@ const ManageExercises: React.FC = () => {
     const [expectedResult, setExpectedResult] = useState<string>('');
     const [javascript, setJavascript] = useState<string>('');
     const [iframeKey, setIframeKey] = useState(0);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+    const [currentClue, setCurrentClue] = useState<string>('');
 
 
     const computedAllTags = useMemo(() => {
@@ -115,13 +120,16 @@ const ManageExercises: React.FC = () => {
     }, [iframeKey]);
 
     const fetchExercises = async () => {
+        setLoading(true);
+        setError(null);
         const token = localStorage.getItem('token');
         if (!token) {
-            console.error('No auth token found');
+            setError('Ingen autentiseringstoken hittades. Vänligen logga in.');
+            setLoading(false);
             return;
         }
         try {
-            const response = await fetch('/api/fetch-exercises'    , {
+            const response = await fetch('/api/fetch-exercises', {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -138,7 +146,11 @@ const ManageExercises: React.FC = () => {
         }
         catch (err) {
             console.error(err instanceof Error ? err.message : 'An error occurred');
+            setError('Kunde inte ladda övningar. Försök igen senare.');
             setAllExercises([]);
+        }
+        finally {
+            setLoading(false);
         }
     };
 
@@ -303,14 +315,15 @@ const ManageExercises: React.FC = () => {
                 javascript: '',
                 expectedResult: '',
                 tags: null,
-                difficulty: 1, 
+                difficulty: 1,
                 lightbulbs: [true, false, false, false, false],
+                clues: []
         })
         }
 
     const changeDifficulty = (index: number) => () => {
         if (selectedExercise) {
-            const newLightbulbs = Array(5).fill(false).map((_, i) => i <= index); 
+            const newLightbulbs = Array(5).fill(false).map((_, i) => i <= index);
             setSelectedExercise({
                 ...selectedExercise,
                 lightbulbs: newLightbulbs,
@@ -319,8 +332,42 @@ const ManageExercises: React.FC = () => {
         }
     }
 
+    const addClue = () => {
+        if (!currentClue.trim()) return;
+        if (selectedExercise && selectedExercise.clues.length < 4) {
+            setSelectedExercise({
+                ...selectedExercise,
+                clues: [...selectedExercise.clues, currentClue.trim()]
+            });
+            setCurrentClue('');
+        }
+    };
+
+    const removeClue = (index: number) => {
+        if (selectedExercise) {
+            setSelectedExercise({
+                ...selectedExercise,
+                clues: selectedExercise.clues.filter((_, i) => i !== index)
+            });
+        }
+    };
 
 
+
+
+if (loading) return (
+    <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Laddar övningar...</p>
+    </div>
+);
+
+if (error) return (
+    <div className="error-container">
+        <p>{error}</p>
+        <button className="retry-button" onClick={fetchExercises}>Försök igen</button>
+    </div>
+);
 
 return (
     <div className="manage-projects-container exercise-container">
@@ -358,12 +405,52 @@ return (
                         placeholder='Övningsbeskrivning här'>{description}</textarea>
                 </div>
                 <div className="title-section">
-                    <textarea id="expectedResultExerciseEditor" rows={1} value={selectedExercise?.expectedResult || ''} 
+                    <textarea id="expectedResultExerciseEditor" rows={1} value={selectedExercise?.expectedResult || ''}
                         onChange={(e) => {
                             setSelectedExercise(prev => ({...prev!, expectedResult: e.target.value}));
                             setExpectedResult(e.target.value);
-                        }} 
+                        }}
                         placeholder='Förväntat resultat här'>{expectedResult}</textarea>
+                </div>
+                <div className="clues-section">
+                    <div className="clue-input-container">
+                        <textarea
+                            id="clueInput"
+                            rows={2}
+                            value={currentClue}
+                            onChange={(e) => setCurrentClue(e.target.value)}
+                            placeholder='Ledtråd här (max 4)'
+                            disabled={selectedExercise?.clues && selectedExercise.clues.length >= 4}
+                        />
+                        <button
+                            className='user-button'
+                            onClick={addClue}
+                            disabled={!currentClue.trim() || (selectedExercise?.clues && selectedExercise.clues.length >= 4)}
+                        >
+                            Lägg till ledtråd
+                        </button>
+                    </div>
+                    {selectedExercise?.clues && selectedExercise.clues.length > 0 && (
+                        <div className="clues-display">
+                            {selectedExercise.clues.map((clue, i) => (
+                                <div key={i} className="clue-item">
+                                    <textarea
+                                        rows={2}
+                                        value={clue}
+                                        readOnly
+                                        className="clue-display-text"
+                                    />
+                                    <button
+                                        className='delete-button clue-remove-btn'
+                                        onClick={() => removeClue(i)}
+                                        title="Ta bort ledtråd"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
                 <div className="javascript-section exercise-javascript-section">
                     <textarea rows={5} id="jsExerciseEditor" value={selectedExercise?.javascript || ''} 

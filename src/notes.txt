@@ -36,6 +36,5 @@ Hjälp för övningar?
     flera steg?
 Fixa UI för deltagare att visa/filtrara övningar
 Fixa Toast för alla db händelser
-
 VIKTIGT
 

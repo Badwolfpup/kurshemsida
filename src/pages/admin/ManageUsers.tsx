@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './ManageUsers.css';
-import '../../styles/button.css'
+import '../../styles/button.css';
+import '../../styles/spinner.css';
 import { useUser } from '../../context/UserContext';
 import getUsers from '../../data/FetchUsers';
+import Toast from '../../utils/toastMessage';
 interface User {
   id: number;
   firstName: string;
@@ -15,6 +18,7 @@ interface User {
 }
 
 const ManageUsers: React.FC = () => {
+  const navigate = useNavigate();
   const [activeUsers, setActiveUsers] = useState<User[]>([]);
   const [inactiveUsers, setInactiveUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -26,15 +30,24 @@ const ManageUsers: React.FC = () => {
   const [selectedRoleName, setSelectedRoleName] = useState<string>("deltagare");
   const [selectedCoach, setSelectedCoach] = useState<string>("");
   const [userList, setUserList] = useState<User[]>([]);
-  const [isNewUser, setIsNewUser] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const fetchUsers = async (role: number) => {
-    const data:  User[] | undefined = await getUsers();
-    if (data) {
-      data.sort((a, b) => a.firstName.localeCompare(b.firstName));
-      setUserList(data);
-      setActiveUsers(data.filter(user => user.isActive && user.authLevel === role));
-      setInactiveUsers(data.filter(user => !user.isActive && user.authLevel === role));
+    setLoading(true);
+    setError(null);
+    try {
+      const data:  User[] | undefined = await getUsers();
+      if (data) {
+        data.sort((a, b) => a.firstName.localeCompare(b.firstName));
+        setUserList(data);
+        setActiveUsers(data.filter(user => user.isActive && user.authLevel === role));
+        setInactiveUsers(data.filter(user => !user.isActive && user.authLevel === role));
+      }
+    } catch (err) {
+      setError('Kunde inte ladda användare. Försök igen senare.');
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -74,6 +87,7 @@ const ManageUsers: React.FC = () => {
       }
       // Refetch users after status change
       await fetchUsers(user.authLevel);
+      setToastMessage(`Användare ${user.isActive ? 'inaktiverad' : 'aktiverad'} framgångsrikt!`);
     } 
     catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -102,6 +116,7 @@ const ManageUsers: React.FC = () => {
       }
       // Refetch users after deletion
       await fetchUsers(user.authLevel);
+      setToastMessage('Användare raderad framgångsrikt!');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
@@ -132,9 +147,14 @@ const ManageUsers: React.FC = () => {
       await fetchUsers(authLevel);
       setAddNewUserForm(false);
       changeToAddedUserView(authLevel);
+      setToastMessage('Användare tillagd framgångsrikt!');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
+  };
+
+  const handleEditUser = (user: User) => {
+    navigate('/userpermissions', { state: { selectedUser: user } });
   };
 
   const changeToAddedUserView = (role: number) => {
@@ -213,16 +233,13 @@ const ManageUsers: React.FC = () => {
   }
 
   const showStudentCombobox = (value: string) => {
-    console.log(value);
     setSelectedRole(value);
     if (value === "4" )  setIsStudent(true);
     else setIsStudent(false);
-    console.log(isStudent);
   }
 
 
   const showAddNewUserForm = () => {
-    setIsNewUser(true);
     setSelectedUser(null);
     setAddNewUserForm(true);
     setBtnText("Lägg till");
@@ -246,17 +263,20 @@ const ManageUsers: React.FC = () => {
   }
 
 
-  if (error) return <div>Error: {error}</div>;
+  if (loading) return (
+    <div className="loading-container">
+      <div className="spinner"></div>
+      <p>Laddar användare...</p>
+    </div>
+  );
 
-  function showUpdateUser(user: User): void {
-    setIsNewUser(false);
-    setAddNewUserForm(true);
-    setBtnText("Uppdatera");
-    setSelectedUser(user);
-    setSelectedRole(user.authLevel.toString());
-    if (user.authLevel === 4) setIsStudent(true);
-    else setIsStudent(false);      
-  }
+  if (error) return (
+    <div className="error-container">
+      <p>{error}</p>
+      <button className="retry-button" onClick={() => fetchUsers(4)}>Försök igen</button>
+    </div>
+  );
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value, type } = e.target;
@@ -293,17 +313,11 @@ const ManageUsers: React.FC = () => {
     return false;
   }
 
-  const addOrUpdateUser = () => {
-    if (isNewUser) {
-      addUser(getNewUserInputs());
-    }
-    else {
-      if (selectedUser) updateUser(selectedUser);
-    }
-  }
+
 
   return (
     <div className="manage-users-container">
+      {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
       <div className="header-section">
         <div className='filter-buttons'>
           {showTeacherUsers() && <button id="teacher-button" className='role-button user-button' onClick={async (e) => {changeRole(e, 2)}}>Lärare</button>}
@@ -323,7 +337,7 @@ const ManageUsers: React.FC = () => {
               {isStudent && addCoachComboBox()}
             </div>
             <div className="add-user-buttons">
-              <button className='user-button' onClick={() => {addOrUpdateUser(); setSelectedCoach(""); setSelectedRole("4"); setAddNewUserForm(false);}}>{btnText}</button>
+              <button className='user-button' onClick={() => {addUser(getNewUserInputs()); setSelectedCoach(""); setSelectedRole("4"); setAddNewUserForm(false);}}>{btnText}</button>
               <button className='user-button' onClick={() => {setAddNewUserForm(false); setSelectedCoach(""); setSelectedRole("4")}}>Avbryt</button>
             </div>
           </div>
@@ -357,8 +371,8 @@ const ManageUsers: React.FC = () => {
                   <td>{getRole(user.authLevel)}</td>
                   <td>{getCoachName(user.coachId)}</td>
                   <td className='list-buttons'>
-                    <button className="user-button" onClick={() => showUpdateUser(user)}>✏️</button>
-                    <button className="user-button" onClick={() => {user.isActive = !user.isActive; updateUser(user)}}>Inaktivera</button>                    
+                    <button className="user-button" onClick={() => handleEditUser(user)}>✏️</button>
+                    <button className="user-button" onClick={() => {user.isActive = !user.isActive; updateUser(user)}}>Inaktivera</button>
                   </td>
                 </tr>
               ))

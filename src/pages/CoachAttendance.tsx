@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import getUsers from "../data/FetchUsers";
 import { useState, useEffect } from "react";
-import './CoachAttendance.css'
+import './CoachAttendance.css';
+import '../styles/spinner.css';
 import { useUser } from "../context/UserContext";
 
 interface User {
@@ -17,7 +18,7 @@ interface User {
 }
 
 const CoachAttendance: React.FC = () => {
-
+    const [attendance, setAttendance] = useState<User[]>([]);
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [activeUsers, setActiveUsers] = useState<User[]>([]);
     const [usersForDropdown, setUsersForDropdown] = useState<User[]>([]);
@@ -26,31 +27,52 @@ const CoachAttendance: React.FC = () => {
     const {userId } = useUser();
     const [loading, setLoading] = useState(true);
     const [userFetched, setUserFetched] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [selectedUser, setSelectedUser] = useState<number>(0);
     
+    const usersWithAttendance  = useMemo(() => 
+      filteredUsers.map(user => {
+        const a = attendance.find(x => x.id === user.id);
+        return a ? { ...user, attendedDays: a.attendedDays } : user;
+      }).filter(y => (selectedUser ? y.id === selectedUser : true)), [filteredUsers, attendance]);
 
     useEffect(() => {
     fetchUsers();  
     }, [date]);
 
     useEffect(() => {
-    if (activeUsers.length > 0) {  
-        getWeek();
-        getAttendance();
-    }
+    const loadAttendanceData = async () => {
+      if (activeUsers.length > 0) {
+        const spinnerTimeout = setTimeout(() => {
+          setLoading(true);
+        }, 300);
+
+        setError(null);
+        try {
+          await Promise.all([getWeek(), getAttendance()]);
+        } catch (err) {
+          setError('Kunde inte ladda närvarodata. Försök igen senare.');
+        } finally {
+          clearTimeout(spinnerTimeout);
+          setLoading(false);
+        }
+      }
+    };
+    loadAttendanceData();
     }, [date, userFetched]); 
 
   
     const fetchUsers = async () => {
-      setLoading(true);
+      setError(null);
       try {
         const users = await getUsers() as User[];
         setFilteredUsers(users.filter(user => user.isActive && user.authLevel === 4 && user.coachId === userId));
         setActiveUsers(users.filter(user => user.isActive && user.authLevel === 4 && user.coachId === userId));
         setUsersForDropdown(users.filter(user => user.isActive && user.authLevel === 4 && user.coachId === userId));
-        setLoading(false);
         setUserFetched(true);
       } catch (err) {
-        setLoading(false);
+        setError('Kunde inte ladda användare. Försök igen senare.');
+      } finally {
       }
     }
 
@@ -58,59 +80,48 @@ const CoachAttendance: React.FC = () => {
     const getWeek = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
-        console.log('No authentication token found. Please log in.');
-        return;
+        throw new Error('Ingen autentiseringstoken hittades.');
     }
-    try {
-        const response = await fetch(`/api/get-week/${date.toISOString()}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'text/plain'
-        },
-        method: 'GET'
-        });
-        if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        setSelectedWeek((await response.text()).replaceAll('"', ''));
-    } catch (err) {
-        console.log(err instanceof Error ? err.message : 'An error occurred');
+    const response = await fetch(`/api/get-week/${date.toISOString()}`, {
+      headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'text/plain'
+      },
+      method: 'GET'
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    setSelectedWeek((await response.text()).replaceAll('"', ''));
     }
 
     const getAttendance = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
-        console.log('No authentication token found. Please log in.');
-        return;
+        throw new Error('Ingen autentiseringstoken hittades.');
     }
-    try {
-        const response = await fetch(`/api/weekly-attendance/${date.toISOString()}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        },
-        method: 'GET'
-        });
-        if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        let data = await response.json();
-        setActiveUsers(prevUsers => 
-          prevUsers.map(user => {
-          const attendanceData = data.find((item: any) => item.id === user.id);
-          return attendanceData ? { ...user, attendedDays: attendanceData.attendedDays } : user;
-        }));
-        setFilteredUsers(prevUsers => 
-          prevUsers.map(user => {
-          const attendanceData = data.find((item: any) => item.id === user.id);
-          return attendanceData ? { ...user, attendedDays: attendanceData.attendedDays } : user;
-        })
-      );
-        
-      } catch (err) {
-          console.log(err instanceof Error ? err.message : 'An error occurred');
-      }
+    const response = await fetch(`/api/weekly-attendance/${date.toISOString()}`, {
+      headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+      },
+      method: 'GET'
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    setAttendance(await response.json());
+    // let data = await response.json();
+    // setActiveUsers(prevUsers =>
+    //   prevUsers.map(user => {
+    //   const attendanceData = data.find((item: any) => item.id === user.id);
+    //   return attendanceData ? { ...user, attendedDays: attendanceData.attendedDays } : user;
+    // }));
+    // setFilteredUsers(prevUsers =>
+    //   prevUsers.map(user => {
+    //   const attendanceData = data.find((item: any) => item.id === user.id);
+    //   return attendanceData ? { ...user, attendedDays: attendanceData.attendedDays } : user;
+    // }));
     }
 
     const changeWeek = (change: boolean) => setDate(new Date(date.setDate(date.getDate() + (change ? 7 : -7))));
@@ -118,10 +129,10 @@ const CoachAttendance: React.FC = () => {
 
     const getDate = (offset: number): Date => {
       const today = new Date();
-      const monday = new Date(today);
+      const monday = new Date(date);
       const dayOfWeek = today.getDay();
       const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;  // Treat Sunday as 7
-      monday.setDate(today.getDate() - adjustedDay + offset);
+      monday.setDate(monday.getDate() - adjustedDay + offset);
       return monday;
     };
 
@@ -133,9 +144,14 @@ const CoachAttendance: React.FC = () => {
     }
 
     const showUser = (id: number) => {
-        console.log(id);
-        if (id !== 0) setFilteredUsers(activeUsers.filter(user => user.id === id));
-        else setFilteredUsers(activeUsers);
+        if (id !== 0) {
+          setSelectedUser(id);
+          setFilteredUsers(activeUsers.filter(user => user.id === id));
+        }
+        else {
+          setSelectedUser(0);
+          setFilteredUsers(activeUsers);
+        }
     }
 
 const hasAttended = (user: User, date: Date): boolean => {
@@ -147,11 +163,19 @@ const hasAttended = (user: User, date: Date): boolean => {
   return (
     <div>
       {loading ? (
-        <div>Loading users...</div>  // Or a spinner component
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p>Laddar användare...</p>
+        </div>
+      ) : error ? (
+        <div className="error-container">
+          <p>{error}</p>
+          <button className="retry-button" onClick={fetchUsers}>Försök igen</button>
+        </div>
       ) : (
       <div className="attendence-container">
           <div className='navbar'>
-              <select id="user-dropdown" onChange={(e) => showUser(Number(e.target.value))}>
+              <select id="user-dropdown" value={selectedUser} onChange={(e) => showUser(Number(e.target.value))}>
                   <option value="0">Alla deltagare</option>
                   {usersForDropdown.map(user => (
                   <option key={user.id} value={user.id}>
@@ -161,6 +185,7 @@ const hasAttended = (user: User, date: Date): boolean => {
               </select>
           </div>
           <h1>Närvarosida</h1>
+
           <div className="week-picker">
               <button className="prev-week-button" onClick={() => changeWeek(false)}>&lt;</button>
               <p className="week-select">{selectedWeek}</p>
@@ -178,12 +203,12 @@ const hasAttended = (user: User, date: Date): boolean => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredUsers.map(item => (
+                    {usersWithAttendance.map(item => (
                       <tr key={item.id}>
                         <td>{item.firstName[0].toUpperCase()}.{item.lastName[0].toUpperCase()}</td>
-                        {Array.from({ length: 4 }).map((_ : any, index: any) => 
+                        {Array.from({ length: 4 }).map((_ : any, index: any) =>
                           { return (
-                          <td> 
+                          <td>
                             <button key={index} className={'absent' + (hasAttended(item, getDate(index +1)) ? " attended" : "")} ></button>
                           </td> );
                           })

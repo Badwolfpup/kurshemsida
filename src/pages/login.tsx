@@ -13,7 +13,6 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("test");
     if (!showPassword) 
     {
       const response = await fetch('/api/email-validation', {
@@ -32,7 +31,7 @@ const Login: React.FC = () => {
         setEmail(inputValue);
         setPassword(data);
         setShowPassword(true);
-      } else if (data == 0) {
+      } else if (data === "Passcode sent to your email.") {
         setEmail(inputValue);
         setShowPassword(true);
       }

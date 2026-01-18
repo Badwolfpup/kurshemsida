@@ -6,7 +6,7 @@ import { useUser } from './context/UserContext';
 import Sidebar from './components/Sidebar';
 import AdminSidebar from './components/AdminSidebar';
 import MainContent from './components/MainContent';
-import AboutCourse from './pages/AboutCourse';
+import AboutCourse from './pages/AboutContent/AboutCourse';
 
 
 const App: React.FC = () => {
@@ -18,7 +18,7 @@ const App: React.FC = () => {
   
   useEffect(() => {
     if (isLoggedIn) {
-      if (!showAdmin) navigate('/timeline');
+      if (!showAdmin) navigate('/projects');
       else navigate('/manageusers');
     }
     else if (!showAboutPage) {
@@ -39,7 +39,7 @@ const App: React.FC = () => {
 
   const handleAdminBack = () => {
     setShowAdmin(false);
-    navigate('/timeline'); // Navigate back to home or timeline
+    navigate('/projects'); // Navigate back to home or timeline
   };
 
   if (isLoggedIn && !showAboutPage) {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import './ManageProjects.css'; 
+import './ManageProjects.css';
+import '../../styles/spinner.css';
 import Toast from '../../utils/toastMessage';
 import {processDeltaForImages} from '../../utils/imageUtils';
 
@@ -29,6 +30,8 @@ const ManageProjects: React.FC = () => {
     const [showImageContainer, setShowImageContainer] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [imageLoaded, setImageLoaded] = useState(false);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
     const computedAllTags = useMemo(() => {
         const projectTags = allProjects ? allProjects.flatMap(x => x.tags || []) : [];
@@ -39,9 +42,12 @@ const ManageProjects: React.FC = () => {
 
 
     const fetchProjects = async () => {
+        setLoading(true);
+        setError(null);
         const token = localStorage.getItem('token');
         if (!token) {
-            console.error('No auth token found');
+            setError('Ingen autentiseringstoken hittades. Vänligen logga in.');
+            setLoading(false);
             return;
         }
         try {
@@ -61,8 +67,11 @@ const ManageProjects: React.FC = () => {
             setAllProjects(data);
         }
         catch (err) {
-            console.error(err instanceof Error ? err.message : 'An error occurred');
+            setError('Kunde inte ladda projekt. Försök igen senare.');
             setAllProjects([]);
+        }
+        finally {
+            setLoading(false);
         }
     };
 
@@ -307,6 +316,20 @@ const ManageProjects: React.FC = () => {
     }
     }
 
+    if (loading) return (
+        <div className="loading-container">
+            <div className="spinner"></div>
+            <p>Laddar projekt...</p>
+        </div>
+    );
+
+    if (error) return (
+        <div className="error-container">
+            <p>{error}</p>
+            <button className="retry-button" onClick={fetchProjects}>Försök igen</button>
+        </div>
+    );
+
     return (
     <div className="manage-projects-container">
         {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
@@ -398,7 +421,7 @@ const ManageProjects: React.FC = () => {
                             <span key={i} className="project-tag chosen-tags" onClick={() => setShowTagOverlay(true)} 
                             onContextMenu={(e) => {
                                 e.preventDefault();  // Prevents right-click menu
-                                if (selectedProject) {
+                                if (selectedProject && !['html', 'css', 'javascript'].includes(tag)) {
                                     setSelectedProject({
                                         ...selectedProject,
                                         tags: selectedProject.tags.filter(t => t !== tag)

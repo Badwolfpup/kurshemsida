@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './Projects.css';
+import '../styles/spinner.css';
 
 
 interface Project {
@@ -32,17 +33,22 @@ const Projects: React.FC = () => {
   const [remainingTags, setRemainingTags] = useState<string[]>([]);
   const [pickedTag, setPickedTag] = useState<string>('');
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   
 
 
     const fetchProjects = async () => {
+        setLoading(true);
+        setError(null);
         const token = localStorage.getItem('token');
         if (!token) {
-            console.error('No auth token found');
+            setError('Ingen autentiseringstoken hittades. Vänligen logga in.');
+            setLoading(false);
             return;
         }
         try {
-            const response = await fetch(`/api/fetch-projects`    , {
+            const response = await fetch(`/api/fetch-projects`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -61,7 +67,11 @@ const Projects: React.FC = () => {
         }
         catch (err) {
             console.error(err instanceof Error ? err.message : 'An error occurred');
+            setError('Kunde inte ladda projekt. Försök igen senare.');
             setAllProjects([]);
+        }
+        finally {
+            setLoading(false);
         }
     };
 
@@ -215,7 +225,21 @@ const Projects: React.FC = () => {
 
   return (
     <>
-    {showAllprojects &&  
+    {loading && (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Laddar projekt...</p>
+      </div>
+    )}
+
+    {error && (
+      <div className="error-container">
+        <p>{error}</p>
+        <button className="retry-button" onClick={fetchProjects}>Försök igen</button>
+      </div>
+    )}
+
+    {!loading && !error && showAllprojects &&
       (<div className="all-projects-container" >
           <header className="projects-header">  {/* Renamed to match CSS */}
               <div className="projects-header-controls">  {/* Renamed to match CSS */}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Calendar from './Calendar';
+// import Calendar from './Calendar';
 import './AdminSidebar.css';
 
 interface AdminSidebarProps {
@@ -18,7 +18,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen, onBack }
         <span className="line"></span>
       </button>
       <h2>Admin menu</h2>
-      <Calendar />
+      {/* <Calendar /> */}
       <div className="menu-link">
         <Link to="/manageusers">Hantera användare</Link>
       </div>

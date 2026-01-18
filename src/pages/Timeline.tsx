@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './timeline.css';
+import '../styles/spinner.css';
 import { useUser } from '../context/UserContext';
 import QuillEditor from '../utils/quillEditor';
 
@@ -16,11 +17,16 @@ const Timeline: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const { userType, userId } = useUser();
   const [editModes, setEditModes] = useState<Record<string,boolean>>({});
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchPosts = async () => {
+    setLoading(true);
+    setError(null);
     const token = localStorage.getItem('token');
     if (!token) {
-      console.error('No authentication token found. Please log in.');
+      setError('Ingen autentiseringstoken hittades. Vänligen logga in.');
+      setLoading(false);
       return;
     }
     try {
@@ -28,7 +34,7 @@ const Timeline: React.FC = () => {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        },        
+        },
       });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -46,6 +52,10 @@ const Timeline: React.FC = () => {
     }
     catch (error) {
       console.error('Failed to fetch posts:', error);
+      setError('Kunde inte ladda inlägg. Försök igen senare.');
+    }
+    finally {
+      setLoading(false);
     }
   }
 
@@ -117,8 +127,22 @@ const Timeline: React.FC = () => {
 
   return (
     <div className='timeline-main'>
-      {posts.map((post) => ( 
-        <div key={post.id} className="timeline-post-container"> 
+      {loading && (
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p>Laddar inlägg...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="error-container">
+          <p>{error}</p>
+          <button className="retry-button" onClick={fetchPosts}>Försök igen</button>
+        </div>
+      )}
+
+      {!loading && !error && posts.map((post) => (
+        <div key={post.id} className="timeline-post-container">
             {!editModes[post.id] && (
             <div className={new Date(post.publishedAt) > new Date() ? 'unpublished' : ''}>
               <div dangerouslySetInnerHTML={{ __html: post.html }}></div>
@@ -146,7 +170,7 @@ const Timeline: React.FC = () => {
         </div>))}
 
     </div>
-    
+
   );
 };
 

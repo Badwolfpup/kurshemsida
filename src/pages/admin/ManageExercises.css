@@ -17,3 +17,95 @@
 .exercise-javascript-section textarea {
     min-height: 175px !important;
 }
+
+/* Clues section styling */
+.clues-section {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid #1976d2;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 3px;
+    gap: 10px;
+}
+
+.clue-input-container {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.clue-input-container textarea {
+    flex: 1;
+    font-family: "Fira Mono", "Consolas", monospace;
+    font-size: 1em;
+    background: rgba(255, 255, 255, 0.5);
+    border: none;
+    resize: vertical;
+    color: #1565c0;
+    outline: none;
+    padding: 10px;
+    border-radius: 4px;
+    min-height: 40px;
+}
+
+.clue-input-container textarea::placeholder {
+    color: #90caf9;
+    font-style: italic;
+}
+
+.clue-input-container textarea:disabled {
+    background: rgba(200, 200, 200, 0.3);
+    color: #999;
+    cursor: not-allowed;
+}
+
+.clue-input-container .user-button {
+    white-space: nowrap;
+    align-self: flex-start;
+}
+
+.clues-display {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.clue-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.clue-item textarea {
+    flex: 1;
+    font-family: "Fira Mono", "Consolas", monospace;
+    font-size: 1em;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid #90caf9;
+    resize: none;
+    color: #1565c0;
+    outline: none;
+    padding: 10px;
+    border-radius: 4px;
+    min-height: 40px;
+    cursor: default;
+}
+
+.clue-remove-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    align-self: flex-start;
+    margin-top: 4px;
+}

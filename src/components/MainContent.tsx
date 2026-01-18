@@ -22,7 +22,7 @@ import MakePost from '../pages/admin/MakePost';
 import AdminSettings from '../pages/admin/AdminSettings';
 import CoachAttendance from '../pages/CoachAttendance';
 import ManageProjects from '../pages/admin/ManageProjects';
-import AboutCourse from '../pages/AboutCourse';
+import AboutCourse from '../pages/AboutContent/AboutCourse';
 import Login from '../pages/Login';
 import Exercises from '../pages/Exercises';
 import ManageExercises from '../pages/admin/ManageExercises';

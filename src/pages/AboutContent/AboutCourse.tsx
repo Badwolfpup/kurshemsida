@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import './AboutCourse.css';
+import Events from './Events';
 
 interface AboutCourseProps {
   setShowAboutPage: (value: boolean) => void;
@@ -9,7 +10,7 @@ const AboutCourse: React.FC<AboutCourseProps> = ({ setShowAboutPage }) => {
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
 
   const handleCardClick = (card: string) => {
-    setSelectedCard(selectedCard === card ? null : card);
+    if (selectedCard === null) setSelectedCard(card);
   };
 
   const backButton = () => {
@@ -57,6 +58,27 @@ const AboutCourse: React.FC<AboutCourseProps> = ({ setShowAboutPage }) => {
             {selectedCard === 'instructor' && backButton()}
             <h2>Kurs Instruktör</h2>
             <p>Möt våra erfarna lärare som guidar dig...</p>
+          </div>
+            <div 
+            className={`course-card course-events ${selectedCard === 'events' ? 'expanded' : ''}`} 
+            onClick={() => handleCardClick('events')}
+          >
+            {selectedCard === 'events' && backButton()}
+            {selectedCard === 'events' && <Events />}
+            {selectedCard !== 'events' && (
+              <>
+                <h2>Kurs Aktuella Händelser</h2>
+                <p>Delta i spännande evenemang och workshops...</p>
+              </>
+            )}
+          </div>
+                    <div 
+            className={`course-card course-get-started ${selectedCard === 'get-started' ? 'expanded' : ''}`} 
+            onClick={() => handleCardClick('get-started')}
+          >
+            {selectedCard === 'get-started' && backButton()}
+            <h2>Kurs Kom igång</h2>
+            <p>Kom igång att koda med våra enkla guider och resurser...</p>
           </div>
         </div>
       </div>
