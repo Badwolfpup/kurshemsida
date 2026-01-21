@@ -313,16 +313,16 @@ const UserPermissions: React.FC = () => {
       }));
     };
 
-    const toggleSelectAllProjects = (projectType: string) => {
-      const projectsOfType = allProjects.filter(p => p.typeofproject === projectType);
-      const allSelected = projectsOfType.every(p => selectedProjects[p.id]);
+    // const toggleSelectAllProjects = (projectType: string) => {
+    //   const projectsOfType = allProjects.filter(p => p.typeofproject === projectType);
+    //   const allSelected = projectsOfType.every(p => selectedProjects[p.id]);
 
-      const newSelections = { ...selectedProjects };
-      projectsOfType.forEach(p => {
-        newSelections[p.id] = !allSelected;
-      });
-      setSelectedProjects(newSelections);
-    };
+    //   const newSelections = { ...selectedProjects };
+    //   projectsOfType.forEach(p => {
+    //     newSelections[p.id] = !allSelected;
+    //   });
+    //   setSelectedProjects(newSelections);
+    // };
 
     // Project lock toggle functions
     const toggleProjectLock = (projectId: number, lockType: 'html' | 'css' | 'js') => {
@@ -381,7 +381,7 @@ const UserPermissions: React.FC = () => {
     const renderProjectSection = (projectType: string, displayName: string) => {
       const projectsOfType = allProjects.filter(p => p.typeofproject === projectType);
       const isExpanded = expandedSections[projectType];
-      const allSelected = projectsOfType.length > 0 && projectsOfType.every(p => selectedProjects[p.id]);
+      // const allSelected = projectsOfType.length > 0 && projectsOfType.every(p => selectedProjects[p.id]);
 
       // Determine which locks to show based on project type
       const showHtml = true;
@@ -488,10 +488,10 @@ const UserPermissions: React.FC = () => {
       );
     };
 
-    const toggleAllModules = () => {
-      const allEnabled = jsModules.every(m => m.enabled);
-      setJsModules(jsModules.map(m => ({ ...m, enabled: !allEnabled })));
-    };
+    // const toggleAllModules = () => {
+    //   const allEnabled = jsModules.every(m => m.enabled);
+    //   setJsModules(jsModules.map(m => ({ ...m, enabled: !allEnabled })));
+    // };
 
     const handleToggleAllLocked = () => {
       const newLocked = !allLocked;
@@ -510,11 +510,11 @@ const UserPermissions: React.FC = () => {
       setJsModules(jsModules.map(m => ({ ...m, difficulty })));
     };
 
-    const toggleModuleEnabled = (id: string) => {
-      setJsModules(jsModules.map(m =>
-        m.id === id ? { ...m, enabled: !m.enabled } : m
-      ));
-    };
+    // const toggleModuleEnabled = (id: string) => {
+    //   setJsModules(jsModules.map(m =>
+    //     m.id === id ? { ...m, enabled: !m.enabled } : m
+    //   ));
+    // };
 
     const toggleModuleLocked = (id: string) => {
       setJsModules(jsModules.map(m =>
