@@ -32,7 +32,7 @@ const ManageUsers: React.FC = () => {
   const [userList, setUserList] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-
+  
   const fetchUsers = async (role: number) => {
     setLoading(true);
     setError(null);
@@ -54,6 +54,8 @@ const ManageUsers: React.FC = () => {
   useEffect(() => {
     fetchUsers(4);
   }, []);
+
+
 
   const updateUser = async (user: User) => {
     const token = localStorage.getItem('token');

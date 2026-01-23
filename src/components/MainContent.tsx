@@ -46,7 +46,7 @@ const MainContent: React.FC<MainContentProps> = ({ setShowAboutPage }) => {
         <Route path="courses/javascript/functions" element={<JsFunctions />} />
         <Route path="courses/javascript/arrays" element={<JsArrays />} />
         <Route path="courses/javascript/objects" element={<JsObjects />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login setShowAboutPage={setShowAboutPage} />} />
         <Route path="/timeline" element={<Timeline />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/portfolio" element={<Portfolio />} />

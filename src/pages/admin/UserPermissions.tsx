@@ -130,6 +130,7 @@ const UserPermissions: React.FC = () => {
       setIsStudent(passedUser.authLevel === 4);
       fetchPermissions(passedUser.email);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
 
   const fetchPermissions = async (email: string) => {

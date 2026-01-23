@@ -33,6 +33,7 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1rem;
+  box-sizing: border-box;
 }
 
 .login-button {
@@ -49,4 +50,29 @@
 
 .login-button:hover {
   background-color: #0056b3;
+}
+
+.back-to-main::before {
+  content: '←';  /* Arrow */
+  font-size: 1.0em;
+}
+
+.back-to-main {
+  margin-left: auto;
+}
+
+.login-input-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-instructions {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #333;
+  font-size: 1rem;
+  font-weight: normal;
 }

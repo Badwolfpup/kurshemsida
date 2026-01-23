@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import './Login.css';
 
+interface LoginProps {
+  setShowAboutPage: (value: boolean) => void;
+}
 
-
-const Login: React.FC = () => {
+const Login: React.FC<LoginProps> = ({ setShowAboutPage }) => {
   const [inputValue, setInputValue] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
@@ -47,7 +49,16 @@ const Login: React.FC = () => {
       });
       if (!response.ok) {
         const passcodeInput = document.getElementById("passcode-instructions");
-        if (passcodeInput) passcodeInput.innerText = "Lösenkoden är felaktig eller för gammal. Försök igen.";
+        if (passcodeInput) 
+        {
+          const text = await response.text();
+          try {
+              const errorData = JSON.parse(text);
+              passcodeInput.innerText = errorData.detail || errorData.title || "Ett oväntat fel uppstod";
+          } catch (e) {
+              passcodeInput.innerText = text;
+          }
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -60,7 +71,7 @@ const Login: React.FC = () => {
 
   const showEmail = () => {
     return (
-      <div>
+      <div className="login-input-container">
       <h3 id="email-instructions" className="login-instructions">Ange din e-post för att logga in</h3>
         <input
           type="email"
@@ -71,14 +82,14 @@ const Login: React.FC = () => {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           required
-        /> 
+        />
       </div>
       )
   }
 
   const showPasswordInput = () => {
     return (
-      <div>
+      <div className="login-input-container">
          <h3 id="passcode-instructions" className="login-instructions">Ange det engångslösenord som skickades till din e-post</h3>
           <input
           type="password"
@@ -96,6 +107,7 @@ const Login: React.FC = () => {
     <div className="login-container">
       <h1 className="login-banner">Välkommen till CUL programmeringskurs</h1>
       <form className="login-form" autoComplete='on' onSubmit={handleSubmit}>
+        <button type="button" className="back-to-main user-button" onClick={() =>setShowAboutPage(true)}></button>
         {showPassword ? showPasswordInput() : showEmail()}
         <button className="login-button" type="submit">Logga in</button>
       </form>

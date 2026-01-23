@@ -1,40 +1,16 @@
-Kalender där vi kan lägga till händelser - koppla autmatiska inlägg i flödet
-    react-calendar
-    react-datepicker
-    @fullcalendar/react @fullcalendar/daygrid
-Kurskatalog
-    Vi låser upp kurser 
-        varje delkurs har övningar kopplade till sig
-Övningssida
-    övningar har taggar för vad mna kan träna
-    övningar har lösningar HTML/CSS/KOD som vi kan låsa upp 1 eller fler
-    Filtrera övningar
-    Vi låser upp tillgång till taggar (alla måste vara upplåsta för att visas?)
-
-Adminsida
-    ***Tillägg/borttag av deltagare
-    ***Skapa inlägg i flödet
-            Styra när inlägget ska visas
-    Lägg till händelser i kalendern
-    Styra tillgång till i pripcip alla funktioner
-    För närvaro
-        - lägg till table närvaro i db - (array med elev id för varje dag?) **KLAR**
-        - lägg till funktion för att add/remove coacher
-        - lägg til coachdropdown för lägga till nya elever
-        - lägga till närvarosida
-            - dropdown med år / veckor
-            - elever i lista  + toggles för varje dag (grön närvarande, grå (default) ej närvarande
-                - spara/avbryt knapp
-
-
-Inbyggd kodyta vid förklaringar och ?övningar?
-Skapa mobilapp för samma sida
 
 **TODO**
-Koppla inlägg till kalender
-Hjälp för övningar?
-    flera steg?
+
+Sida med länkar till resurser
+Tan Query
+
 Fixa UI för deltagare att visa/filtrara övningar
 Fixa Toast för alla db händelser
 VIKTIGT
 
+
+
+**FINISHED TASKS**
+Passcode expiration - 15 min lockout efter 10 felaktiga försök
+Routa tillAboutCourse om token expired
+Back button på inloggningssidan

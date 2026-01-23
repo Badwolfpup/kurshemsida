@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
 
 
@@ -10,6 +10,7 @@ interface UserContextType {
   userType: UserType;
   userId: number | null;
   userEmail: string | null;
+  userTokenExpired: Date | null;
   login: (type: string) => void;
   logout: () => void;
 }
@@ -21,6 +22,32 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [userType, setUserType] = useState<UserType>(null);
   const [userId, setUserId] = useState<number | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userTokenExpired, setUserTokenExpired] = useState<Date | null>(null);
+  const timeoutRef = useRef<number | null>(null);
+
+  // Function to clear any existing timeout
+  const clearExpirationTimeout = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
+
+  // Function to set a new timeout for expiration
+  const setExpirationTimeout = (expiredDate: Date) => {
+    clearExpirationTimeout(); // Clear any existing
+    const now = new Date();
+    const delay = expiredDate.getTime() - now.getTime();
+    if (delay > 0) {
+      timeoutRef.current = setTimeout(() => {
+        logout(); // Or just update state: setUserTokenExpired(new Date()); to trigger effects
+      }, delay);
+    } else {
+      // Already expired, handle immediately
+      logout();
+    }
+  };
+
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -32,6 +59,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (role === 'Admin' || role === 'Teacher' || role === 'Coach' || role === 'Student' || role === 'Guest') {
           setUserType(role);
           setIsLoggedIn(true);
+          const expired = decoded['expired'] ? new Date(decoded['expired']) : null;
+          setUserTokenExpired(expired);
+          if (expired) {
+            setExpirationTimeout(expired); // Set timeout on load
+          }          
           setUserEmail(decoded['sub'] || null);
           setUserId(decoded['id'] ? Number(decoded['id']) : null);
         }
@@ -40,6 +72,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         logout();
       }
     }
+     return () => clearExpirationTimeout(); // Cleanup on unmount
   }, []); // Empty dependency array ensures this runs only once
 
   const login = (token: string) => {
@@ -50,6 +83,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoggedIn(true);
     setUserEmail(decoded['sub'] || null);
     setUserId(decoded['id'] ? Number(decoded['id']) : null);
+    const expired = decoded['expired'] ? new Date(decoded['expired']) : null;
+    setUserTokenExpired(expired);
+    if (expired) {
+      setExpirationTimeout(expired); // Set timeout on login
+    }  
   };
 
   const logout = () => {
@@ -58,10 +96,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserType(null);
     setUserEmail(null);
     setUserId(null);
+    setUserTokenExpired(null);
+    clearExpirationTimeout();
   };
 
   return (
-    <UserContext.Provider value={{ isLoggedIn, userType, userId, userEmail, login, logout }}>
+    <UserContext.Provider value={{ isLoggedIn, userType, userId, userEmail, userTokenExpired, login, logout }}>
       {children}
     </UserContext.Provider>
   );

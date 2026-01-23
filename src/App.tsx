@@ -15,15 +15,16 @@ const App: React.FC = () => {
   const [showAdmin, setShowAdmin] = useState(false);
   const [showAboutPage, setShowAboutPage] = useState(true);
   const navigate = useNavigate();
-  
+;
+
   useEffect(() => {
     if (isLoggedIn) {
       if (!showAdmin) navigate('/projects');
       else navigate('/manageusers');
     }
-    else if (!showAboutPage) {
-      navigate('/login');
-    }
+    else if (!showAboutPage) navigate('/login');
+ 
+    else navigate('/');
   }, [isLoggedIn, showAboutPage]);
 
   const logout = () => {
@@ -52,8 +53,9 @@ const App: React.FC = () => {
   }
 
   if (showAboutPage) return <AboutCourse setShowAboutPage={setShowAboutPage} />;
+ 
 
-  return <Login />;
+  return <Login setShowAboutPage={setShowAboutPage} />;
 
 
 
