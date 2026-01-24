@@ -1,8 +1,9 @@
 
 **TODO**
-
+Ändra databasen till att 
 Sida med länkar till resurser
 Tan Query
+Taggar funkar inte att lägga till i exercises (projects?)
 
 Fixa UI för deltagare att visa/filtrara övningar
 Fixa Toast för alla db händelser

@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import Toast from "../../utils/toastMessage";
 import './ManageExercises.css';
 import '../../styles/spinner.css';
+import type { AddExerciseDto, UpdateExerciseDto } from "../../Types/Dto/ExerciseDto";
+import { useExercises, useAddExercise, useUpdateExercise, useDeleteExercise } from "../../hooks/useExercises";
 
 interface Exercise {
     id: number;
@@ -19,7 +21,6 @@ interface Exercise {
 const ManageExercises: React.FC = () => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
-    const [allExercises, setAllExercises] = useState<Exercise[]>([]);
     const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
     const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
     const [showEditor, setShowEditor] = useState(false);
@@ -31,16 +32,19 @@ const ManageExercises: React.FC = () => {
     const [expectedResult, setExpectedResult] = useState<string>('');
     const [javascript, setJavascript] = useState<string>('');
     const [iframeKey, setIframeKey] = useState(0);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+
     const [currentClue, setCurrentClue] = useState<string>('');
+    const { data: exercises = [] as Exercise[], isLoading, isError, error, refetch, isRefetching } = useExercises();
+    const addExerciseMutation = useAddExercise();
+    const updateExerciseMutation = useUpdateExercise();
+    const deleteExerciseMutation = useDeleteExercise();
 
 
     const computedAllTags = useMemo(() => {
-        const exerciseTags = allExercises ? allExercises.flatMap(x => x.tags || []) : [];
+        const exerciseTags = exercises ? exercises.flatMap(x => x.tags || []) : [];
         const selectedTags = selectedExercise ? selectedExercise.tags || [] : [];
         return [...new Set([...exerciseTags, ...selectedTags])];  // Combine and dedupe
-    }, [allExercises, selectedExercise]);
+    }, [exercises, selectedExercise]);
 
     useEffect(() => {
         if (selectedExercise !== null && iframeRef. current) {
@@ -119,135 +123,51 @@ const ManageExercises: React.FC = () => {
                 }
     }, [iframeKey]);
 
-    const fetchExercises = async () => {
-        setLoading(true);
-        setError(null);
-        const token = localStorage.getItem('token');
-        if (!token) {
-            setError('Ingen autentiseringstoken hittades. Vänligen logga in.');
-            setLoading(false);
-            return;
-        }
-        try {
-            const response = await fetch('/api/fetch-exercises', {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json() as Exercise[];
-            data.forEach(proj => {
-                proj.lightbulbs = Array(5).fill(false).map((_, i) => i < proj.difficulty);
-            });
-            setAllExercises(data);
-        }
-        catch (err) {
-            console.error(err instanceof Error ? err.message : 'An error occurred');
-            setError('Kunde inte ladda övningar. Försök igen senare.');
-            setAllExercises([]);
-        }
-        finally {
-            setLoading(false);
-        }
-    };
 
-    useEffect(() => {
-        fetchExercises();
-    }, []);
+
+
 
     const addExercise = async () => {
         if (!hasAllFieldsText()) {
             return;
         }
-        const { id, ...input } = selectedExercise!;  // Exclude id when adding new
-        
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.error('No auth token found');
-            return;
-        }
-        try {
-            const response = await fetch('/api/add-exercise', {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            method: 'POST',
-            body: JSON.stringify(input)
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+        const { id, lightbulbs, ...input } = selectedExercise!; 
+        addExerciseMutation.mutate(input as AddExerciseDto, {
+            onSuccess: () => {
+                setShowEditor(false);
+                setToastMessage("Exercise saved successfully!");
+                setTimeout(() => setToastMessage(null), 3000);
             }
-            await fetchExercises();
-            setToastMessage("Exercise saved successfully!");
-            setTimeout(() => setToastMessage(null), 3000);
-        } catch (err) {
-            console.error(err instanceof Error ? err.message : 'An error occurred');
-        }
+        });       
+        
     };
 
     const updateExercise = async () => {
         if (!hasAllFieldsText || selectedExercise === null) {
             return;
         }
-
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.error('No auth token found');
-            return;
-        }
-        try {
-            const response = await fetch(`/api/update-exercise`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            method: 'PUT',
-            body: JSON.stringify(selectedExercise)
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+        const { lightbulbs, ...input } = selectedExercise!; 
+        updateExerciseMutation.mutate(input as UpdateExerciseDto, {
+            onSuccess: () => {
+                setToastMessage("Exercise updated successfully!");
+                setTimeout(() => setToastMessage(null), 3000);
             }
-            await fetchExercises();
-            setToastMessage("Exercise updated successfully!");
-            setTimeout(() => setToastMessage(null), 3000);
-        } catch (err) {
-            console.error(err instanceof Error ? err.message : 'An error occurred');
-        }
+        });
+        
     };
 
     const deleteExercise = async () => {
         if (selectedExerciseId === null || selectedExercise === null) {
             return;
         }
-        const prompt = window.confirm(`Är du säker på att du vill ta bort övningen ${selectedExercise.title}? Detta kan inte ångras.`);
-        if (!prompt) return;
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.error('No auth token found');
-            return;
-        }
-        try {
-            const response = await fetch(`/api/delete-exercise/${selectedExerciseId}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            method: 'DELETE'
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+        deleteExerciseMutation.mutate({ id: selectedExerciseId, title: selectedExercise.title }, {
+            onSuccess: () => {
+                setToastMessage("Exercise deleted successfully!");
+                setTimeout(() => setToastMessage(null), 3000);
+                resetFrames();
             }
-            await fetchExercises();
-            setToastMessage("Exercise deleted successfully!");
-            setTimeout(() => setToastMessage(null), 3000);
-            resetFrames();
-        } catch (err) {
-            console.error(err instanceof Error ? err.message : 'An error occurred');
-        }
+        });
+        
     };  
 
     const hasAllFieldsText = () => {
@@ -264,7 +184,7 @@ const ManageExercises: React.FC = () => {
     const handleExerciseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const index = e.target.value ? parseInt(e.target.value) : null;
         setSelectedExerciseId(index);
-        setSelectedExercise(index !== null ? allExercises.find(p => p.id === index) || null : null);
+        setSelectedExercise(index !== null ? exercises.find(p => p.id === index) || null : null);
         const iframe = document.querySelector('.preview-container') as HTMLIFrameElement;
         if (iframe != null && iframe.contentDocument != null) {
             iframe.contentDocument.body.innerHTML = '';
@@ -285,7 +205,7 @@ const ManageExercises: React.FC = () => {
 
     const loadExerciseIntoEditor = (index: number) => {
         if (index === null) return;
-        const exercise = allExercises.find(p => p.id === index);
+        const exercise = exercises.find(p => p.id === index);
         console.log(exercise);
         if (!exercise) return;
         setSelectedExercise(exercise);  // Set the whole object
@@ -355,17 +275,17 @@ const ManageExercises: React.FC = () => {
 
 
 
-if (loading) return (
+if (isLoading) return (
     <div className="loading-container">
         <div className="spinner"></div>
         <p>Laddar övningar...</p>
     </div>
 );
 
-if (error) return (
+if (isError) return (
     <div className="error-container">
-        <p>{error}</p>
-        <button className="retry-button" onClick={fetchExercises}>Försök igen</button>
+        <p>{error instanceof Error ? error.message : 'An error occurred'}</p>
+      <button className="retry-button" onClick={() => {refetch()}} disabled={isRefetching}>{isRefetching ? 'Laddar...' : 'Försök igen'}</button>
     </div>
 );
 
@@ -379,7 +299,7 @@ return (
                     <label htmlFor="exerciseSelector" className="visually-hidden">Välj övning:</label>
                     <select className="project-selector" id="exerciseSelector" value={selectedExerciseId ?? ''} onChange={handleExerciseChange}>
                         <option value="">Välj övning</option>
-                        {allExercises.map((ex) => (
+                        {exercises.map((ex) => (
                         <option key={ex.id} value={ex.id}>{ex.title}</option>
                         ))}
                     </select>

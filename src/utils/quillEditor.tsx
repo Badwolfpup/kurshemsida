@@ -8,7 +8,8 @@ interface QuillEditorProps {
   height?: string;
   publishOrUpdate: boolean
   delta?: any ; // Callback to load a post into the editor
-  onPublish?: (html: string, delta: any, date: string | null) => void; // Callback for publishing, receives HTML and delta
+  onPublish?: (html: string, delta: any, date: string | null) => void;
+  onUpdate?: (html: string, delta: any, date: string | null) => void; // Callback for publishing, receives HTML and delta
 }
 
 const QuillEditor: React.FC<QuillEditorProps> = ({
@@ -17,6 +18,7 @@ const QuillEditor: React.FC<QuillEditorProps> = ({
   publishOrUpdate,
   delta,
   onPublish,
+  onUpdate,
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const quillInstanceRef = useRef<Quill | null>(null);
@@ -106,6 +108,16 @@ const QuillEditor: React.FC<QuillEditorProps> = ({
     }
   };
 
+  const update = async () => {
+    if (onUpdate && quillInstanceRef.current) {
+      const delta = quillInstanceRef.current.getContents();
+      const html = quillInstanceRef.current.root.innerHTML;
+      let date: string | null = (document.getElementById('post-date') as HTMLInputElement).value;
+      if (!date) date = null;
+      await onUpdate(html, delta, date);
+    }
+  };
+
   const clear = () => {
     if (quillInstanceRef.current) {
       quillInstanceRef.current.setContents([]);
@@ -126,7 +138,7 @@ const QuillEditor: React.FC<QuillEditorProps> = ({
       <div className="draft-btns">
         {<button className="user-button" onClick={saveDraft}>Spara utkast</button>}
         {<button className="user-button" onClick={loadDraft}>Ladda utkast</button>}
-        <button className="user-button" onClick={publish}>{publishOrUpdate ? 'Publicera' : 'Uppdatera'}</button>
+        <button className="user-button" onClick={publishOrUpdate ? publish : update}>{publishOrUpdate ? 'Publicera' : 'Uppdatera'}</button>
         <input type="date" id="post-date" name="post-date" />
         <button className="delete-button" onClick={() => resetDate()}>✕</button>
 

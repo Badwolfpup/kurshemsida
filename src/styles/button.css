@@ -1,36 +1,35 @@
 .user-button {
-  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-  color: white;
+  background: var(--btn-primary-bg);
+  color: var(--text-inverse);
   border: none;
   padding: 10px 20px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease, var(--theme-transition);
   font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .user-button:hover {
-  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  background: var(--btn-primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
 }
 
 .delete-button {
-  background: linear-gradient(135deg, #e53935 0%, #d32f2f 100%);
-  color: white;
+  background: var(--btn-danger-bg);
+  color: var(--text-inverse);
   border: none;
   padding: 10px 20px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease, var(--theme-transition);
   font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .delete-button:hover {
-  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+  background: var(--btn-danger-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
 }
-

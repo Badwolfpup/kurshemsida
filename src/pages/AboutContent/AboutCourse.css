@@ -1,86 +1,83 @@
-/* Main area and nav (similar to other pages) */
 .main-area {
   display: flex;
   flex-direction: column;
   height: 100vh;
   width: 100vw;
   align-content: center;
-  background: linear-gradient(135deg, #f0f4f8 0%, #ffffff 100%);
+  background: var(--bg-body);
   margin: 0 auto;
   overflow: hidden;
+  transition: var(--theme-transition);
 }
 
 nav {
-  background: linear-gradient(135deg, #bbdefb 0%, #e3f2fd 100%);
+  background: var(--bg-header);
   padding: 15px;
   display: flex;
   justify-content: flex-end;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
+  transition: var(--theme-transition);
 }
 
-/* Content wrapper - centers the header, back button, and container */
 .content-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;  /* Center horizontally */
-  flex: 1;  /* Take remaining space */
+  align-items: center;
+  flex: 1;
   width: 100%;
   padding: 20px;
 }
 
-/* Back button - floating in top-right of expanded card */
 .back-button {
   position: absolute;
   top: 10px;
   right: 10px;
-  background: rgba(200, 200, 200, 0.8);  /* Light greyish opaque */
-  color: #333;
-  border: 1px solid rgba(150, 150, 150, 0.5);
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
   font-size: 1em;
   font-weight: 500;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);  /* Floating shadow */
-  transition: all 0.3s ease;
-  z-index: 15;  /* Above card */
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease, var(--theme-transition);
+  z-index: 15;
 }
 
 .back-button:hover {
-  background: rgba(180, 180, 180, 0.9);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  background: var(--bg-hover);
+  box-shadow: var(--shadow-lg);
   transform: translateY(-2px);
 }
 
 .back-button:before {
-  content: '←';  /* Arrow */
+  content: '\2190';
   font-size: 1.5em;
 }
 
-/* Container - grid for quarters, centered */
 .about-course-container {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);  /* 2x2 grid for quarters */
+  grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(2, 1fr);
   gap: 10px;
   column-gap: 50px;
   width: 100%;
   height: 80vh;
-  max-width: 1200px;  /* Limit for centering */
-  margin: 0 auto;  /* Horizontal center */
+  max-width: 1200px;
+  margin: 0 auto;
   transition: all 0.3s ease;
-  justify-items: center;  /* Center cards */
+  justify-items: center;
 }
 
-/* Cards - distinct and card-like */
 .course-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
-  border: 1px solid #e0e0e0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
   padding: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease, var(--theme-transition);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -88,96 +85,92 @@ nav {
   text-align: center;
   min-height: 200px;
   width: 100%;
-  position: relative;  /* For absolute back button */
+  position: relative;
 }
 
 .course-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  border-color: #1976d2;
+  border-color: var(--color-primary);
 }
 
 .course-card h2 {
   margin: 0 0 10px 0;
-  color: #424242;
+  color: var(--text-primary);
   font-size: 1.5em;
 }
 
 .course-card p {
   margin: 0;
-  color: #666;
+  color: var(--text-secondary);
 }
 
-
-
-/* Expanded state - covers entire container */
 .course-card.expanded {
-  grid-column: 1 / -1;  /* Span all columns */
-  grid-row: 1 / -1;    /* Span all rows */
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
   min-height: 400px;
   z-index: 10;
   transform: scale(1.02);
-  justify-content: flex-start;  /* Align content to top */
-  align-items: flex-start;  /* Align items to top */
+  justify-content: flex-start;
+  align-items: flex-start;
   text-align: left;
 }
 
-/* Hide non-expanded cards when one is expanded */
 .about-course-container:has(.expanded) .course-card:not(.expanded) {
-  display: none;  /* Fully hidden */
+  display: none;
 }
 
 .about-course-header {
-  display: flex;  /* Flex for h1 and button on same line */
-  justify-content: space-between;  /* h1 left, button right */
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 20px 40px;  /* Adjusted for flex */
-  background: linear-gradient(135deg, #bbdefb 0%, #e3f2fd 100%);
-  border-bottom: 2px solid #1976d2;
+  padding: 20px 40px;
+  background: var(--bg-header);
+  border-bottom: 2px solid var(--color-primary);
   width: 100%;
-  max-width: 1200px;  /* Match container */
+  max-width: 1200px;
   border-radius: 12px;
   margin-bottom: 20px;
+  transition: var(--theme-transition);
 }
 
 .about-course-header h1 {
-  font-size: 3em;  /* Large and bold */
+  font-size: 3em;
   font-weight: 700;
-  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1565c0 100%);  /* Gradient text */
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 50%, var(--color-primary-darker) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin: 0;
   padding: 5px;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);  /* Depth */
-  animation: enticingGlow 2s ease-in-out infinite alternate;  /* Subtle glow */
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  animation: enticingGlow 2s ease-in-out infinite alternate;
   margin: 0 auto;
 }
 
-.about-course-header button {  /* Button in header */
-  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-  color: white;
+.about-course-header button {
+  background: var(--btn-primary-bg);
+  color: var(--text-inverse);
   border: none;
   padding: 10px 20px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease, var(--theme-transition);
   font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .about-course-header button:hover {
-  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  background: var(--btn-primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
 }
 
 @keyframes enticingGlow {
   0% { text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
-  100% { text-shadow: 0 4px 12px rgba(25, 118, 210, 0.4); }  /* Blue glow */
+  100% { text-shadow: 0 4px 12px rgba(25, 118, 210, 0.4); }
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .about-course-container {
     grid-template-columns: 1fr;
@@ -188,7 +181,7 @@ nav {
     grid-row: 1;
   }
   .about-course-header {
-    flex-direction: column;  /* Stack h1 and button on mobile */
+    flex-direction: column;
     gap: 15px;
     padding: 20px;
   }

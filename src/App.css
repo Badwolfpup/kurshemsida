@@ -5,6 +5,8 @@
   height: 100vh;
   overflow: hidden;
   position: relative;
+  background-color: var(--bg-body);
+  transition: var(--theme-transition);
 }
 
 @media (max-width: 600px) {

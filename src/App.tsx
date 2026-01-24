@@ -1,12 +1,16 @@
 import './App.css'
 import React, { useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
-import Login from './pages/Login';
 import { useUser } from './context/UserContext';
+import Login from './pages/Login';
 import Sidebar from './components/Sidebar';
 import AdminSidebar from './components/AdminSidebar';
 import MainContent from './components/MainContent';
 import AboutCourse from './pages/AboutContent/AboutCourse';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools/production';
+
+const queryClient = new QueryClient();
 
 
 const App: React.FC = () => {
@@ -43,20 +47,38 @@ const App: React.FC = () => {
     navigate('/projects'); // Navigate back to home or timeline
   };
 
-  if (isLoggedIn && !showAboutPage) {
-    return (
-      <div className="app">
-        {showAdmin && userType === "Admin" ? (<AdminSidebar isOpen={isOpen} setIsOpen={setIsOpen} onBack={handleAdminBack} />) : (<Sidebar isOpen={isOpen} setIsOpen={setIsOpen} logout={logout} onAdminClick={handleAdminClick}/>)}
-        <MainContent setShowAboutPage={setShowAboutPage} />
-      </div>
-    );
-  }
+  // if (isLoggedIn && !showAboutPage) {
+  //   return (
+  //     <div className="app">
+  //       {showAdmin && userType === "Admin" ? (<AdminSidebar isOpen={isOpen} setIsOpen={setIsOpen} onBack={handleAdminBack} />) : (<Sidebar isOpen={isOpen} setIsOpen={setIsOpen} logout={logout} onAdminClick={handleAdminClick}/>)}
+  //       <MainContent setShowAboutPage={setShowAboutPage} />
+  //     </div>
+  //   );
+  // }
 
-  if (showAboutPage) return <AboutCourse setShowAboutPage={setShowAboutPage} />;
+  // if (showAboutPage) return <AboutCourse setShowAboutPage={setShowAboutPage} />;
  
 
-  return <Login setShowAboutPage={setShowAboutPage} />;
-
+  // return <Login setShowAboutPage={setShowAboutPage} />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      {isLoggedIn && !showAboutPage ? (
+        <div className="app">
+          {showAdmin && userType === "Admin" ? (
+            <AdminSidebar isOpen={isOpen} setIsOpen={setIsOpen} onBack={handleAdminBack} />
+          ) : (
+            <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} logout={logout} onAdminClick={handleAdminClick}/>
+          )}
+          <MainContent setShowAboutPage={setShowAboutPage} />
+        </div>
+      ) : showAboutPage ? (
+        <AboutCourse setShowAboutPage={setShowAboutPage} />
+      ) : (
+        <Login setShowAboutPage={setShowAboutPage} />
+      )}
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  );
 
 
 

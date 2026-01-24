@@ -1,113 +1,47 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import './ManageProjects.css';
 import '../../styles/spinner.css';
 import Toast from '../../utils/toastMessage';
-import {processDeltaForImages} from '../../utils/imageUtils';
+import type ProjectType from '../../Types/ProjectType';
+import type { AddProjectDto, UpdateProjectDto } from '../../Types/Dto/ProjectDto';
+import { useProjects, useAddProject, useDeleteProject, useUpdateProject } from '../../hooks/useProjects';
 
-interface Project {
-    id: number;
-    title: string;
-    description: string;
-    html: string;
-    css: string;
-    javascript: string;
-    tags: string[];
-    difficulty: number;
-    lightbulbs: boolean[];
-    image?: string;
-}
 
 const ManageProjects: React.FC = () => {
 
-    const [allProjects, setAllProjects] = useState<Project[]>([]);
     const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
-    const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+    const [selectedProject, setSelectedProject] = useState<ProjectType | null>(null);
     const [selectedProjectType, setSelectedProjectType] = useState<string>('');
     const [showEditor, setShowEditor] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [filterText, setFilterText] = useState<string>('');
     const [showTagOverlay, setShowTagOverlay] = useState(false);
-    const [showImageContainer, setShowImageContainer] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
-    const [imageLoaded, setImageLoaded] = useState(false);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const { data: projects = [] as ProjectType[], isLoading, isError, error, refetch, isRefetching } = useProjects();
+    const addProjectMutation = useAddProject();
+    const updateProjectMutation = useUpdateProject();
+    const deleteProjectMutation = useDeleteProject();
+
 
     const computedAllTags = useMemo(() => {
-        const projectTags = allProjects ? allProjects.flatMap(x => x.tags || []) : [];
+        const projectTags = projects ? projects.flatMap(x => x.tags || []) : [];
         const selectedTags = selectedProject ? selectedProject.tags || [] : [];
         return [...new Set([...projectTags, ...selectedTags])];  // Combine and dedupe
-    }, [allProjects, selectedProject]);
+    }, [projects, selectedProject]);
 
-
-
-    const fetchProjects = async () => {
-        setLoading(true);
-        setError(null);
-        const token = localStorage.getItem('token');
-        if (!token) {
-            setError('Ingen autentiseringstoken hittades. Vänligen logga in.');
-            setLoading(false);
-            return;
-        }
-        try {
-            const response = await fetch('/api/fetch-projects'    , {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json() as Project[];
-            data.forEach(proj => {
-                proj.lightbulbs = Array(5).fill(false).map((_, i) => i < proj.difficulty);
-            });
-            setAllProjects(data);
-        }
-        catch (err) {
-            setError('Kunde inte ladda projekt. Försök igen senare.');
-            setAllProjects([]);
-        }
-        finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchProjects();
-    }, []);
 
     const addProject = async () => {
         if (!hasAllFieldsText()) {
             return;
         }
-        const { id, ...input } = selectedProject!;  // Exclude id when adding new
-        
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.error('No auth token found');
-            return;
-        }
-        try {
-            const response = await fetch('/api/add-project', {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            method: 'POST',
-            body: JSON.stringify(input)
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+        const { id, lightbulbs, ...input } = selectedProject!; 
+        addProjectMutation.mutate(input as AddProjectDto, {
+            onSuccess: () => {
+                setShowEditor(false);
+                setToastMessage("Project saved successfully!");
+                setTimeout(() => setToastMessage(null), 3000);
             }
-            await fetchProjects();
-            setToastMessage("Project saved successfully!");
-            setTimeout(() => setToastMessage(null), 3000);
-        } catch (err) {
-            console.error(err instanceof Error ? err.message : 'An error occurred');
-        }
+        });
     };
 
     const updateProject = async () => {
@@ -115,67 +49,35 @@ const ManageProjects: React.FC = () => {
             return;
         }
 
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.error('No auth token found');
-            return;
-        }
-        try {
-            const response = await fetch(`/api/update-project`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            method: 'PUT',
-            body: JSON.stringify(selectedProject)
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+        const { lightbulbs, ...input } = selectedProject!; 
+        updateProjectMutation.mutate(input as UpdateProjectDto, {
+            onSuccess: () => {
+                setToastMessage("Project updated successfully!");
+                setTimeout(() => setToastMessage(null), 3000);
             }
-            await fetchProjects();
-            setToastMessage("Project updated successfully!");
-            setTimeout(() => setToastMessage(null), 3000);
-        } catch (err) {
-            console.error(err instanceof Error ? err.message : 'An error occurred');
-        }
+        });
+
     };
 
     const deleteProject = async () => {
         if (selectedProjectId === null || selectedProject === null) {
             return;
         }
-        const prompt = window.confirm(`Är du säker på att du vill ta bort projektet ${selectedProject.title}? Detta kan inte ångras.`);
-        if (!prompt) return;
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.error('No auth token found');
-            return;
-        }
-        try {
-            const response = await fetch(`/api/delete-project/${selectedProjectId}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            method: 'DELETE'
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+        deleteProjectMutation.mutate({ id: selectedProjectId, title: selectedProject.title }, {
+            onSuccess: () => {
+                setToastMessage("Project deleted successfully!");
+                setTimeout(() => setToastMessage(null), 3000);
+                resetFrames();
             }
-            await fetchProjects();
-            setToastMessage("Project deleted successfully!");
-            setTimeout(() => setToastMessage(null), 3000);
-            resetFrames();
-        } catch (err) {
-            console.error(err instanceof Error ? err.message : 'An error occurred');
-        }
+        });
+      
     };  
 
     const hasAllFieldsText = () => {
         
         if (!selectedProject?.title || !selectedProject.description || !selectedProject.html || !selectedProject.css || !selectedProject.javascript) {
             console.error('One or more input fields are empty');
-            window.alert('Fyll i alla fält innan du sparar projektet.');
+            window.alert('Fyll i alla fält innan du /uppdaterar projektet.');
             return false;
         }
         return true;
@@ -184,7 +86,7 @@ const ManageProjects: React.FC = () => {
     const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const index = e.target.value ? parseInt(e.target.value) : null;
         setSelectedProjectId(index);
-        setSelectedProject(index !== null ? allProjects.find(p => p.id === index) || null : null);
+        setSelectedProject(index !== null ? projects.find(p => p.id === index) || null : null);
         const iframe = document.querySelector('.preview-container') as HTMLIFrameElement;
         if (iframe != null && iframe.contentDocument != null) {
             iframe.contentDocument.body.innerHTML = '';
@@ -206,7 +108,7 @@ const ManageProjects: React.FC = () => {
 
     const loadProjectIntoEditor = (index: number) => {
         if (index === null) return;
-        const project = allProjects.find(p => p.id === index);
+        const project = projects.find(p => p.id === index);
         console.log(project);
         if (!project) return;
         setSelectedProject(project);  // Set the whole object
@@ -287,46 +189,19 @@ const ManageProjects: React.FC = () => {
         }
     }
 
-    const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-    if (file) {
-        // Convert file to base64
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            const base64 = event.target?.result as string;
-            
-            // Create a delta-like structure for the function
-            const delta = {
-                ops: [{ insert: { image: base64 } }]
-            };
-            
-            // Process (upload) the image
-            const processedOps = await processDeltaForImages(delta);
-            const imageUrl = processedOps[0]?.insert?.image;  // Get uploaded URL
-            
-            if (imageUrl) {
-                // Add to project
-                setSelectedProject({ ...selectedProject!, image: imageUrl });
-                setShowImageContainer(true);
-            }
-        };
-        reader.readAsDataURL(file);  // Reads as base64
-        setShowImageContainer(true);
 
-    }
-    }
 
-    if (loading) return (
+    if (isLoading) return (
         <div className="loading-container">
             <div className="spinner"></div>
             <p>Laddar projekt...</p>
         </div>
     );
 
-    if (error) return (
+    if (isError) return (
         <div className="error-container">
-            <p>{error}</p>
-            <button className="retry-button" onClick={fetchProjects}>Försök igen</button>
+            <p>{error?.message}</p>
+      <button className="retry-button" onClick={() => {refetch()}} disabled={isRefetching}>{isRefetching ? 'Laddar...' : 'Försök igen'}</button>
         </div>
     );
 
@@ -340,7 +215,7 @@ const ManageProjects: React.FC = () => {
                     <label htmlFor="projectSelector" className="visually-hidden">Välj projekt:</label>
                     <select className="project-selector" id="projectSelector" value={selectedProjectId ?? ''} onChange={handleProjectChange}>
                         <option value="">Välj projekt</option>
-                        {allProjects.map((ex) => (
+                        {projects.map((ex) => (
                         <option key={ex.id} value={ex.id}>{ex.title}</option>
                         ))}
                     </select>
@@ -482,14 +357,8 @@ const ManageProjects: React.FC = () => {
                             <span key={i} className={`difficulty ${lightbulb ? "high" : "low"}`} onClick={changeDifficulty(i)}>💡</span>
                         ))}
                     </div>
-                    <button className='user-button show-image-container' style={{ marginLeft: 'auto' }} onClick={() => {  document.getElementById('image-input')?.click() }}>Lägg till bild</button>
-                    <input id="image-input" type='file' accept='image/*'  style={{display: 'none' }} onChange={(e) => { handleImage(e); }}/>
+
                 </div>
-                {showImageContainer && <div  className='image-container'>
-                    {!imageLoaded && <div className="loading">Loading image...</div>}
-                    <img className='project-image' style={{ display: imageLoaded ? 'block' : 'none' }} onLoad={() => setImageLoaded(true)} src={selectedProject?.image} alt="Projektbild" />
-                    <button className='user-button' onClick={() =>  { setShowImageContainer(false); if (selectedProject) selectedProject.image = ""; setImageLoaded(false); }}>Ta bort bild</button>
-                </div> }
                 <div className="save-button-container">
                     <button id="saveProjectButton" type="button" onClick={isEditing ? updateProject : addProject}>{isEditing ? "Uppdatera" : "Spara"} projekt</button>
                     <button id="previewProjectButton" type="button" onClick={previewProject}>Förhandsgranska</button>
