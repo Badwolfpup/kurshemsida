@@ -21,7 +21,15 @@ export interface UpdateUserDto {
   email?: string;
   authLevel?: number; 
   isActive?: boolean ;
-  course?: number;
-  coachId?: number;
-  contactId?: number;
+  course?: number | null;  
+  coachId?: number | null;  
+  contactId?: number | null; 
+  scheduledMonAm?: boolean;
+  scheduledMonPm?: boolean;
+  scheduledTueAm?: boolean;
+  scheduledTuePm?: boolean;
+  scheduledWedAm?: boolean;
+  scheduledWedPm?: boolean;
+  scheduledThuAm?: boolean;
+  scheduledThuPm?: boolean;
 }

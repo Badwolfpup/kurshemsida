@@ -1,0 +1,55 @@
+.date-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.coach-attendance-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.coach-table {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+}
+
+.coach-table table {
+    flex: 0 1 auto;
+}
+
+.coach-table .attendence-table th:nth-child(5),
+.coach-table .attendence-table td:nth-child(5) {
+    border-right: 1px solid #000;
+}
+
+.scheduled-days-section h2 {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.scheduled-days-section .attendence-table {
+    margin-bottom: 20px;
+}
+
+.scheduled-days-section .header-info {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.scheduled-days-section .header-info h2 {
+    margin: 0;
+}
+
+.scheduled-days-section .header-info span {
+    font-size: 0.9rem;
+    font-family: Arial, sans-serif;
+    color: #616161;
+    font-style: italic !important;
+    transform: translateY(-1px);
+}

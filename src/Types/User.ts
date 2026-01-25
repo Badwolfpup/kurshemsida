@@ -8,4 +8,12 @@ export default interface UserType {
   course: number | null;
   coachId: number | null;
   contactId: number | null;
+  scheduledMonAm: boolean;
+  scheduledMonPm: boolean;
+  scheduledTueAm: boolean;
+  scheduledTuePm: boolean;
+  scheduledWedAm: boolean;
+  scheduledWedPm: boolean;
+  scheduledThuAm: boolean;
+  scheduledThuPm: boolean;
 }

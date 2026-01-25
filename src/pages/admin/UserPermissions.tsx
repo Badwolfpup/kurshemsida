@@ -1,37 +1,18 @@
 
 import React, { useState, useEffect} from 'react';
 import { useLocation } from 'react-router-dom';
-import getPermissions from '../../data/FetchPermissions';
 import '../../styles/button.css';
 import '../../styles/spinner.css';
 import './UserPermissions.css';
 import Toast from '../../utils/toastMessage';
 import { useUser } from '../../context/UserContext';
+import type UserType from '../../Types/User';
+import type ProjectType from '../../Types/ProjectType';
+// import type ExerciseType from '../../Types/ExerciseType';
+import { useUsers, useUpdateUser } from '../../hooks/useUsers';
+import { useProjects } from '../../hooks/useProjects';
+// import { useExercises } from '../../hooks/useExercises';
 
-
-interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  authLevel: number;  // Role as number
-  isActive: boolean;
-  course?: number;
-  coachId?: number | null;
-}
-
-interface Permissions {
-  userId: number;
-  html: boolean;
-  css: boolean;
-  javascript: boolean;
-  variable: boolean;
-  conditionals: boolean;
-  loops: boolean;
-  functions: boolean;
-  arrays: boolean;
-  objects: boolean;
-}
 
 interface JavaScriptModule {
   id: string;
@@ -42,40 +23,21 @@ interface JavaScriptModule {
   clues: boolean;
 }
 
-interface Project {
-  id: number;
-  name: string;
-  description: string;
-  difficulty: number;
-  tags: string[];
-  typeofproject: string;
-}
-
-const defaultPermissions: Permissions = {
-  userId: 0,
-  html: false,
-  css: false,
-  javascript: false,
-  variable: false,
-  conditionals: false,
-  loops: false,
-  functions: false,
-  arrays: false,
-  objects: false
-};
-
 const UserPermissions: React.FC = () => {
-  const [activeUsers, setActiveUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [userPermissions, setUserPermissions] = useState<Permissions>(defaultPermissions);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  // const [activeUsers, setActiveUsers] = useState<User[]>([]);
+  // const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
+  // const [userPermissions, setUserPermissions] = useState<Permissions>(defaultPermissions);
+
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isStudent, setIsStudent] = useState(true);
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [selectedCoach, setSelectedCoach] = useState<string>("");
-  const [allProjects, setAllProjects] = useState<Project[]>([]);
+  const { data: projects = [] as ProjectType[]} = useProjects();
+  // const { data: exercises = [] as ExerciseType[]} = useExercises();
+  const { data: users = [] as UserType[], refetch, isRefetching, isLoading, isError, error } = useUsers();
+  const updateUserMutation = useUpdateUser();
+
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({
     html: false,
     css: false,
@@ -113,164 +75,28 @@ const UserPermissions: React.FC = () => {
   const { userType } = useUser();
   const location = useLocation();
 
-  useEffect(() => {
-    const initialize = async () => {
-      await fetchUsers();
-      await fetchProjects();
-      setSelectedRole("4");
-    };
-    initialize();
-  }, []);
-
   // Handle passed user from navigation
   useEffect(() => {
     const passedUser = location.state?.selectedUser;
     if (passedUser) {
+      setSelectedRole(passedUser.authLevel.toString());
       setSelectedUser(passedUser);
       setIsStudent(passedUser.authLevel === 4);
-      fetchPermissions(passedUser.email);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
 
-  const fetchPermissions = async (email: string) => {
-    if (!email) {
-      setUserPermissions(defaultPermissions);
-      return;
-    }
-    try {
-      const data: Permissions = await getPermissions(email) as Permissions;
-      if (!data) {
-        setUserPermissions(defaultPermissions);
-        return;
-      }
-      setUserPermissions(data);
-      console.log(`Email: ${email}`, data);
-    } catch (err) {
-      console.log(err instanceof Error ? err.message : 'An error occurred');
-    }
+
+  const handleUpdateUser = (user: UserType, update: boolean) => {
+      if (!selectedUser) return;
+
+      updateUserMutation.mutate(user, {
+        onSuccess: () => {
+          setToastMessage(`${update ? 'Användaren uppdaterad' : 'Schemat uppdaterat'}!`);
+          setTimeout(() => setToastMessage(null), 3000);
+        }
+      });
   }
-
-    const fetchUsers = async () => {
-      setLoading(true);
-      setError(null);
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('Ingen autentiseringstoken hittades. Vänligen logga in.');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch(`/api/fetch-users`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        let data = await response.json() as User[];
-        data.sort((a, b) => a.firstName.localeCompare(b.firstName));
-        setActiveUsers(data.filter(user => user.isActive));
-
-        const filtered = data.filter(user => user.isActive && user.authLevel === (selectedRole ? Number(selectedRole) : 4));
-        setFilteredUsers(filtered);
-
-        if (filtered.length > 0 && !selectedUser) {
-          setSelectedUser(filtered[0]);
-          setIsStudent(filtered[0].authLevel === 4);
-          fetchPermissions(filtered[0].email);
-        }
-      }
-      catch (err) {
-        setError('Kunde inte ladda användare. Försök igen senare.');
-      }
-      finally {
-        setLoading(false);
-      }
-    }
-
-    const updateUser = async (user: User | null)  => {
-      if (!user) return;
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('No authentication token found.');
-        return;
-      }
-      console.log(user);
-      try {
-        const updateData = {
-            id: user.id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            authLevel: user.authLevel,
-            isActive: user.isActive,
-            ...(user.course !== undefined && { course: user.course }),
-            ...(user.coachId !== undefined && { coachId: user.coachId })
-      };
-        console.log('Sending:', JSON.stringify(updateData));
-        const response = await fetch(`/api/update-user`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(updateData)
-        });
-        if (!response.ok) {
-          throw new Error(`Failed to ${(user.isActive ? "inactivate" : "activate")} user: ${response.status}`);
-        }
-        // Refetch users after status change
-        await fetchUsers();
-        setToastMessage(`Användare ${user.isActive ? 'inaktiverad' : 'aktiverad'} framgångsrikt!`);
-      } 
-      catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      }
-    };
-
-    const fetchProjects = async () => {
-      setError(null);
-      const token = localStorage.getItem('token');
-      if (!token) {
-          setError('Ingen autentiseringstoken hittades. Vänligen logga in.');
-          return;
-      }
-      try {
-          const response = await fetch('/api/fetch-projects'    , {
-          headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-          }
-          });
-          if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          const data = await response.json() as Project[];
-          data.sort((a, b) => a.difficulty - b.difficulty);
-          data.forEach(project => {
-            if (!project.tags) {
-              project.tags = [];
-            }
-            if (!project.hasOwnProperty('typeofproject') || project.typeofproject === null || project.typeofproject === undefined || project.typeofproject === "") {
-              project.typeofproject = "html";
-            }
-          if (project.tags.some(tag => tag.toLowerCase() === "javascript")) project.typeofproject = "javascript";
-          else if (project.tags.some(tag => tag.toLowerCase() === "css")) project.typeofproject = "css";
-          else project.typeofproject = "html";
-          });
-          setAllProjects(data);
-      }
-      catch (err) {
-          setError('Kunde inte ladda projekt. Försök igen senare.');
-          setAllProjects([]);
-      }
-
-    };
-
  
     // const checkboxChanged = async (e: React.ChangeEvent<HTMLInputElement>) => {
     //   const { id, checked } = e.target;
@@ -340,7 +166,7 @@ const UserPermissions: React.FC = () => {
       const newLocked = !allProjectsLocked;
       setAllProjectsLocked(newLocked);
       const newLocks: typeof projectLocks = {};
-      allProjects.forEach(p => {
+      projects.forEach(p => {
         newLocks[p.id] = { html: newLocked, css: newLocked, js: newLocked };
       });
       setProjectLocks(newLocks);
@@ -353,7 +179,7 @@ const UserPermissions: React.FC = () => {
       const newLocked = !htmlLocked;
       setHtmlLocked(newLocked);
       const newLocks = { ...projectLocks };
-      allProjects.forEach(p => {
+      projects.forEach(p => {
         newLocks[p.id] = { ...newLocks[p.id], html: newLocked };
       });
       setProjectLocks(newLocks);
@@ -363,7 +189,7 @@ const UserPermissions: React.FC = () => {
       const newLocked = !htmlCssLocked;
       setHtmlCssLocked(newLocked);
       const newLocks = { ...projectLocks };
-      allProjects.forEach(p => {
+      projects.forEach(p => {
         newLocks[p.id] = { ...newLocks[p.id], html: newLocked, css: newLocked };
       });
       setProjectLocks(newLocks);
@@ -373,14 +199,17 @@ const UserPermissions: React.FC = () => {
       const newLocked = !htmlCssJsLocked;
       setHtmlCssJsLocked(newLocked);
       const newLocks = { ...projectLocks };
-      allProjects.forEach(p => {
+      projects.forEach(p => {
         newLocks[p.id] = { ...newLocks[p.id], html: newLocked, css: newLocked, js: newLocked };
       });
       setProjectLocks(newLocks);
     };
 
+    const typeOfProject = (project: ProjectType): string => project.tags.includes("javascript") ? "javascript" : project.tags.includes("css") ? "css" : "html";
+    
+
     const renderProjectSection = (projectType: string, displayName: string) => {
-      const projectsOfType = allProjects.filter(p => p.typeofproject === projectType);
+      const projectsOfType = projects.filter(p => typeOfProject(p) === projectType);
       const isExpanded = expandedSections[projectType];
       // const allSelected = projectsOfType.length > 0 && projectsOfType.every(p => selectedProjects[p.id]);
 
@@ -450,7 +279,7 @@ const UserPermissions: React.FC = () => {
                         />
                       </div>
                       <div className="project-details">
-                        <div className="project-name">{project.name}</div>
+                        <div className="project-name">{project.title}</div>
                         <div className="project-description">{project.description}</div>
                         <div className="project-difficulty">
                           Svårighetsgrad: {'⭐'.repeat(project.difficulty)}
@@ -634,7 +463,7 @@ const UserPermissions: React.FC = () => {
               <select name='coachId' id="coachId" value={selectedUser?.coachId || selectedCoach} onChange={handleInputChange} className="coach-combobox">
                 <option value="">Välj coach (valfritt)</option>
                 {
-                  activeUsers.filter(user => user.authLevel === 3 && user.isActive).map((coach) => (
+                  users.filter(user => user.authLevel === 3 && user.isActive).map((coach) => (
                     <option key={coach.email} value={coach.id || ""}>
                       {`${coach.firstName} ${coach.lastName}`}
                     </option>
@@ -646,10 +475,9 @@ const UserPermissions: React.FC = () => {
     }
   
     const addCourseComboBox = (): React.ReactNode => {
-      console.log('Rendering course combobox');
         return (
           <div className="combobox-wrapper">
-            <select name='course' id="course" value={selectedUser?.course} onChange={handleInputChange} className="course-combobox">
+            <select name='course' id="course" value={selectedUser?.course || ""} onChange={handleInputChange} className="course-combobox">
               <option value="">Välj spår</option>
               <option value="1">Spår 1</option>
               <option value="2">Spår 2</option>
@@ -673,50 +501,65 @@ const UserPermissions: React.FC = () => {
         );
     }
 
+    const addTeacherComboBox = (): React.ReactNode => {
+        return (
+          <div className="combobox-wrapper">
+            <select name='teacherId' id="teacherId" className="coach-combobox">
+              <option value="">Välj lärare (valfritt)</option>
+              {users.length > 0 ? (
+                users.filter(user => user.authLevel <= 2 && user.isActive).map((teacher) => (
+                  <option key={teacher.email} value={teacher.id || ""}>
+                    {`${teacher.firstName} ${teacher.lastName}`}
+                  </option>
+                ))
+              ) : null}
+            </select>
+          </div>
+        );
+  }
+
     const userChanged = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const email = e.target.value;
-      const user = activeUsers.find(user => user.email === email) || null;
+      const id = e.target.value;
+      const user = users.find(user => user.id === parseInt(id)) || null;
       setIsStudent(user?.authLevel === 4);
-      fetchPermissions(email)
       setSelectedUser(user);
     }
 
   const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const role = e.target.value;
-    console.log(role);
-    const active = activeUsers.filter(user => user.authLevel === parseInt(role))
-    setFilteredUsers(active);
+    setSelectedRole(role);
+    const active = users.filter(user => user.authLevel === parseInt(role))
     if (active.length > 0) {
        setSelectedUser(active[0]);
        setIsStudent(active[0].authLevel === 4);
     }
   }
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value, type } = e.target;
-        let parsedValue: any = value;
-        if (name === 'coachId') {
-          setSelectedCoach(activeUsers.find(user => user.id === parseInt(value)) ? value : "");
-        }
-        if (type === 'number' || name === 'authLevel' || name === 'course' || name === 'coachId') {
-            parsedValue = value ? parseInt(value) : null;
-        }
-        console.log(value);
-        if (selectedUser !== null) setSelectedUser(selectedUser ? { ...selectedUser, [name]: parsedValue } : null);
-    };
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      const { name, value, type } = e.target;
+      let parsedValue: any = value;
+      if (name === 'coachId') {
+        setSelectedCoach(users.find(user => user.id === parseInt(value)) ? value : "");
+      }
+      if (type === 'number' || name === 'authLevel' || name === 'course' || name === 'coachId') {
+          parsedValue = value ? parseInt(value) : null;
+      }
+      if (selectedUser !== null) setSelectedUser(selectedUser ? { ...selectedUser, [name]: parsedValue } : null);
+  };
 
 
-  if (loading) return (
+
+  if (isLoading) return (
     <div className="loading-container">
       <div className="spinner"></div>
       <p>Laddar användare...</p>
     </div>
   );
 
-  if (error) return (
+  if (isError) return (
     <div className="error-container">
-      <p>{error}</p>
-      <button className="retry-button" onClick={fetchUsers}>Försök igen</button>
+      <p>{error.message}</p>
+      <button className="retry-button" onClick={() => {refetch()}} disabled={isRefetching}>{isRefetching ? 'Laddar...' : 'Försök igen'}</button>
     </div>
   );
 
@@ -731,31 +574,96 @@ const UserPermissions: React.FC = () => {
           <option value="3">Coach</option>
           <option value="4">Deltagare</option>
         </select>
-        <select id="user-dropdown" onChange={(e) => userChanged(e)}>
-          {filteredUsers.map(user => (
-            <option key={user.email} value={user.email}>
+        <select id="user-dropdown" value={selectedUser?.id || ""}  onChange={(e) => userChanged(e)}>
+          {users.filter(user => user.authLevel === parseInt(selectedRole)).map(user => (
+            <option key={user.email} value={user.id}>
               {user.firstName} {user.lastName}
             </option>
           ))}
         </select>
-        <button className='user-button' onClick={() => updateUser(selectedUser)}>Uppdatera</button>
+        <button className='user-button' onClick={() => selectedUser && handleUpdateUser(selectedUser, true)}>Uppdatera</button>
       </div>
-      {userPermissions.userId !== 0 && (
+      
         <div className='permissions-container'>
           <div>
             <div className="add-user-form">
               <div className="add-user-name-inputs">
-                <input type="text" name='firstName' id="firstName" placeholder="Förnamn"  required value={selectedUser?.firstName} onChange={handleInputChange}/>
-                <input type="text" name='lastName' id="lastName" placeholder="Efternamn" required value={selectedUser?.lastName} onChange={handleInputChange}/>
+                <div className='header-box-title'>
+                  <span>Förnamn</span>
+                  <input type="text" name='firstName' id="firstName" placeholder="Förnamn"  required value={selectedUser?.firstName} onChange={handleInputChange}/>
+                </div>
+                <div className='header-box-title'>
+                  <span>Efternamn</span>
+                  <input type="text" name='lastName' id="lastName" placeholder="Efternamn" required value={selectedUser?.lastName} onChange={handleInputChange}/>
+                </div>
+              <div className='header-box-title'>
+                <span>Email</span>
                 <input type="email" name='email' id="email" placeholder="Email" required value={selectedUser?.email} onChange={handleInputChange}/>
+              </div>  
+              <div className='header-box-title'>
+                <span>Roll</span>
                 {addRoleComboBox()}
-                {isStudent && addCourseComboBox()}
-                {isStudent && addCoachComboBox()}
               </div>
-              {/* <div className="add-user-buttons">
-                <button className='user-button' onClick={() => {addUser(getNewUserInputs()); setSelectedCoach(""); setSelectedRole("4"); setAddNewUserForm(false);}}>{btnText}</button>
-                <button className='user-button' onClick={() => {setAddNewUserForm(false); setSelectedCoach(""); setSelectedRole("4")}}>Avbryt</button>
-              </div> */}
+                {isStudent && (<div className='header-box-title'><span>Kurs</span> {addCourseComboBox()}</div>)}
+                {isStudent && (<div className='header-box-title'><span>Coach</span> {addCoachComboBox()}</div>)}
+                {isStudent && (<div className='header-box-title'><span>Kontakt</span> {addTeacherComboBox()}</div>)}
+              </div>
+              {selectedUser?.authLevel === 4 && <div>
+                <h2>Schemalagda dagar</h2>
+                <div className="attendence-table">
+                  <table>
+                    <thead>
+                      <tr>
+                          <th>Pass</th>
+                          <th>Måndag</th>
+                          <th>Tisdag</th>
+                          <th>Onsdag</th>
+                          <th>Torsdag</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Förmiddag</td>
+                        <td><button onClick={() => {
+                          if (!selectedUser) return;
+                          const updated = {...selectedUser, scheduledMonAm: !selectedUser.scheduledMonAm};
+                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (selectedUser?.scheduledMonAm ? " attended" : "")} ></button></td>
+                        <td><button onClick={() => {
+                          if (!selectedUser) return;
+                          const updated = {...selectedUser, scheduledTueAm: !selectedUser.scheduledTueAm};
+                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (selectedUser?.scheduledTueAm ? " attended" : "")} ></button></td>
+                        <td><button onClick={() => {
+                          if (!selectedUser) return;
+                          const updated = {...selectedUser, scheduledWedAm: !selectedUser.scheduledWedAm};
+                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (selectedUser?.scheduledWedAm ? " attended" : "")} ></button></td>
+                        <td><button onClick={() => {
+                          if (!selectedUser) return;
+                          const updated = {...selectedUser, scheduledThuAm: !selectedUser.scheduledThuAm};
+                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (selectedUser?.scheduledThuAm ? " attended" : "")} ></button></td>
+                      </tr>
+                      <tr>
+                        <td>Eftermiddag</td>
+                        <td><button onClick={() => {
+                          if (!selectedUser) return;
+                          const updated = {...selectedUser, scheduledMonPm: !selectedUser.scheduledMonPm};
+                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (selectedUser?.scheduledMonPm ? " attended" : "")} ></button></td>
+                        <td><button onClick={() => {
+                          if (!selectedUser) return;
+                          const updated = {...selectedUser, scheduledTuePm: !selectedUser.scheduledTuePm};
+                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (selectedUser?.scheduledTuePm ? " attended" : "")} ></button></td>
+                        <td><button onClick={() => {
+                          if (!selectedUser) return;
+                          const updated = {...selectedUser, scheduledWedPm: !selectedUser.scheduledWedPm};
+                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (selectedUser?.scheduledWedPm ? " attended" : "")} ></button></td>
+                        <td><button onClick={() => {
+                          if (!selectedUser) return;
+                          const updated = {...selectedUser, scheduledThuPm: !selectedUser.scheduledThuPm};
+                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (selectedUser?.scheduledThuPm ? " attended" : "")} ></button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>}
           </div>
           </div>
           <h3>Projekt</h3>
@@ -765,16 +673,14 @@ const UserPermissions: React.FC = () => {
             {renderProjectSection('javascript', 'JavaScript')}
           </div>
         </div>
-      )}
       <br/>
-      {userPermissions.userId !== 0 && (
-        <div className='permissions-container'>
-          <h3>JavaScript Moduler</h3>
-          <div className='courses-sections'>
-            {renderJavaScriptModulesSection()}
-          </div>
+      
+      <div className='permissions-container'>
+        <h3>JavaScript Moduler</h3>
+        <div className='courses-sections'>
+          {renderJavaScriptModulesSection()}
         </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -1,8 +1,8 @@
 
 **TODO**
-Ändra databasen till att 
+
+Ändra databasen till att hantera permissions
 Sida med länkar till resurser
-Tan Query
 Taggar funkar inte att lägga till i exercises (projects?)
 
 Fixa UI för deltagare att visa/filtrara övningar
@@ -15,3 +15,6 @@ VIKTIGT
 Passcode expiration - 15 min lockout efter 10 felaktiga försök
 Routa tillAboutCourse om token expired
 Back button på inloggningssidan
+Implementera Tan Query
+Lägga till schemalagda dagar för deltagare och i coachvy
+Visa månadsvis närvaro för coacher (och admin som val)

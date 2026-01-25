@@ -40,6 +40,20 @@
   outline: none;
 }
 
+.header-box-title {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 15px;
+}
+
+.header-box-title span {
+  font-weight: 600;
+  font-size: 18px;
+  color: #424242;
+  text-align: center;
+}
+
 .permissions-container {
   background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
   padding: 25px;

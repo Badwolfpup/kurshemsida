@@ -79,6 +79,24 @@ export const userService = {
         throw new Error(`Failed to delete user: ${response.status}`);
         }
         return true;
-    }   
+    },
+    updateActivity: async (userId: number): Promise<boolean> => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No authentication token found. Please log in.');
+        }
+        const response = await fetch(`/api/update-activity`, {
+            method: 'PUT',
+            headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId })
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to update user activity status: ${response.status}`);
+        }
+        return true;    
+    }, 
 
 }

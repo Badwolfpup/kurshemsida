@@ -82,7 +82,7 @@
   font-weight: 600;
   padding: 15px;
   text-align: center;
-  border-bottom: 2px solid #90caf9;
+  /* border-bottom: 2px solid #90caf9; */
 }
 
 .attendence-table td {

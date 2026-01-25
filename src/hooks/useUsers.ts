@@ -31,6 +31,18 @@ export function useUpdateUser() {
     });
 }
 
+export function useUpdateActivityStatus() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (userId: number) => userService.updateActivity(userId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['users'] });
+        },
+    });
+}
+
+
+
 export function useDeleteUser() {
     const queryClient = useQueryClient();
     return useMutation({

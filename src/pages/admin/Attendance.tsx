@@ -13,8 +13,8 @@ const Attendance: React.FC = () => {
 
   const [date, setDate] = useState<Date>(new Date());
   const { data: users = [] as UserType[], isLoading: isUsersLoading, isError: isUsersError, error: usersError, refetch: refetchUsers, isRefetching: isUsersRefetching } = useUsers();
-  const { data: attendance = [] as AttendanceType[], isLoading: isAttendanceLoading, isError: isAttendanceError, error: attendanceError, refetch: refetchAttendance, isRefetching: isAttendanceRefetching } = useAttendance(date);
-  const { data: week } = useGetWeek(date);
+  const { data: attendance = [] as AttendanceType[], isLoading: isAttendanceLoading, isError: isAttendanceError, error: attendanceError, refetch: refetchAttendance, isRefetching: isAttendanceRefetching } = useAttendance(date, 1);
+  const { data: week } = useGetWeek(date, 1);
   const updateAttendance = useUpdateAttendance();
 
 

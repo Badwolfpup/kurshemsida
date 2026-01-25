@@ -2,12 +2,12 @@ import type { UpdateAttendanceDto } from "../Types/Dto/AttendanceDto";
 import type AttendanceType from "../Types/Attendance";
 
 export const attendanceService = {
-    fetchAttendance: async (date: Date): Promise<AttendanceType[]> => {
+    fetchAttendance: async (date: Date, count: number): Promise<AttendanceType[]> => {
         const token = localStorage.getItem('token');
         if (!token) {
         throw new Error('Ingen autentiseringstoken hittades.');
         }
-        const response = await fetch(`/api/weekly-attendance/${date.toISOString()}`, {
+        const response = await fetch(`/api/weekly-attendance/${date.toISOString()}/${count}`, {
         headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -36,11 +36,11 @@ export const attendanceService = {
         }
         return true;
     },
-    getWeek: async (date: Date): Promise<string> => {
+    getWeek: async (date: Date, count: number): Promise<string> => {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('Ingen autentiseringstoken hittades.');
         
-        const response = await fetch(`/api/get-week/${date.toISOString()}`, {
+        const response = await fetch(`/api/get-week/${date.toISOString()}/${count}`, {
         headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'text/plain'

@@ -5,9 +5,9 @@ import '../../styles/button.css';
 import '../../styles/spinner.css';
 import { useUser } from '../../context/UserContext';
 import Toast from '../../utils/toastMessage';
-import { useUsers, useAddUser, useUpdateUser, useDeleteUser } from '../../hooks/useUsers';
+import { useUsers, useAddUser, useUpdateActivityStatus, useDeleteUser } from '../../hooks/useUsers';
 import type UserType from '../../Types/User';
-import type { AddUserDto, UpdateUserDto, DeleteUserDto } from '../../Types/Dto/UserDto';
+import type { AddUserDto, DeleteUserDto } from '../../Types/Dto/UserDto';
 
 
 
@@ -19,9 +19,9 @@ const ManageUsers: React.FC = () => {
   const [selectedRoleName, setSelectedRoleName] = useState<string>("deltagare");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const { data: users = [] as UserType[], isLoading, isError, error, refetch, isRefetching } = useUsers();
-  const addUser = useAddUser();
-  const updateUser = useUpdateUser();
-  const deleteUser = useDeleteUser();
+  const addUserMutation = useAddUser();
+  const updateActivityStatusMutation = useUpdateActivityStatus();
+  const deleteUserMutation = useDeleteUser();
 
 
   const handleEditUser = (user: UserType) => {
@@ -164,7 +164,7 @@ const ManageUsers: React.FC = () => {
 
   const handleDeleteUser = async (user: UserType) => {
     try {
-      await deleteUser.mutateAsync({ id: user.id, firstName: user.firstName, lastName: user.lastName } as DeleteUserDto);
+      await deleteUserMutation.mutateAsync({ id: user.id, firstName: user.firstName, lastName: user.lastName } as DeleteUserDto);
       setToastMessage('Användare raderad framgångsrikt!');
     } catch (err) {
       setToastMessage('Kunde inte radera användare. Försök igen senare.');
@@ -172,27 +172,19 @@ const ManageUsers: React.FC = () => {
     }
   }
 
-  const handleUpdateUser = async (user: UserType) => {
+  const handleUserActivityStatus = async (id: number) => {
     try {
-      await updateUser.mutate({ 
-      id: user.id, 
-      firstName: user.firstName, 
-      lastName: user.lastName, 
-      email: user.email, 
-      authLevel: user.authLevel, 
-      isActive: user.isActive, 
-      course: user.course, coachId: 
-      user.coachId } as UpdateUserDto);
-      setToastMessage(`Användare ${user.isActive ? 'aktiverad' : 'inaktiverad'} framgångsrikt!`);
+      await updateActivityStatusMutation.mutate(id);
+      setToastMessage(`Användarens aktivitet uppdaterad framgångsrikt!`);
     } catch (err) {
-      setToastMessage(`Kunde inte ${user.isActive ? 'aktivera' : 'inaktivera'} användare. Försök igen senare.`);
+      setToastMessage(`Kunde inte uppdatera användarens aktivitet. Försök igen senare.`);
       return;
     }
   }
    
   const handleAddUser = async () => {
     const newUserInputs = getNewUserInputs();
-    addUser.mutate(newUserInputs);
+    addUserMutation.mutate(newUserInputs);
   }
 
     if (isLoading) return (
@@ -270,7 +262,7 @@ const ManageUsers: React.FC = () => {
                   {selectedRole === "4" && <td>{getContactName(user.contactId)}</td>}
                   <td className='list-buttons'>
                     <button className="user-button" onClick={() => handleEditUser(user)}>✏️</button>
-                    <button className="user-button" onClick={() => {user.isActive = !user.isActive; handleUpdateUser(user)}}>Inaktivera</button>
+                    <button className="user-button" onClick={() => {user.isActive = !user.isActive; handleUserActivityStatus(user.id)}}>Inaktivera</button>
                   </td>
                 </tr>
               ))
@@ -308,7 +300,7 @@ const ManageUsers: React.FC = () => {
                   {selectedRole === "4" && <td>{getCoachName(user.coachId)}</td>}
                   {selectedRole === "4" && <td>{getContactName(user.contactId)}</td>}
                   <td className='list-buttons'>
-                    <button className="user-button" onClick={() => {user.isActive = !user.isActive; handleUpdateUser(user)}}>Aktivera</button>
+                    <button className="user-button" onClick={() => {user.isActive = !user.isActive; handleUserActivityStatus(user.id)}}>Aktivera</button>
                     <button className="delete-button" onClick={() => handleDeleteUser(user)}>✕</button>
                   </td>
                 </tr>
