@@ -3,6 +3,7 @@ export default interface UserType {
   firstName: string;
   lastName: string;
   email: string;
+  telephone: string | null;
   authLevel: number; 
   isActive: boolean;
   course: number | null;

@@ -11,7 +11,7 @@
 }
 
 .table-wrapper {
-  max-height: 33vh;
+  max-height: 66vh;
   overflow-y: auto;
   border-radius: 12px;
   box-shadow: var(--shadow-lg);
@@ -29,7 +29,12 @@
   box-shadow: var(--shadow-lg);
   background-color: var(--bg-surface);
   font-family: 'Roboto', sans-serif;
-  overflow: hidden;
+}
+
+.user-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .header-section {
@@ -139,8 +144,13 @@
   position: absolute;
   top: 10px;
   left: 10px;
+  right: 10px;
   display: flex;
   gap: 10px;
+}
+
+.filter-buttons > :last-child {
+  margin-left: auto;
 }
 
 .role-button {
@@ -162,10 +172,13 @@
 }
 
 .role-button-selected {
-  background: var(--btn-primary-bg);
-  color: var(--text-inverse);
+  background: var(--table-header-bg) !important;
+  /* color: var(--text-primary); */
+  color: black !important;
   outline: none;
   box-shadow: var(--shadow-md);
+  font-weight: 600;
+  border-bottom: 2px solid var(--border-table);
 }
 
 .list-buttons {
@@ -175,3 +188,4 @@
   margin-top: 10px;
   margin-right: 10px;
 }
+

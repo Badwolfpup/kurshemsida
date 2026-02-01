@@ -292,6 +292,48 @@
   color: var(--text-primary);
 }
 
+/* Language Selector */
+.language-selector {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 32px;
+  border: 2px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--bg-surface-alt);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.language-option:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+}
+
+.language-option.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.flag-icon {
+  width: 32px;
+  height: 24px;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.language-label {
+  font-size: 1.1em;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
 /* Current theme indicator */
 .current-theme-indicator {
   text-align: center;

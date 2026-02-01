@@ -7,6 +7,7 @@ import type UserType from "../Types/User";
 import type AttendanceType from "../Types/Attendance";
 import { useUsers, useUpdateUser } from "../hooks/useUsers";
 import { useAttendance, useGetWeek } from "../hooks/useAttendance";
+import { useNoClasses } from "../hooks/useNoClass";
 import Toast from "../utils/toastMessage";
 
 
@@ -18,16 +19,18 @@ const CoachAttendance: React.FC = () => {
     const [selectedUserId, setSelectedUserId] = useState<number>(0);
     const { data: users = [] as UserType[], isLoading: isUsersLoading, isError: isUsersError, error: usersError, refetch: refetchUsers, isFetching: isUsersFetching } = useUsers();
     const { data: attendance = [] as AttendanceType[], isLoading: isAttendanceLoading, isError: isAttendanceError, error: attendanceError, refetch: refetchAttendance, isRefetching: isAttendanceRefetching } = useAttendance(date, 2);
+    const { data: noClasses = [] as Date[], isLoading: isNoClassesLoading, isError: isNoClassesError, error: noClassesError, refetch: refetchNoClasses, isRefetching: isNoClassesRefetching } = useNoClasses();
     const updateUserMutation = useUpdateUser();
     const { data: week } = useGetWeek(date, 2);
 
-    const isLoading = isUsersLoading || isAttendanceLoading;
-    const isError = isUsersError || isAttendanceError;
-    const isFetching = isUsersFetching || isAttendanceRefetching;
+    const isLoading = isUsersLoading || isAttendanceLoading || isNoClassesLoading;
+    const isError = isUsersError || isAttendanceError || isNoClassesError;
+    const isFetching = isUsersFetching || isAttendanceRefetching || isNoClassesRefetching;
 
     const refetch = () => {
       if (isUsersError) refetchUsers();
       if (isAttendanceError) refetchAttendance();
+      if (isNoClassesError) refetchNoClasses();
     }
 
 
@@ -43,7 +46,9 @@ const CoachAttendance: React.FC = () => {
     }
 
 
-    const changeWeek = (change: boolean) => setDate(new Date(date.setDate(date.getDate() + (change ? 14 : -14))));
+    const changeWeek = (change: boolean) => {
+      setDate(new Date(date.setDate(date.getDate() + (change ? 14 : -14))));
+    }
 
 
     const getDate = (offset: number): Date => {
@@ -63,13 +68,23 @@ const CoachAttendance: React.FC = () => {
     }
 
 
-  const hasAttended = (user: UserType, date: Date): boolean => {
+  const styleAttendanceButtons = (user: UserType, date: Date): string => {
+    const isNoClass = noClasses.filter(d => compareDates(new Date(d), date)).length > 0;
+    if (isNoClass) return " noclass";
     const result = attendance.filter(x => x.userId === user.id).filter(dates => dates.date.some(d => compareDates(new Date(d), date))
     ).length > 0;
-    return result;
+    return result ? " attended" : "";
   };
 
   const dateFormatted = (date: Date): string => date.toLocaleDateString('sv-SE', {  day: 'numeric', month: 'short' });
+
+  const checkInitials = (user: UserType): string => {
+    const initials = users.filter(x => x.authLevel === 4 && x.coachId === userId && x.id !== user.id).map(u => u.firstName[0] + u.lastName[0]);
+    if (initials.includes(user.firstName[0] + user.lastName[0])) {
+      return `${user.firstName.slice(0,2)}.${user.lastName.slice(0,2)}`;
+    }
+    return `${user.firstName[0]}.${user.lastName[0]}`;
+  }
 
   return (
     <div>
@@ -80,7 +95,7 @@ const CoachAttendance: React.FC = () => {
         </div>
       ) : isError ? (
         <div className="error-container">
-          <p>{usersError?.message || attendanceError?.message}</p>
+          <p>{usersError?.message || attendanceError?.message || noClassesError?.message}</p>
           <button className="retry-button" onClick={() => {refetch()}} disabled={isFetching}>{isFetching ? 'Laddar...' : 'Försök igen'}</button>
         </div>
       ) : (
@@ -88,19 +103,26 @@ const CoachAttendance: React.FC = () => {
         {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
         <div className="coach-attendance-header">
             <h2>Närvarosida</h2>
-              <div className='navbar'>
-                  <select id="user-dropdown" value={selectedUserId} onChange={(e) => { setSelectedUserId(Number(e.target.value)); setSelectedUser(users.find(u => u.id === Number(e.target.value)) || null); }}>
-                      <option value="0">Alla deltagare</option>
-                      {users.filter(user => user.authLevel === 4 && user.coachId === userId).map(user => (
-                        <option key={user.id} value={user.id}>
-                          {user.firstName} {user.lastName}
-                      </option>
-                      ))}
-                  </select>
+              <div className="header-controls">
+                  <div className='navbar'>
+                      <select id="user-dropdown" value={selectedUserId} onChange={(e) => { setSelectedUserId(Number(e.target.value)); setSelectedUser(users.find(u => u.id === Number(e.target.value)) || null); }}>
+                          <option value="0">Alla deltagare</option>
+                          {users.filter(user => user.authLevel === 4 && user.coachId === userId).map(user => (
+                            <option key={user.id} value={user.id}>
+                              {checkInitials(user)}
+                          </option>
+                          ))}
+                      </select>
+                  </div>
+                  <div className="week-picker">
+                    <button className="prev-week-button" onClick={() => changeWeek(false)}>&lt;</button>
+                    <p className="week-select">{week}</p>
+                    <button className="next-week-button" onClick={() => changeWeek(true)}>&gt;</button>
+                  </div>
               </div>
               {selectedUserId !== 0 && 
               <div className="scheduled-days-section">
-                <div className="header-info"><h2>Schemalagda dagar</h2><span>- Du kan ändra själv</span></div>
+                <div className="header-info"><h2>Schemalagda dagar</h2><span>- Du kan ändra själv. Blå färg betyder att deltagaren är tänkt att delta den dagen.</span></div>
                 <div className="attendence-table">
                   <table>
                     <thead>
@@ -157,10 +179,20 @@ const CoachAttendance: React.FC = () => {
                 </div>
             </div>}
 
-            <div className="week-picker">
-                <button className="prev-week-button" onClick={() => changeWeek(false)}>&lt;</button>
-                <p className="week-select">{week}</p>
-                <button className="next-week-button" onClick={() => changeWeek(true)}>&gt;</button>
+
+            <div className="legend-container">
+              <div className="week-picker">
+                <button className="attended"></button>
+                <span>Närvaro</span>
+              </div>
+              <div className="week-picker">
+                <button className="absent"></button>
+                <span>Frånvaro</span>
+              </div>
+              <div className="week-picker">
+                <button className="noclass"></button>
+                <span>Ingen lektion</span>
+              </div>
             </div>
         </div>
         <div className="coach-table">
@@ -182,11 +214,11 @@ const CoachAttendance: React.FC = () => {
                   <tbody>
                     {users?.filter(x=> x.authLevel === 4 && x.coachId === userId && (selectedUserId !== 0 ? x.id === selectedUserId : true)).map((item, i) => (
                       <tr key={i}>
-                        <td>{item.firstName} {item.lastName}</td>
+                        <td>{checkInitials(item)}</td>
                         {Array.from({ length: 8 }).map((_ : any, index: any) =>
                           { return (
                           <td>
-                            <button key={index} className={'absent' + (hasAttended(item, getDate(index +1-7)) ? " attended" : "")} ></button>
+                            <button key={index} className={'absent' + styleAttendanceButtons(item, getDate(index +1-7))} ></button>
                           </td> );
                           })
                         }

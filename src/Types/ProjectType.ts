@@ -6,6 +6,6 @@ export default interface ProjectType {
   css: string;
   javascript: string;
   difficulty: number;
-  tags: string[];
   lightbulbs: boolean[];
+  projectType: string;
 }

@@ -2,54 +2,42 @@ import type { UpdateAttendanceDto } from "../Types/Dto/AttendanceDto";
 import type AttendanceType from "../Types/Attendance";
 
 export const attendanceService = {
+    
     fetchAttendance: async (date: Date, count: number): Promise<AttendanceType[]> => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-        throw new Error('Ingen autentiseringstoken hittades.');
-        }
         const response = await fetch(`/api/weekly-attendance/${date.toISOString()}/${count}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        },
-        method: 'GET'
+            credentials: 'include',
         });
-        if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        responseAction(response);
         return await response.json();
     },
     updateAttendance: async (attendance: UpdateAttendanceDto): Promise<boolean> => {
-        const token = localStorage.getItem('token');
-        if (!token) throw new Error('No authentication token found. Please log in.');
-
         const response = await fetch(`/api/update-attendance`, {
             method: 'PUT',
+            credentials: 'include',
             headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(attendance),
         });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        responseAction(response);
         return true;
     },
     getWeek: async (date: Date, count: number): Promise<string> => {
-        const token = localStorage.getItem('token');
-        if (!token) throw new Error('Ingen autentiseringstoken hittades.');
         
         const response = await fetch(`/api/get-week/${date.toISOString()}/${count}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'text/plain'
-        },
-        method: 'GET'
+            credentials: 'include',
         });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        responseAction(response);
         return (await response.text()).replaceAll('"', '');
+    }
+}
+
+const responseAction = (response: Response): void => {
+    if (response.status === 401) {
+        window.location.href = '/login';
+        throw new Error('Unauthorized. Redirecting to login.');
+    }
+    else if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
     }
 }

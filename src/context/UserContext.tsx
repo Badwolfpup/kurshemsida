@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
-import { jwtDecode } from 'jwt-decode';
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+
 
 
 type UserType = 'Admin' | 'Teacher' | 'Coach' | 'Student' | 'Guest' | null;
@@ -10,8 +10,8 @@ interface UserContextType {
   userType: UserType;
   userId: number | null;
   userEmail: string | null;
-  userTokenExpired: Date | null;
-  login: (type: string) => void;
+  isLoading: boolean;
+  login: () => void;
   logout: () => void;
 }
 
@@ -19,89 +19,52 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [userType, setUserType] = useState<UserType>(null);
   const [userId, setUserId] = useState<number | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [userTokenExpired, setUserTokenExpired] = useState<Date | null>(null);
-  const timeoutRef = useRef<number | null>(null);
 
-  // Function to clear any existing timeout
-  const clearExpirationTimeout = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-  };
-
-  // Function to set a new timeout for expiration
-  const setExpirationTimeout = (expiredDate: Date) => {
-    clearExpirationTimeout(); // Clear any existing
-    const now = new Date();
-    const delay = expiredDate.getTime() - now.getTime();
-    if (delay > 0) {
-      timeoutRef.current = setTimeout(() => {
-        logout(); // Or just update state: setUserTokenExpired(new Date()); to trigger effects
-      }, delay);
-    } else {
-      // Already expired, handle immediately
-      logout();
-    }
-  };
-
-
-  // Load from localStorage on mount
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const decoded: any = jwtDecode(token);
-        const role = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'regular';
-        if (role === 'Admin' || role === 'Teacher' || role === 'Coach' || role === 'Student' || role === 'Guest') {
-          setUserType(role);
-          setIsLoggedIn(true);
-          const expired = decoded['expired'] ? new Date(decoded['expired']) : null;
-          setUserTokenExpired(expired);
-          if (expired) {
-            setExpirationTimeout(expired); // Set timeout on load
-          }          
-          setUserEmail(decoded['sub'] || null);
-          setUserId(decoded['id'] ? Number(decoded['id']) : null);
-        }
-      } catch (error) {
-        console.error('Invalid token:', error);
-        logout();
-      }
-    }
-     return () => clearExpirationTimeout(); // Cleanup on unmount
-  }, []); // Empty dependency array ensures this runs only once
+    const checkLogin = async () =>  login().finally(() => setIsLoading(false)); 
+    checkLogin();
+  }, []); 
 
-  const login = (token: string) => {
-    localStorage.setItem('token', token);
-    const decoded: any = jwtDecode(token);
-    const role = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-    setUserType(role);
-    setIsLoggedIn(true);
-    setUserEmail(decoded['sub'] || null);
-    setUserId(decoded['id'] ? Number(decoded['id']) : null);
-    const expired = decoded['expired'] ? new Date(decoded['expired']) : null;
-    setUserTokenExpired(expired);
-    if (expired) {
-      setExpirationTimeout(expired); // Set timeout on login
-    }  
+  const login = async () => {
+    try {
+      const response = await fetch('/api/me', { credentials: 'include' });
+      if (response.ok) {
+        const data = await response.json();
+        setUserId(Number(data.id));
+        setUserEmail(data.email);
+        setUserType(data.role);
+        setIsLoggedIn(true);
+      } else {
+        console.error('Not authenticated - response not OK');
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+
+
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
+  const logout = async () => {
     setIsLoggedIn(false);
     setUserType(null);
     setUserEmail(null);
     setUserId(null);
-    setUserTokenExpired(null);
-    clearExpirationTimeout();
+    try {
+        await fetch('/api/logout', {
+            method: 'POST',
+            credentials: 'include'
+        });
+    } catch (error) {
+        console.error('Logout failed:', error);
+    }
   };
 
   return (
-    <UserContext.Provider value={{ isLoggedIn, userType, userId, userEmail, userTokenExpired, login, logout }}>
+    <UserContext.Provider value={{ isLoggedIn, userType, userId, userEmail, isLoading, login, logout }}>
       {children}
     </UserContext.Provider>
   );

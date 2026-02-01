@@ -5,7 +5,8 @@ export default interface ExerciseType {
   javascript: string;
   expectedResult: string;
   difficulty: number;
-  tags: string[];
   clues: string[];
+  exerciseType: string;
   lightbulbs: boolean[];
+  goodToKnow: string;
 }

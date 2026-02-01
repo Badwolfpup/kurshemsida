@@ -3,7 +3,7 @@ import React, { useState, useEffect} from 'react';
 import { useLocation } from 'react-router-dom';
 import '../../styles/button.css';
 import '../../styles/spinner.css';
-import './UserPermissions.css';
+import './UserProfiles.css';
 import Toast from '../../utils/toastMessage';
 import { useUser } from '../../context/UserContext';
 import type UserType from '../../Types/User';
@@ -23,21 +23,19 @@ interface JavaScriptModule {
   clues: boolean;
 }
 
-const UserPermissions: React.FC = () => {
-  // const [activeUsers, setActiveUsers] = useState<User[]>([]);
-  // const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+const UserProfiles: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
-  // const [userPermissions, setUserPermissions] = useState<Permissions>(defaultPermissions);
-
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isStudent, setIsStudent] = useState(true);
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [selectedCoach, setSelectedCoach] = useState<string>("");
+  const [selectedTeacherId, setSelectedTeacherId] = useState<number | null>(null);
   const { data: projects = [] as ProjectType[]} = useProjects();
   // const { data: exercises = [] as ExerciseType[]} = useExercises();
   const { data: users = [] as UserType[], refetch, isRefetching, isLoading, isError, error } = useUsers();
   const updateUserMutation = useUpdateUser();
 
+  console.log(users);
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({
     html: false,
     css: false,
@@ -205,7 +203,7 @@ const UserPermissions: React.FC = () => {
       setProjectLocks(newLocks);
     };
 
-    const typeOfProject = (project: ProjectType): string => project.tags.includes("javascript") ? "javascript" : project.tags.includes("css") ? "css" : "html";
+    const typeOfProject = (project: ProjectType): string => project.projectType === "javascript" ? "javascript" : project.projectType === "css" ? "css" : "html";
     
 
     const renderProjectSection = (projectType: string, displayName: string) => {
@@ -504,11 +502,11 @@ const UserPermissions: React.FC = () => {
     const addTeacherComboBox = (): React.ReactNode => {
         return (
           <div className="combobox-wrapper">
-            <select name='teacherId' id="teacherId" className="coach-combobox">
-              <option value="">Välj lärare (valfritt)</option>
+            <select name='teacherId' id="teacherId" className="coach-combobox" onChange={(e) => handleInputChange(e)} value={selectedTeacherId || 0}>
+              <option value={0}>Välj lärare (valfritt)</option>
               {users.length > 0 ? (
                 users.filter(user => user.authLevel <= 2 && user.isActive).map((teacher) => (
-                  <option key={teacher.email} value={teacher.id || ""}>
+                  <option key={teacher.email} value={teacher.id || 0}>
                     {`${teacher.firstName} ${teacher.lastName}`}
                   </option>
                 ))
@@ -540,6 +538,10 @@ const UserPermissions: React.FC = () => {
       let parsedValue: any = value;
       if (name === 'coachId') {
         setSelectedCoach(users.find(user => user.id === parseInt(value)) ? value : "");
+      }
+      if (name === 'teacherId' || name === 'contactId') {
+        setSelectedTeacherId(value ? parseInt(value) : null);
+        if (selectedUser) selectedUser.contactId = value ? parseInt(value) : null;
       }
       if (type === 'number' || name === 'authLevel' || name === 'course' || name === 'coachId') {
           parsedValue = value ? parseInt(value) : null;
@@ -599,6 +601,10 @@ const UserPermissions: React.FC = () => {
               <div className='header-box-title'>
                 <span>Email</span>
                 <input type="email" name='email' id="email" placeholder="Email" required value={selectedUser?.email} onChange={handleInputChange}/>
+              </div> 
+              <div className='header-box-title'>
+                <span>Telefon</span>
+                <input type="tel" name='telephone' id="telephone" placeholder="Telefon (valfritt)" value={selectedUser?.telephone || ""} onChange={handleInputChange}/>
               </div>  
               <div className='header-box-title'>
                 <span>Roll</span>
@@ -685,4 +691,4 @@ const UserPermissions: React.FC = () => {
   );
 };
 
-export default UserPermissions;
+export default UserProfiles;

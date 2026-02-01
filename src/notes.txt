@@ -1,17 +1,42 @@
 
 **TODO**
+Asserts för övningar
+Swe/Eng
+    Gå igenom alla sidor och lägg till ternary för vilket språk som ska visas
 
+LATER
+UI - samma bredd oavsett innehåll.
+UI - Responsivt på olika upplösningar
 Ändra databasen till att hantera permissions
 Sida med länkar till resurser
-Taggar funkar inte att lägga till i exercises (projects?)
+Sortera efter kolumner
 
-Fixa UI för deltagare att visa/filtrara övningar
-Fixa Toast för alla db händelser
-VIKTIGT
 
 
 
 **FINISHED TASKS**
+30/1 - 2/2
+Implementera HttpCookie
+Kontakt sparas inte
+Dela upp uservy i aktiv o inaktiv
+Coachattendance, info om schema
+Enkel vecka → getWeek för adminattendance
+Scrolla om overflow när användare visas
+Tabellrubriker sticky
+“knapp” för att skifta filter
+Datum och veckodag på rubriken i attendance
+Guest-inlogg som inte kräver login
+Lagt till telefonnummer
+Check om initialer finns som dublett på coach, Fö.E → Fö.Ef
+Lägg till guest@guest.com som användare med fast lösenkod
+Markera dagar som icke-lektioner
+Tagit bort taggar från projekt och övningar. Typen är statisk utifrån kategori nu
+Lagt till Good to know avsnitt i övningar där man kan ge tips tex på alternativa lösningar eller annat info 
+Implementera Tan react i ick-admin sidor
+Fixa UI för deltagare att visa/filtrara övningar
+
+
+23/1 - 25/1 
 Passcode expiration - 15 min lockout efter 10 felaktiga försök
 Routa tillAboutCourse om token expired
 Back button på inloggningssidan

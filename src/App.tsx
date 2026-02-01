@@ -14,7 +14,7 @@ const queryClient = new QueryClient();
 
 
 const App: React.FC = () => {
-  const { isLoggedIn, logout: contextLogout, userType } = useUser();
+  const { isLoggedIn, isLoading, logout: contextLogout, userType } = useUser();
   const [isOpen, setIsOpen] = useState(true);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showAboutPage, setShowAboutPage] = useState(true);
@@ -22,14 +22,16 @@ const App: React.FC = () => {
 ;
 
   useEffect(() => {
+    if (isLoading) return; // Wait until loading is complete
     if (isLoggedIn) {
+      setShowAboutPage(false);
       if (!showAdmin) navigate('/projects');
       else navigate('/manageusers');
     }
     else if (!showAboutPage) navigate('/login');
- 
+
     else navigate('/');
-  }, [isLoggedIn, showAboutPage]);
+  }, [isLoggedIn, showAboutPage, isLoading]);
 
   const logout = () => {
     contextLogout();
@@ -47,19 +49,7 @@ const App: React.FC = () => {
     navigate('/projects'); // Navigate back to home or timeline
   };
 
-  // if (isLoggedIn && !showAboutPage) {
-  //   return (
-  //     <div className="app">
-  //       {showAdmin && userType === "Admin" ? (<AdminSidebar isOpen={isOpen} setIsOpen={setIsOpen} onBack={handleAdminBack} />) : (<Sidebar isOpen={isOpen} setIsOpen={setIsOpen} logout={logout} onAdminClick={handleAdminClick}/>)}
-  //       <MainContent setShowAboutPage={setShowAboutPage} />
-  //     </div>
-  //   );
-  // }
 
-  // if (showAboutPage) return <AboutCourse setShowAboutPage={setShowAboutPage} />;
- 
-
-  // return <Login setShowAboutPage={setShowAboutPage} />;
   return (
     <QueryClientProvider client={queryClient}>
       {isLoggedIn && !showAboutPage ? (

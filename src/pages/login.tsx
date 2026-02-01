@@ -7,10 +7,11 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ setShowAboutPage }) => {
-  const [inputValue, setInputValue] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [password, setPassword] = useState('');
-  const [email, setEmail] = useState('');
+  const [inputValue, setInputValue] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [password, setPassword] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
   const { login } = useUser();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,13 +29,17 @@ const Login: React.FC<LoginProps> = ({ setShowAboutPage }) => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      console.log(data);
       if (data > 0) {
         setEmail(inputValue);
         setPassword(data);
         setShowPassword(true);
       } else if (data === "Passcode sent to your email.") {
         setEmail(inputValue);
+        setShowPassword(true);
+      }
+      else if (data ==="guest") {
+        setEmail(inputValue);
+        setPassword("");
         setShowPassword(true);
       }
       else  {
@@ -45,7 +50,7 @@ const Login: React.FC<LoginProps> = ({ setShowAboutPage }) => {
       const response = await fetch('/api/passcode-validation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, passcode: password })
+        body: JSON.stringify({ email: email, passcode: password, rememberMe: rememberMe })
       });
       if (!response.ok) {
         const passcodeInput = document.getElementById("passcode-instructions");
@@ -61,11 +66,12 @@ const Login: React.FC<LoginProps> = ({ setShowAboutPage }) => {
         }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+      else login();
 
-      const data = await response.json();
+      // const data = await response.json();
 
-      if (data.token) login(data.token);
-      else alert("Ogiltig lösenkod. Försök igen.");
+      // if (data.token) login(data.token);
+      // else alert("Ogiltig lösenkod. Försök igen.");
     }
   }
 
@@ -83,6 +89,9 @@ const Login: React.FC<LoginProps> = ({ setShowAboutPage }) => {
           onChange={(e) => setInputValue(e.target.value)}
           required
         />
+        <div className='checkbox-container'>
+          <span>Kom ihåg mig</span><input type="checkbox" id="rememberMe" name="rememberMe" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+        </div>
       </div>
       )
   }
@@ -94,11 +103,14 @@ const Login: React.FC<LoginProps> = ({ setShowAboutPage }) => {
           <input
           type="password"
           className="login-input"
-          placeholder="Enter the pass"
+          placeholder="Ange lösenkod här"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+        <div className='checkbox-container'>
+          <span>Kom ihåg mig</span><input type="checkbox" name="rememberMe" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)}/>
+        </div>
       </div>
     )
   }

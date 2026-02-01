@@ -4,6 +4,13 @@
     align-items: center;
 }
 
+.header-controls {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    margin-top: 10px;
+}
+
 .coach-attendance-header {
     display: flex;
     flex-direction: column;
@@ -14,15 +21,34 @@
     display: flex;
     gap: 2rem;
     justify-content: center;
+    max-height: 50vh;
+    overflow-y: auto;
 }
 
 .coach-table table {
     flex: 0 1 auto;
 }
 
+.legend-container {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+.legend-container .week-picker {
+    flex: 1;
+    flex-wrap: nowrap;
+}
+
 .coach-table .attendence-table th:nth-child(5),
 .coach-table .attendence-table td:nth-child(5) {
     border-right: 1px solid #000;
+}
+
+.attendence-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .scheduled-days-section h2 {

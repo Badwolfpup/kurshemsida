@@ -4,8 +4,9 @@ export interface AddExerciseDto {
     javascript: string;
     expectedResult: string;
     difficulty: number;
-    tags?: string[];
     clues?: string[];
+    exerciseType: string;
+    goodToKnow: string;
 }
 
 export interface UpdateExerciseDto {
@@ -15,6 +16,7 @@ export interface UpdateExerciseDto {
     javascript?: string;
     expectedResult?: string;
     difficulty?: number;
-    tags?: string[];
     clues?: string[];
+    exerciseType?: string;
+    goodToKnow?: string;
 }

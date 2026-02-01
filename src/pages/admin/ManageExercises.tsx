@@ -1,32 +1,20 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Toast from "../../utils/toastMessage";
 import './ManageExercises.css';
 import '../../styles/spinner.css';
 import type { AddExerciseDto, UpdateExerciseDto } from "../../Types/Dto/ExerciseDto";
+import type ExerciseType from "../../Types/ExerciseType";
 import { useExercises, useAddExercise, useUpdateExercise, useDeleteExercise } from "../../hooks/useExercises";
 
-interface Exercise {
-    id: number;
-    title: string;
-    description: string;
-    javascript: string;
-    expectedResult: string;
-    tags: string[] | null;
-    difficulty: number;
-    lightbulbs: boolean[];
-    clues: string[];
-}
 
 
 const ManageExercises: React.FC = () => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
-    const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+    const [selectedExercise, setSelectedExercise] = useState<ExerciseType | null>(null);
     const [showEditor, setShowEditor] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [filterText, setFilterText] = useState<string>('');
-    const [showTagOverlay, setShowTagOverlay] = useState(false);
     const [title, setTitle] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [expectedResult, setExpectedResult] = useState<string>('');
@@ -34,17 +22,12 @@ const ManageExercises: React.FC = () => {
     const [iframeKey, setIframeKey] = useState(0);
 
     const [currentClue, setCurrentClue] = useState<string>('');
-    const { data: exercises = [] as Exercise[], isLoading, isError, error, refetch, isRefetching } = useExercises();
+    const { data: exercises = [] as ExerciseType[], isLoading, isError, error, refetch, isRefetching } = useExercises();
     const addExerciseMutation = useAddExercise();
     const updateExerciseMutation = useUpdateExercise();
     const deleteExerciseMutation = useDeleteExercise();
 
 
-    const computedAllTags = useMemo(() => {
-        const exerciseTags = exercises ? exercises.flatMap(x => x.tags || []) : [];
-        const selectedTags = selectedExercise ? selectedExercise.tags || [] : [];
-        return [...new Set([...exerciseTags, ...selectedTags])];  // Combine and dedupe
-    }, [exercises, selectedExercise]);
 
     useEffect(() => {
         if (selectedExercise !== null && iframeRef. current) {
@@ -137,6 +120,7 @@ const ManageExercises: React.FC = () => {
                 setShowEditor(false);
                 setToastMessage("Exercise saved successfully!");
                 setTimeout(() => setToastMessage(null), 3000);
+                resetFrames();
             }
         });       
         
@@ -234,10 +218,11 @@ const ManageExercises: React.FC = () => {
                 description: '',
                 javascript: '',
                 expectedResult: '',
-                tags: null,
                 difficulty: 1,
+                exerciseType: 'strings',
                 lightbulbs: [true, false, false, false, false],
-                clues: []
+                clues: [],
+                goodToKnow: ''
         })
         }
 
@@ -372,6 +357,19 @@ return (
                         </div>
                     )}
                 </div>
+                <div className="good-to-know-section">
+                    <div className="goodtoknow-display">
+                        <textarea
+                            rows={2}
+                            id="goodToKnowInput"
+                            value={selectedExercise?.goodToKnow || ''}
+                            onChange={(e) => {
+                                setSelectedExercise(prev => ({...prev!, goodToKnow: e.target.value}));
+                            }}
+                            placeholder='Bra att veta här'
+                        />
+                    </div>
+                </div>
                 <div className="javascript-section exercise-javascript-section">
                     <textarea rows={5} id="jsExerciseEditor" value={selectedExercise?.javascript || ''} 
                         onChange={(e) => {
@@ -380,76 +378,22 @@ return (
                         }} 
                     placeholder='JavaScript-kod här'>{javascript}</textarea>
                 </div>
-                <div className='tag-main-container'>
-                    <div className="tag-section">
-                        {showTagOverlay && (
-                            <div className="tag-overlay" onClick={() => setShowTagOverlay(false)}>  {/* Click outside to close */}
-                                <div className="tag-popup" onClick={(e) => e.stopPropagation()}>  {/* Prevent close on inner click */}
-                                    <div className="tag-input-container">
-                                        <input 
-                                            type="text" 
-                                            id="tagExerciseInput" 
-                                            placeholder="Lägg till eller filtrera taggar" 
-                                            autoFocus={true}
-                                            onChange={(e) => setFilterText(e.target.value)} 
-                                        />
-                                        <button 
-                                            className='user-button' 
-                                            onClick={() => {
-                                                const tagInput = document.getElementById('tagInput') as HTMLInputElement;
-                                                const newTag = tagInput.value.toLowerCase().trim();
-                                                if (newTag && selectedExercise && !selectedExercise.tags?.includes(newTag)) {
-                                                    setSelectedExercise({
-                                                        ...selectedExercise,
-                                                        tags: [...selectedExercise.tags ?? [], newTag]
-                                                    });
-                                                    // setAllTags(prev => [...new Set([...prev, newTag])]);
-                                                    const tagInputField = document.getElementById('tagInput') as HTMLInputElement;
-                                                    if (tagInputField) tagInputField.value = '';
-                                                    tagInputField.focus();
-                                                }
-                                            }}
-                                        >
-                                            Lägg till tagg
-                                        </button>
-                                    </div>
-                                    {computedAllTags.length > 0 && computedAllTags
-                                        .filter(tag => {
-                                            if (!filterText) return true;
-                                            return tag.toLowerCase().startsWith(filterText.toLowerCase());
-                                        })  // Filter based on input
-                                        .map((tag, i) => (
-                                            <span key={i} id={`tag-${i}`} className='project-tag' onContextMenu={(e) => e.preventDefault()} onClick={() => {
-                                                const newtag = document.getElementById(`tag-${i}`)?.innerText;
-                                                if (newtag && selectedExercise && !selectedExercise.tags?.includes(newtag)) {
-                                                    setSelectedExercise({
-                                                        ...selectedExercise,
-                                                        tags: [...selectedExercise.tags ?? [], newtag]
-                                                    });
-                                                    // setAllTags(prev => [...new Set([...prev, newtag])]);
-                                                }
-                                            }}>{tag}</span>                                             
-                                        ))}
-                                </div>
-                            </div>
-                        )}
-                        {selectedExercise?.tags?.map((tag, i) => (
-                            <span key={i} className="project-tag chosen-tags" onClick={() => setShowTagOverlay(true)} 
-                            onContextMenu={(e) => {
-                                console.log(selectedExercise.tags);
-                                e.preventDefault();  // Prevents right-click menu
-                                if (selectedExercise) {
-                                    setSelectedExercise({
-                                        ...selectedExercise,
-                                        tags: selectedExercise.tags?.filter(t => t !== tag ) || []
-                                    });
-                                }
-                            }}>{tag}</span>
-                        ))}
-                    </div>
-                    <button id="tagEditor" className='user-button' onClick={() => { console.log(computedAllTags);    setShowTagOverlay(true);}}>Lägg till tagg</button> 
-                </div>
                 <div className='difficulty-container'>
+                    <select className="project-selector" id="exerciseTypeSelector" value={selectedExercise?.exerciseType || 'strings'}
+                        onChange={(e) => {
+                            setSelectedExercise(prev => ({...prev!, exerciseType: e.target.value}));
+                        }}>
+                        <option value="strings">Strängar</option>
+                        <option value="numbers">Tal</option>
+                        <option value="conditionals">Villkorsatser</option>
+                        <option value="functions">Funktioner</option>
+                        <option value="loops">Loopar</option>
+                        <option value="arrays">Arrayer</option>
+                        <option value="objects">Objekt</option>
+                        <option value="dom">DOM</option>
+                        <option value="events">Events</option>
+                        <option value="api">Använda API</option>
+                    </select>
                     <div className='lightbulbs'>
                         {selectedExercise?.lightbulbs.map((lightbulb, i) => (
                             <span key={i} className={`difficulty ${lightbulb ? "high" : "low"}`} onClick={changeDifficulty(i)}>💡</span>

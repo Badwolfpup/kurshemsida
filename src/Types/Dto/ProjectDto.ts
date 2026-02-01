@@ -5,7 +5,7 @@ export interface AddProjectDto {
   css: string;
   javascript: string;
   difficulty: number;
-  tags: string[];
+  projectType: string;
 }
 
 export interface UpdateProjectDto {
@@ -16,6 +16,6 @@ export interface UpdateProjectDto {
     css?: string;
     javascript?: string;
     difficulty?: number;
-    tags?: string[];
+    projectType?: string;
 }
 

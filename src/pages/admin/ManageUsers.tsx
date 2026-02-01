@@ -14,7 +14,8 @@ import type { AddUserDto, DeleteUserDto } from '../../Types/Dto/UserDto';
 const ManageUsers: React.FC = () => {
   const navigate = useNavigate();
   const {userType} = useUser();
-  const [addNewUserForm, setAddNewUserForm] = useState(false);
+  const [showActiveUsers, setShowActiveUsers] = useState<boolean>(true);
+  const [addNewUserForm, setAddNewUserForm] = useState<boolean>(false);
   const [selectedRole, setSelectedRole] = useState<string>("4");
   const [selectedRoleName, setSelectedRoleName] = useState<string>("deltagare");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -25,7 +26,7 @@ const ManageUsers: React.FC = () => {
 
 
   const handleEditUser = (user: UserType) => {
-    navigate('/userpermissions', { state: { selectedUser: user } });
+    navigate('/userprofile', { state: { selectedUser: user } });
   };
 
   // const changeToAddedUserView = (role: number) => {
@@ -45,6 +46,7 @@ const ManageUsers: React.FC = () => {
     const firstNameInput = (document.querySelector('.add-user-name-inputs input[placeholder="Förnamn"]') as HTMLInputElement).value.trim();
     const lastNameInput = (document.querySelector('.add-user-name-inputs input[placeholder="Efternamn"]') as HTMLInputElement).value.trim();
     const emailInput = (document.querySelector('.add-user-name-inputs input[placeholder="Email"]') as HTMLInputElement).value.trim();
+    const telephoneInput = (document.querySelector('.add-user-name-inputs input[placeholder="Telefon (valfritt)"]') as HTMLInputElement).value.trim();
     const authLevelEl = (document.querySelector('.role-combobox') as HTMLSelectElement);
     const authLevelInput = authLevelEl ? parseInt(authLevelEl.value) : 4;
 
@@ -54,7 +56,7 @@ const ManageUsers: React.FC = () => {
     const courseInput = courseEl && courseEl.value ? parseInt(courseEl.value) : null;
     const teacherIdEl = document.querySelector('.teacher-combobox') as HTMLSelectElement;
     const contactIdInput = teacherIdEl && teacherIdEl.value ? parseInt(teacherIdEl.value) : null;
-    return { firstName: firstNameInput, lastName: lastNameInput, email: emailInput, authLevel: authLevelInput, coachId: coachIdInput,  course: courseInput, contactId: contactIdInput } as AddUserDto;
+    return { firstName: firstNameInput, lastName: lastNameInput, email: emailInput, telephone: telephoneInput, authLevel: authLevelInput, coachId: coachIdInput,  course: courseInput, contactId: contactIdInput } as AddUserDto;
   }
 
 
@@ -148,14 +150,11 @@ const ManageUsers: React.FC = () => {
     const prevBtnEl = document.querySelector('.role-button-selected') as HTMLButtonElement
     const btnEl = e.target as HTMLButtonElement
     if (prevBtnEl && prevBtnEl !== btnEl) {
-      prevBtnEl.classList.remove('role-button-selected');
-      prevBtnEl.classList.add('role-button');
-      btnEl.classList.remove('role-button');
-      btnEl.classList.add('role-button-selected'); 
+      prevBtnEl.classList.toggle('role-button-selected');
+      btnEl.classList.toggle('role-button-selected'); 
     }
     else if (!prevBtnEl) {
-      btnEl.classList.remove('role-button');
-      btnEl.classList.add('role-button-selected'); 
+      btnEl.classList.toggle('role-button-selected'); 
     }
     setSelectedRoleName(btnEl.textContent ? (btnEl.textContent === 'Coach' ? 'coacher' : btnEl.textContent.toLowerCase()) : "");
     setSelectedRole(role.toString());
@@ -210,8 +209,9 @@ const ManageUsers: React.FC = () => {
           {userType === "Admin" && <button id="teacher-button" className='role-button user-button' onClick={async (e) => {changeRole(e, 2)}}>Lärare</button>}
           <button id="coach-button" className='role-button user-button' onClick={async (e) => {changeRole(e, 3)}}>Coach</button>
           <button id="student-button" className='role-button-selected user-button' onClick={async (e) => {changeRole(e, 4)}}>Deltagare</button>
+          <button className='role-button' onClick={() => setShowActiveUsers(!showActiveUsers)}>Se {showActiveUsers ? "Inaktiva" : "Aktiva"}</button>
         </div>
-        <h2>{`Aktiva ${selectedRoleName}`}</h2>
+        <h2>{`${showActiveUsers ? "Aktiva" : "Inaktiva"} ${selectedRoleName}`}</h2>
         {addNewUserForm ? 
         (
           <div className="add-user-form">
@@ -219,6 +219,7 @@ const ManageUsers: React.FC = () => {
               <input type="text" name='firstName' id="firstName" placeholder="Förnamn"  required/>
               <input type="text" name='lastName' id="lastName" placeholder="Efternamn" required/>
               <input type="email" name='email' id="email" placeholder="Email" required/>
+              <input type="tel" name='telephone' id="telephone" placeholder="Telefon (valfritt)" />
               {addRoleComboBox()}
               {selectedRole === "4" && addCourseComboBox()}
               {selectedRole === "4" && addCoachComboBox()}
@@ -239,6 +240,7 @@ const ManageUsers: React.FC = () => {
             <tr>
               <th>Namn</th>
               <th>Email</th>
+              <th>Telefon</th>
               {selectedRole === "4" && <th>Kurs</th>}
               <th>Roll</th>
               {selectedRole === "4" && <th>Coach</th>}
@@ -246,62 +248,24 @@ const ManageUsers: React.FC = () => {
               <th>Åtgärd</th>
             </tr>
           </thead>
-          <tbody>
-            {users.length === 0 ? (
+          <tbody className='table-body'>
+            {users.filter(user => (showActiveUsers ? user.isActive : !user.isActive) && user.authLevel === parseInt(selectedRole)).length === 0 ? (
               <tr>
-                <td colSpan={8}>No active users found.</td>
+                <td colSpan={9}>Inga {showActiveUsers ? "aktiva" : "inaktiva"} användare hittades.</td>
               </tr>
             ) : (
-              users.filter(user => user.isActive && user.authLevel === parseInt(selectedRole)).map((user, index) => (
+              users.filter(user => (showActiveUsers ? user.isActive : !user.isActive) && user.authLevel === parseInt(selectedRole)).map((user, index) => (
                 <tr key={index}>
                         <td>{user.firstName} {user.lastName}</td>
                   <td>{user.email}</td>
+                  <td style={{ whiteSpace: 'nowrap' }}>{user.telephone || ""}</td>
                   {selectedRole === "4" && <td>{user.course}</td>}
                   <td>{getRole(user.authLevel)}</td>
                   {selectedRole === "4" && <td>{getCoachName(user.coachId)}</td>}
                   {selectedRole === "4" && <td>{getContactName(user.contactId)}</td>}
                   <td className='list-buttons'>
-                    <button className="user-button" onClick={() => handleEditUser(user)}>✏️</button>
-                    <button className="user-button" onClick={() => {user.isActive = !user.isActive; handleUserActivityStatus(user.id)}}>Inaktivera</button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-      <br /><br />
-      <h2>{`Inaktiva ${selectedRoleName}`}</h2>
-      <div className="table-wrapper">
-        <table className="user-table">
-          <thead>
-            <tr>
-              <th>Namn</th>
-              <th>Email</th>
-              {selectedRole === "4" && <th>Kurs</th>}
-              <th>Roll</th>
-              {selectedRole === "4" && <th>Coach</th>}
-              {selectedRole === "4" && <th>Kontakt</th>}  
-              <th>Åtgärd</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.filter(user => !user.isActive && user.authLevel === parseInt(selectedRole)).length === 0 ? (
-              <tr>
-                <td colSpan={8}>No inactive users found.</td>
-              </tr>
-            ) : (
-              users.filter(user => !user.isActive && user.authLevel === parseInt(selectedRole)).map((user, index) => (
-                <tr key={index}>
-                  <td>{user.firstName} {user.lastName}</td>
-                  <td>{user.email}</td>
-                  {selectedRole === "4" && <td>{user.course}</td>}
-                  <td>{getRole(user.authLevel)}</td>
-                  {selectedRole === "4" && <td>{getCoachName(user.coachId)}</td>}
-                  {selectedRole === "4" && <td>{getContactName(user.contactId)}</td>}
-                  <td className='list-buttons'>
-                    <button className="user-button" onClick={() => {user.isActive = !user.isActive; handleUserActivityStatus(user.id)}}>Aktivera</button>
-                    <button className="delete-button" onClick={() => handleDeleteUser(user)}>✕</button>
+                    <button className={`user-button ` + (showActiveUsers ? 'delete-button' : '')} onClick={() => showActiveUsers ? handleEditUser(user) : handleDeleteUser(user)}>{showActiveUsers ? "✏️" : "✕"}</button>
+                    <button className="user-button" onClick={() => {user.isActive = !user.isActive; handleUserActivityStatus(user.id)}}>{showActiveUsers ? "Inaktivera" : "Aktivera"}</button>
                   </td>
                 </tr>
               ))

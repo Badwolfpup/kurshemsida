@@ -17,7 +17,7 @@ import JsObjects from '../pages/courses/javascript/objects';
 import ManageUsers from '../pages/admin/ManageUsers';
 import Attendance from '../pages/admin/Attendance';
 import './MainContent.css';
-import UserPermissions from '../pages/admin/UserPermissions';
+import UserProfiles from '../pages/admin/UserProfiles';
 import MakePost from '../pages/admin/MakePost';
 import AdminSettings from '../pages/admin/AdminSettings';
 import CoachAttendance from '../pages/CoachAttendance';
@@ -52,7 +52,7 @@ const MainContent: React.FC<MainContentProps> = ({ setShowAboutPage }) => {
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/manageusers" element={<ManageUsers />} />
-        <Route path="/userpermissions" element={<UserPermissions />} />
+        <Route path="/userprofiles" element={<UserProfiles />} />
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/makepost" element={<MakePost />} />
         <Route path="/adminsettings" element={<AdminSettings />} />

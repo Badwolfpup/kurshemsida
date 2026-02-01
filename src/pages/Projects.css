@@ -1,3 +1,8 @@
+.previewer-frame {
+    width: 100%;
+    min-height: 200px;
+}
+
 .projects-header {
     background: var(--bg-header);
     color: var(--text-primary);
@@ -8,6 +13,7 @@
     box-shadow: var(--shadow-lg);
     border-radius: 12px;
     margin-bottom: 15px;
+    max-width: 70%;
     transition: var(--theme-transition);
 }
 
@@ -33,6 +39,10 @@
     flex-wrap: wrap;
     overflow-y: auto;
     transition: var(--theme-transition);
+}
+
+.spa-header-controls button {
+    margin-bottom: 10px;
 }
 
 .projects-header-controls label {
@@ -82,6 +92,8 @@
     gap: 20px;
     padding: 20px;
     justify-items: center;
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 .project-card {
@@ -91,8 +103,9 @@
     box-shadow: var(--shadow-lg);
     padding: 20px;
     cursor: pointer;
+    max-width: 75%;
     transition: all 0.3s ease, var(--theme-transition);
-    min-height: 200px;
+    min-height: 100px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
