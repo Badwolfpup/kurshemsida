@@ -3,13 +3,13 @@
     min-height: 200px;
 }
 
-.projects-header {
+.all-projects-container .projects-header {
     background: var(--bg-header);
     color: var(--text-primary);
     padding: 25px;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
     box-shadow: var(--shadow-lg);
     border-radius: 12px;
     margin-bottom: 15px;

@@ -1,5 +1,6 @@
 
 **TODO**
+Kontaktinfo om oss för coacher 
 Asserts för övningar
 Swe/Eng
     Gå igenom alla sidor och lägg till ternary för vilket språk som ska visas

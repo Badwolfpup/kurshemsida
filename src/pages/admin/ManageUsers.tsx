@@ -54,8 +54,9 @@ const ManageUsers: React.FC = () => {
     const coachIdInput = coachIdEl && coachIdEl.value ? parseInt(coachIdEl.value) : null;
     const courseEl = document.querySelector('.course-combobox') as HTMLSelectElement;
     const courseInput = courseEl && courseEl.value ? parseInt(courseEl.value) : null;
-    const teacherIdEl = document.querySelector('.teacher-combobox') as HTMLSelectElement;
-    const contactIdInput = teacherIdEl && teacherIdEl.value ? parseInt(teacherIdEl.value) : null;
+    const contactIdEl = document.querySelector('.contact-combobox') as HTMLSelectElement;
+    const contactIdInput = contactIdEl && contactIdEl.value ? parseInt(contactIdEl.value) : null;
+    console.log(contactIdInput);
     return { firstName: firstNameInput, lastName: lastNameInput, email: emailInput, telephone: telephoneInput, authLevel: authLevelInput, coachId: coachIdInput,  course: courseInput, contactId: contactIdInput } as AddUserDto;
   }
 
@@ -77,11 +78,11 @@ const ManageUsers: React.FC = () => {
         );
   }
 
-    const addTeacherComboBox = (): React.ReactNode => {
+    const addContactComboBox = (): React.ReactNode => {
         return (
           <div className="combobox-wrapper">
-            <select name='teacherId' id="teacherId" className="coach-combobox">
-              <option value="">Välj lärare (valfritt)</option>
+            <select name='contactId' id="contactId" className="contact-combobox coach-combobox">
+              <option value="">Välj kontakt (valfritt)</option>
               {users.length > 0 ? (
                 users.filter(user => user.authLevel <= 2 && user.isActive).map((teacher) => (
                   <option key={teacher.email} value={teacher.id || ""}>
@@ -223,7 +224,7 @@ const ManageUsers: React.FC = () => {
               {addRoleComboBox()}
               {selectedRole === "4" && addCourseComboBox()}
               {selectedRole === "4" && addCoachComboBox()}
-              {selectedRole === "4" && addTeacherComboBox()}
+              {selectedRole === "4" && addContactComboBox()}
             </div>
             <div className="add-user-buttons">
               <button className='user-button' onClick={() => {handleAddUser();  setSelectedRole("4"); setAddNewUserForm(false);}}>Lägg till</button>

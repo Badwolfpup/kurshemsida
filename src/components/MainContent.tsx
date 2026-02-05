@@ -52,7 +52,7 @@ const MainContent: React.FC<MainContentProps> = ({ setShowAboutPage }) => {
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/manageusers" element={<ManageUsers />} />
-        <Route path="/userprofiles" element={<UserProfiles />} />
+        <Route path="/userprofile" element={<UserProfiles />} />
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/makepost" element={<MakePost />} />
         <Route path="/adminsettings" element={<AdminSettings />} />

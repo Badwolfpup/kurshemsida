@@ -162,7 +162,8 @@ const Projects: React.FC = () => {
   return (<>
     {showAllprojects &&
       (<div className="all-projects-container" >
-          <header className="projects-header">  
+          <div className="projects-header">  
+              <h1>Projektbibliotek</h1>
               <div className="projects-header-controls"> 
                   <label>  
                       <input name='course-selector' type='radio' value='html' readOnly checked={course === 'html'} onChange={() => {   setCourse('html');}} /> HTML
@@ -183,7 +184,7 @@ const Projects: React.FC = () => {
                       ))}
                   </div>
               </div>
-          </header>
+          </div>
           <div className="projects-list">
               {projects.filter(x => course ? x.projectType === course && x.difficulty >= difficultyLevel : x.difficulty >= difficultyLevel).map((proj) =>  (
                   <div key={proj.id} className="project-card" onClick={() => { setSelectedProject(proj); setShowAllprojects(false); setSelectedProjectId(projects.findIndex(p => p.id === proj.id)); }}>

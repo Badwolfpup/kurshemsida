@@ -122,6 +122,7 @@ const Exercises: React.FC = () => {
     {showAllExercises &&
       (<div className="all-exercises-container" >
           <header className="exercises-header">
+                <h1>Övningsbibliotek</h1>
               <div className="exercises-header-controls">
                   <select id="exerciseSelect" value={course} onChange={(e) => { setCourse(e.target.value); setIframeKey(prev => prev + 1);}}>
                         <option value="">Alla Övningar</option>

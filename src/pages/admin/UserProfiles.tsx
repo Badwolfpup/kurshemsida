@@ -35,7 +35,6 @@ const UserProfiles: React.FC = () => {
   const { data: users = [] as UserType[], refetch, isRefetching, isLoading, isError, error } = useUsers();
   const updateUserMutation = useUpdateUser();
 
-  console.log(users);
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({
     html: false,
     css: false,

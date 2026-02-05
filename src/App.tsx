@@ -20,11 +20,12 @@ const App: React.FC = () => {
   const [showAboutPage, setShowAboutPage] = useState(true);
   const navigate = useNavigate();
 ;
-
   useEffect(() => {
     if (isLoading) return; // Wait until loading is complete
     if (isLoggedIn) {
       setShowAboutPage(false);
+  console.log(userType);
+
       if (!showAdmin) navigate('/projects');
       else navigate('/manageusers');
     }
@@ -54,7 +55,7 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       {isLoggedIn && !showAboutPage ? (
         <div className="app">
-          {showAdmin && userType === "Admin" ? (
+          {showAdmin && (userType === "Admin" || userType === "Teacher") ? (
             <AdminSidebar isOpen={isOpen} setIsOpen={setIsOpen} onBack={handleAdminBack} />
           ) : (
             <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} logout={logout} onAdminClick={handleAdminClick}/>

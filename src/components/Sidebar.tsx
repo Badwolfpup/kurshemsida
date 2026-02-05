@@ -138,7 +138,7 @@ useEffect(() => {
         <div className="menu-link">
           <Link to="/settings">Preferenser</Link>
         </div>
-        {userType === 'Admin' && (
+        {(userType === 'Admin' || userType === 'Teacher') && (
           <div className="menu-link">
             <a href="#" onClick={(e) => { e.preventDefault(); onAdminClick(); }}>Admin Panel</a>
           </div>
