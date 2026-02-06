@@ -2,6 +2,7 @@
 import React, { useState, useEffect} from 'react';
 import { useLocation } from 'react-router-dom';
 import '../../styles/button.css';
+import '../../styles/selects.css';
 import '../../styles/spinner.css';
 import './UserProfiles.css';
 import Toast from '../../utils/toastMessage';
@@ -29,10 +30,9 @@ const UserProfiles: React.FC = () => {
   const [isStudent, setIsStudent] = useState(true);
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [selectedCoach, setSelectedCoach] = useState<string>("");
-  const [selectedTeacherId, setSelectedTeacherId] = useState<number | null>(null);
   const { data: projects = [] as ProjectType[]} = useProjects();
   // const { data: exercises = [] as ExerciseType[]} = useExercises();
-  const { data: users = [] as UserType[], refetch, isRefetching, isLoading, isError, error } = useUsers();
+  const { data: users = [] as UserType[], refetch, isRefetching, isLoading, isError, error } = useUsers(1);
   const updateUserMutation = useUpdateUser();
 
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({
@@ -456,8 +456,7 @@ const UserProfiles: React.FC = () => {
     }
     const addCoachComboBox = (): React.ReactNode => {
           return (
-            <div className="combobox-wrapper">
-              <select name='coachId' id="coachId" value={selectedUser?.coachId || selectedCoach} onChange={handleInputChange} className="coach-combobox">
+              <select name='coachId' id="coachId" value={selectedUser?.coachId || selectedCoach} onChange={handleInputChange} className="standard-select">
                 <option value="">Välj coach (valfritt)</option>
                 {
                   users.filter(user => user.authLevel === 3 && user.isActive).map((coach) => (
@@ -467,51 +466,44 @@ const UserProfiles: React.FC = () => {
                   ))
                 }
               </select>
-            </div>
           );
     }
   
     const addCourseComboBox = (): React.ReactNode => {
         return (
-          <div className="combobox-wrapper">
-            <select name='course' id="course" value={selectedUser?.course || ""} onChange={handleInputChange} className="course-combobox">
-              <option value="">Välj spår</option>
+            <select name='course' id="course" value={selectedUser?.course || ""} onChange={handleInputChange} className="standard-select">
+              <option value="" disabled>Välj spår</option>
               <option value="1">Spår 1</option>
               <option value="2">Spår 2</option>
               <option value="3">Spår 3</option>
             </select>
-          </div>
         );
     }
     
     const addRoleComboBox = (): React.ReactNode => {
         return (
-          <div className="combobox-wrapper" >
-            <select name='authLevel' id="authLevel" className="role-combobox" required value={selectedUser?.authLevel || selectedRole} onChange={(e) => { handleInputChange(e); showStudentCombobox(e.target.value);}}>
+            <select name='authLevel' id="authLevel" className="standard-select" required value={selectedUser?.authLevel || selectedRole} onChange={(e) => { handleInputChange(e); showStudentCombobox(e.target.value);}}>
               <option value="" disabled>Välj roll</option>
               {userType === "Admin" ? <option value="1">Admin</option> : null}
               <option value="2">Lärare</option>
               <option value="3">Coach</option>
               <option value="4">Deltagare</option>
             </select>
-          </div>
         );
     }
 
-    const addTeacherComboBox = (): React.ReactNode => {
+    const addContactComboBox = (): React.ReactNode => {
         return (
-          <div className="combobox-wrapper">
-            <select name='teacherId' id="teacherId" className="coach-combobox" onChange={(e) => handleInputChange(e)} value={selectedTeacherId || 0}>
+            <select name='contactId' id="contactId" className="standard-select"  onChange={(e) => handleInputChange(e)} value={selectedUser?.contactId || 0}>
               <option value={0}>Välj lärare (valfritt)</option>
               {users.length > 0 ? (
-                users.filter(user => user.authLevel <= 2 && user.isActive).map((teacher) => (
-                  <option key={teacher.email} value={teacher.id || 0}>
-                    {`${teacher.firstName} ${teacher.lastName}`}
+                users.filter(user => user.authLevel <= 2 && user.isActive).map((contact) => (
+                  <option key={contact.email} value={contact.id || 0}>
+                    {`${contact.firstName} ${contact.lastName}`}
                   </option>
                 ))
               ) : null}
             </select>
-          </div>
         );
   }
 
@@ -538,11 +530,11 @@ const UserProfiles: React.FC = () => {
       if (name === 'coachId') {
         setSelectedCoach(users.find(user => user.id === parseInt(value)) ? value : "");
       }
-      if (name === 'teacherId' || name === 'contactId') {
-        setSelectedTeacherId(value ? parseInt(value) : null);
-        if (selectedUser) selectedUser.contactId = value ? parseInt(value) : null;
-      }
-      if (type === 'number' || name === 'authLevel' || name === 'course' || name === 'coachId') {
+      // if (name === 'teacherId' || name === 'contactId') {
+      //   setSelectedTeacherId(value ? parseInt(value) : null);
+      //   if (selectedUser) selectedUser.contactId = value ? parseInt(value) : null;
+      // }
+      if (type === 'number' || name === 'authLevel' || name === 'course' || name === 'coachId' || name === 'contactId') {
           parsedValue = value ? parseInt(value) : null;
       }
       if (selectedUser !== null) setSelectedUser(selectedUser ? { ...selectedUser, [name]: parsedValue } : null);
@@ -566,57 +558,62 @@ const UserProfiles: React.FC = () => {
 
   return (
 
-    <div className='permission-main-container'>
+    <div className='page-main'>
       {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
-      <div className='navbar'>
-        <select name='authLevel' className="role-combobox" value={selectedRole} required onChange={(e) => handleRoleChange(e)}>
+      <div className='page-header-row-direction'>
+        <h2>Användarprofiler: </h2>
+        <select name='authLevel' className="standard-select" value={selectedRole} required onChange={(e) => handleRoleChange(e)}>
           {userType === "Admin" ? <option value="1">Admin</option> : null}
           <option value="2">Lärare</option>
           <option value="3">Coach</option>
           <option value="4">Deltagare</option>
         </select>
-        <select id="user-dropdown" value={selectedUser?.id || ""}  onChange={(e) => userChanged(e)}>
+        <select id="user-dropdown" className="standard-select" value={selectedUser?.id || ""}  onChange={(e) => userChanged(e)}>
           {users.filter(user => user.authLevel === parseInt(selectedRole)).map(user => (
             <option key={user.email} value={user.id}>
               {user.firstName} {user.lastName}
             </option>
           ))}
         </select>
-        <button className='user-button' onClick={() => selectedUser && handleUpdateUser(selectedUser, true)}>Uppdatera</button>
+        <button className='standard-btn right-aligned' onClick={() => selectedUser && handleUpdateUser(selectedUser, true)}>Uppdatera</button>
       </div>
       
-        <div className='permissions-container'>
+        <div className='page-content'>
           <div>
-            <div className="add-user-form">
-              <div className="add-user-name-inputs">
-                <div className='header-box-title'>
-                  <span>Förnamn</span>
-                  <input type="text" name='firstName' id="firstName" placeholder="Förnamn"  required value={selectedUser?.firstName} onChange={handleInputChange}/>
+            <div>
+              <div className="flex-wrap-horizontal">
+                <div className='flex-column-horizontal-wrap'>
+                  <span className='span-title-center'>Förnamn</span>
+                  <input className='standard-input' type="text" name='firstName' id="firstName" placeholder="Förnamn"  required value={selectedUser?.firstName} onChange={handleInputChange}/>
                 </div>
-                <div className='header-box-title'>
-                  <span>Efternamn</span>
-                  <input type="text" name='lastName' id="lastName" placeholder="Efternamn" required value={selectedUser?.lastName} onChange={handleInputChange}/>
+                <div className='flex-column-horizontal-wrap'>
+                  <span className='span-title-center'>Efternamn</span>
+                  <input className='standard-input' type="text" name='lastName' id="lastName" placeholder="Efternamn" required value={selectedUser?.lastName} onChange={handleInputChange}/>
                 </div>
-              <div className='header-box-title'>
-                <span>Email</span>
-                <input type="email" name='email' id="email" placeholder="Email" required value={selectedUser?.email} onChange={handleInputChange}/>
+              <div className='flex-column-horizontal-wrap'>
+                <span className='span-title-center'>Email</span>
+                <input className='standard-input' type="email" name='email' id="email" placeholder="Email" required value={selectedUser?.email} onChange={handleInputChange}/>
               </div> 
-              <div className='header-box-title'>
-                <span>Telefon</span>
-                <input type="tel" name='telephone' id="telephone" placeholder="Telefon (valfritt)" value={selectedUser?.telephone || ""} onChange={handleInputChange}/>
+              <div className='flex-column-horizontal-wrap'>
+                <span className='span-title-center'>Startdatum</span>
+                <input className='standard-input' type="date" name='startDate' id="startDate" placeholder="Startdatum" value={selectedUser?.startDate ? new Date(selectedUser.startDate).toISOString().split('T')[0] : ""} onChange={handleInputChange}/>
+              </div> 
+              <div className='flex-column-horizontal-wrap'>
+                <span className='span-title-center'>Telefon</span>
+                <input className='standard-input' type="tel" name='telephone' id="telephone" placeholder="Telefon (valfritt)" value={selectedUser?.telephone || ""} onChange={handleInputChange}/>
               </div>  
-              <div className='header-box-title'>
-                <span>Roll</span>
+              <div className='flex-column-horizontal-wrap'>
+                <span className='span-title-center'>Roll</span>
                 {addRoleComboBox()}
               </div>
-                {isStudent && (<div className='header-box-title'><span>Kurs</span> {addCourseComboBox()}</div>)}
-                {isStudent && (<div className='header-box-title'><span>Coach</span> {addCoachComboBox()}</div>)}
-                {isStudent && (<div className='header-box-title'><span>Kontakt</span> {addTeacherComboBox()}</div>)}
+                {isStudent && (<div className='flex-column-horizontal-wrap'><span className='span-title-center'>Kurs</span> {addCourseComboBox()}</div>)}
+                {isStudent && (<div className='flex-column-horizontal-wrap'><span className='span-title-center'>Coach</span> {addCoachComboBox()}</div>)}
+                {isStudent && (<div className='flex-column-horizontal-wrap'><span className='span-title-center'>Kontakt</span> {addContactComboBox()}</div>)}
               </div>
               {selectedUser?.authLevel === 4 && <div>
                 <h2>Schemalagda dagar</h2>
-                <div className="attendence-table">
-                  <table>
+                <div className="page-table-wrapper">
+                  <table className='page-table'>
                     <thead>
                       <tr>
                           <th>Pass</th>
@@ -632,38 +629,38 @@ const UserProfiles: React.FC = () => {
                         <td><button onClick={() => {
                           if (!selectedUser) return;
                           const updated = {...selectedUser, scheduledMonAm: !selectedUser.scheduledMonAm};
-                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (selectedUser?.scheduledMonAm ? " attended" : "")} ></button></td>
+                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent-btn' + (selectedUser?.scheduledMonAm ? " attended-btn" : "")} ></button></td>
                         <td><button onClick={() => {
                           if (!selectedUser) return;
                           const updated = {...selectedUser, scheduledTueAm: !selectedUser.scheduledTueAm};
-                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (selectedUser?.scheduledTueAm ? " attended" : "")} ></button></td>
+                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent-btn' + (selectedUser?.scheduledTueAm ? " attended-btn" : "")} ></button></td>
                         <td><button onClick={() => {
                           if (!selectedUser) return;
                           const updated = {...selectedUser, scheduledWedAm: !selectedUser.scheduledWedAm};
-                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (selectedUser?.scheduledWedAm ? " attended" : "")} ></button></td>
+                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent-btn' + (selectedUser?.scheduledWedAm ? " attended-btn" : "")} ></button></td>
                         <td><button onClick={() => {
                           if (!selectedUser) return;
                           const updated = {...selectedUser, scheduledThuAm: !selectedUser.scheduledThuAm};
-                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (selectedUser?.scheduledThuAm ? " attended" : "")} ></button></td>
+                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent-btn' + (selectedUser?.scheduledThuAm ? " attended-btn" : "")} ></button></td>
                       </tr>
                       <tr>
                         <td>Eftermiddag</td>
                         <td><button onClick={() => {
                           if (!selectedUser) return;
                           const updated = {...selectedUser, scheduledMonPm: !selectedUser.scheduledMonPm};
-                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (selectedUser?.scheduledMonPm ? " attended" : "")} ></button></td>
+                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent-btn' + (selectedUser?.scheduledMonPm ? " attended-btn" : "")} ></button></td>
                         <td><button onClick={() => {
                           if (!selectedUser) return;
                           const updated = {...selectedUser, scheduledTuePm: !selectedUser.scheduledTuePm};
-                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (selectedUser?.scheduledTuePm ? " attended" : "")} ></button></td>
+                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent-btn' + (selectedUser?.scheduledTuePm ? " attended-btn" : "")} ></button></td>
                         <td><button onClick={() => {
                           if (!selectedUser) return;
                           const updated = {...selectedUser, scheduledWedPm: !selectedUser.scheduledWedPm};
-                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (selectedUser?.scheduledWedPm ? " attended" : "")} ></button></td>
+                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent-btn' + (selectedUser?.scheduledWedPm ? " attended-btn" : "")} ></button></td>
                         <td><button onClick={() => {
                           if (!selectedUser) return;
                           const updated = {...selectedUser, scheduledThuPm: !selectedUser.scheduledThuPm};
-                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (selectedUser?.scheduledThuPm ? " attended" : "")} ></button></td>
+                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent-btn' + (selectedUser?.scheduledThuPm ? " attended-btn" : "")} ></button></td>
                       </tr>
                     </tbody>
                   </table>
@@ -677,7 +674,7 @@ const UserProfiles: React.FC = () => {
             {renderProjectSection('css', 'CSS')}
             {renderProjectSection('javascript', 'JavaScript')}
           </div>
-        </div>
+
       <br/>
       
       <div className='permissions-container'>
@@ -687,6 +684,7 @@ const UserProfiles: React.FC = () => {
         </div>
       </div>
     </div>
+        </div>
   );
 };
 

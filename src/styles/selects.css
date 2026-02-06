@@ -1,0 +1,29 @@
+.standard-select {
+  font-size: 1em;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--btn-primary-bg);
+  color: var(--text-inverse);
+  border: 1px solid var(--color-primary-dark);
+  font-weight: 500;
+  transition: all 0.3s ease, var(--theme-transition);
+  min-width: 150px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.standard-select:focus {
+    border-color: var(--color-primary-darker);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.standard-select option {
+    background-color: white;
+    color: black;
+}
+
+.standard-select option:checked {
+    background-color: #1976d2;
+    color: white;
+}

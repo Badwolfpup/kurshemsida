@@ -96,8 +96,8 @@
   box-shadow: 0 0 8px rgba(25, 118, 210, 0.2);
 }
 
-.user-button,
-.delete-button {
+.standard-btn,
+.delete-btn {
   /* Reuse from your existing button styles */
   background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
   color: white;
@@ -111,17 +111,17 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.user-button:hover {
+.standard-btn:hover {
   background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.delete-button {
+.delete-btn {
   background: linear-gradient(135deg, #e53935 0%, #d32f2f 100%);
 }
 
-.delete-button:hover {
+.delete-btn:hover {
   background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);

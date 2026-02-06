@@ -2,9 +2,9 @@ import type UserType from "../Types/User";
 import type { AddUserDto, UpdateUserDto, DeleteUserDto } from "../Types/Dto/UserDto";
 
 export const userService = {
-    fetchUsers: async (): Promise<UserType[]> => {
+    fetchUsers: async (isActive: number | 1): Promise<UserType[]> => {
 
-        const response = await fetch(`/api/fetch-users`, {
+        const response = await fetch(`/api/fetch-users/${isActive}`, {
             credentials: 'include',
         });
         responseAction(response);

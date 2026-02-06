@@ -136,13 +136,13 @@ const QuillEditor: React.FC<QuillEditorProps> = ({
     <div>
       <div ref={editorRef} style={{ height }} />
       <div className="draft-btns">
-        {<button className="user-button" onClick={saveDraft}>Spara utkast</button>}
-        {<button className="user-button" onClick={loadDraft}>Ladda utkast</button>}
-        <button className="user-button" onClick={publishOrUpdate ? publish : update}>{publishOrUpdate ? 'Publicera' : 'Uppdatera'}</button>
+        {<button className="standard-btn" onClick={saveDraft}>Spara utkast</button>}
+        {<button className="standard-btn" onClick={loadDraft}>Ladda utkast</button>}
+        <button className="standard-btn" onClick={publishOrUpdate ? publish : update}>{publishOrUpdate ? 'Publicera' : 'Uppdatera'}</button>
         <input type="date" id="post-date" name="post-date" />
-        <button className="delete-button" onClick={() => resetDate()}>✕</button>
+        <button className="delete-btn" onClick={() => resetDate()}>✕</button>
 
-        <button className="user-button" onClick={clear}>Rensa</button>
+        <button className="standard-btn" onClick={clear}>Rensa</button>
       </div>
     </div>
   );

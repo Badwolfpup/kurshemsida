@@ -45,7 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, logout, onAdminCli
   const [userPermissions, setUserPermissions] = useState<Permissions>(defaultPermissions);
   const { userType, userEmail } = useUser();
   const isStudent= userType === 'Student';
-  const isCoach= userType === 'Coach';
+  const isCoach= userType === 'Coach' || userType === 'Teacher' || userType === 'Admin';
 
 useEffect(() => {
   const fetchPermissions = async () => {
@@ -132,7 +132,7 @@ useEffect(() => {
         </div>
         {isCoach && (
           <div className="menu-link">
-            <Link to="/coach-narvaro">Närvaro</Link>
+            <Link to="/coach-narvaro">Deltagare</Link>
           </div>
         )}
         <div className="menu-link">
@@ -148,8 +148,7 @@ useEffect(() => {
         </div>
         <div className="sidebar-footer">
           <p>Webmaster: <a href='mailto:adam.folke@hudiksvall.se'>Adam Folke</a></p>
-          <p>Kommunens <a href='https://hudiksvall.se/Sidor/Kommun-och-politik/Om-personuppgifter.html' target='_blank' rel="noopener noreferrer">GDPR-policy</a></p>
-          <p>GDRP-ansvarig: <a href='mailto:adam.folke@hudiksvall.se'>Adam Folke</a></p>
+          <p>KomPRRP-ansvarig: <a href='mailto:adam.folke@hudiksvall.se'>Adam Folke</a></p>
         </div>
       </div>
     </div>

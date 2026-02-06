@@ -49,13 +49,6 @@ const Projects: React.FC = () => {
   };
 
 
-  const hideCodeblocks = (codeblock: string) => {
-    const block = document.getElementById(`${codeblock}CodeBlock`);
-    block?.classList.toggle('hide-codeblock');
-    const btn = document.getElementById(`layoutNo${codeblock.toUpperCase()}`);
-    btn?.classList.toggle('active');
-  };
-
 
   const renderContent = () => {
     if (selectedProject === null) {
@@ -67,9 +60,9 @@ const Projects: React.FC = () => {
     if (!showingSolution) {
       return (
         <div>
-          <div className='title-button'>
+          <div className='flex-horizontal'>
               <h2>{ex.title}</h2>
-              <button id="toggleView" type="button" disabled={selectedProject === null} onClick={toggleView}>{showingSolution ? 'Visa Färdig UI' : 'Visa Kodlösning'}</button>
+              <button id="toggleView" className='standard-btn' type="button" disabled={selectedProject === null} onClick={toggleView}>{showingSolution ? 'Visa Uppgift' : 'Visa Kodlösning'}</button>
           </div>
           <p>{ex.description}</p>
           <iframe ref={iframeRef} className="previewer-frame" title="Live Preview"></iframe>
@@ -79,43 +72,42 @@ const Projects: React.FC = () => {
       return (
         <div className={`solution-expanded ${codeLayout ? 'code-layout-columns' : 'code-layout-rows'}`}>
           <div className='solution-container' >
-              
             <div className='title-button'>
               <h2 style={{ marginBottom: 0 }}>{ex.title}</h2>
-              <button id="toggleView" type="button" disabled={selectedProject === null} onClick={toggleView}>{showingSolution ? 'Visa Färdig UI' : 'Visa Kodlösning'}</button>
+              <button id="toggleView" className='standard-btn' type="button" disabled={selectedProject === null} onClick={toggleView}>{showingSolution ? 'Visa Uppgift' : 'Visa Kodlösning'}</button>
             </div>
             <p>{ex.description}</p>
-            <div className="code-toggle">
+            <div className="flex-horizontal">
               <span>Visa:</span>
               <button
                 id="layoutColumns"
-                className={`${!codeLayout ? 'active' : ''}`}
-                title="Visa kod i rader"
+                className={`standard-btn${codeLayout ? ' selected-btn' : ''}`}
+                title="Visa kod på rad"
                 onClick={() => setCodeLayout(prev => !prev)}
               >Rader</button>
               <button
                 id="layoutRows"
-                className={`${codeLayout ? 'active' : ''}`}
-                title="Visa kod i kolumner"
+                className={`standard-btn${!codeLayout ? ' selected-btn' : ''}`}
+                title="Visa kod i en kolumn"
                 onClick={() => setCodeLayout(prev => !prev)}
               >Kolumner</button>
               <button
                 id="layoutNoHTML"
-                className='user-button hide-code-btns active'
+              className={`standard-btn${showHTML ? ' selected-btn' : ''}`}
                 title="Dölj/visa HTML-kod"
-                onClick={() => {setShowHTML(prev => !prev); hideCodeblocks('html')}}
+                onClick={() => {setShowHTML(prev => !prev);}}
               >HTML</button>
               <button
                 id="layoutNoCSS"
-                className='user-buttonactive'
+                className={`standard-btn${showCSS ? ' selected-btn' : ''}`}
                 title="Dölj/visa CSS-kod"
-                onClick={() => {setShowCSS(prev => !prev); hideCodeblocks('css')}}
+                onClick={() => {setShowCSS(prev => !prev);}}
               >CSS</button>
               <button
                 id="layoutNoJS"
-                className='user-buttonactive'
+                className={`standard-btn${showJS ? ' selected-btn' : ''}`}
                 title="Dölj/visa JavaScript-kod"
-                onClick={() => {setShowJS(prev => !prev); hideCodeblocks('js')}}
+                onClick={() => {setShowJS(prev => !prev);}}
               >JavaScript</button>
             </div>
           </div>
@@ -145,6 +137,16 @@ const Projects: React.FC = () => {
     }
   };
 
+  const resetSolutionsView = () => {
+    setShowingSolution(false);
+    setCodeLayout(true);
+    setShowAllprojects(true);
+    setDifficultyLevel(difficultyLevel + 1);
+    setShowHTML(true);
+    setShowCSS(false);
+    setShowJS(false);
+  };
+
   if (isLoading) return (
     <div className="loading-container">
       <div className="spinner"></div>
@@ -161,10 +163,9 @@ const Projects: React.FC = () => {
 
   return (<>
     {showAllprojects &&
-      (<div className="all-projects-container" >
-          <div className="projects-header">  
-              <h1>Projektbibliotek</h1>
-              <div className="projects-header-controls"> 
+      (<div className="page-main" >
+          <div className="page-header-row-direction">  
+              <h2>Välj projekt</h2>
                   <label>  
                       <input name='course-selector' type='radio' value='html' readOnly checked={course === 'html'} onChange={() => {   setCourse('html');}} /> HTML
                   </label>
@@ -174,7 +175,7 @@ const Projects: React.FC = () => {
                   <label>
                       <input name='course-selector' type='radio' value='javascript' readOnly checked={course === 'javascript'} onChange={() => {   setCourse('javascript');}} /> JavaScript
                   </label>
-                  <div className='no-margin-lightbulbs'>
+                  <div className='flex-horizontal-center'>
                       {difficultyFilter.map((lightbulb, i) => (
                           <span key={i} className={`difficulty ${lightbulb ? "high" : "low"}`} onClick={() => {
                               const newfilter = Array(5).fill(false).map((_, idx) => idx <= i);
@@ -183,14 +184,13 @@ const Projects: React.FC = () => {
                           }}>💡</span>
                       ))}
                   </div>
-              </div>
           </div>
-          <div className="projects-list">
+          <div className="page-content">
               {projects.filter(x => course ? x.projectType === course && x.difficulty >= difficultyLevel : x.difficulty >= difficultyLevel).map((proj) =>  (
-                  <div key={proj.id} className="project-card" onClick={() => { setSelectedProject(proj); setShowAllprojects(false); setSelectedProjectId(projects.findIndex(p => p.id === proj.id)); }}>
+                  <div key={proj.id} className="exercise-card" onClick={() => { setSelectedProject(proj); setShowAllprojects(false); setSelectedProjectId(projects.findIndex(p => p.id === proj.id)); }}>
                       <h2>{proj.title}</h2>
                       <p>{proj.description}</p>
-                      <div className="lightbulb-container">
+                      <div>
                           {Array.from({ length: proj.lightbulbs.reduce((a, b) => b ? a + 1 : a, 0) }).map((_, i) => (
                               <span key={i} className={'difficulty high'}>💡</span>
                           ))}
@@ -202,13 +202,12 @@ const Projects: React.FC = () => {
       </div>)
     }
       
-    {!showAllprojects && (<div>
-          <div className="spa-header-controls">
+    {!showAllprojects && (<div className='page-main'>
 
-            <button id="toggleView" type="button" className='user-button' disabled={selectedProject === null} onClick={() => setShowAllprojects(true)}>Gå tillbaka</button>
             
-          </div>
-        <main id="exerciseArea" className="spa-main">
+            
+        <main id="exerciseArea" className="page-content">
+          <button id="toggleView" type="button" className='standard-btn right-aligned' disabled={selectedProject === null} onClick={() => resetSolutionsView()}>Gå tillbaka</button>
           {renderContent()}
         </main>
       </div>)}

@@ -23,7 +23,7 @@
 }
 
 .sidebar.open {
-  width: 25vw;
+  width: 15vw;
   max-width: 400px;
   min-width: 100px;
 }
@@ -152,4 +152,12 @@
 
 .hamburger.open .line:nth-child(3) {
   transform: rotate(45deg) translate(-4px, -4px);
+}
+
+.sidebar .sidebar-footer {
+  display: none;
+}
+
+.sidebar.open .sidebar-footer {
+  display: block;
 }

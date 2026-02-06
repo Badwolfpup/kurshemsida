@@ -6,6 +6,7 @@ export default interface UserType {
   telephone: string | null;
   authLevel: number; 
   isActive: boolean;
+  startDate: Date | null;
   course: number | null;
   coachId: number | null;
   contactId: number | null;

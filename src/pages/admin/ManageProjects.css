@@ -1,6 +1,20 @@
 /* Import Roboto font */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap');
 
+.projects-content {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  height: 95%;
+}
+
+
+
+.projects-content .page-content {
+  width: calc(40vw - 2.5px) !important;
+  min-width: 0 !important;
+}
+
 /* Root container - matches .exercises-container, flex row for side-by-side */
 .manage-projects-container {
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -204,7 +218,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.delete-button {
+.delete-btn {
   background: linear-gradient(135deg, #e53935 0%, #d32f2f 100%) !important;  /* Override with !important */
   color: white !important;
   border: none !important;
@@ -216,24 +230,14 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
-.delete-button:hover {
+.delete-btn:hover {
   background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%) !important;
   transform: translateY(-2px) !important;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
 /* Preview container */
-.preview-container {
-  width: 35vw;
-  height: 98%;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  flex: 0 0 auto;
-  padding: 0;
-  overflow-y: auto;
-}
+
 
 .preview-container iframe {
   width: 100%;
@@ -287,7 +291,7 @@
     box-sizing: border-box;
 }
 
-.tag-input-container .user-button {
+.tag-input-container .standard-btn {
     height: 40px;
     padding: 10px 20px;
     cursor: pointer;
@@ -339,38 +343,12 @@
     flex-direction: row;
 }
 
-.tag-main-container .user-button {
+.tag-main-container .standard-btn {
     margin-left: 5px;
     height: 50px;
 }
 
-.difficulty {
-  font-size: 2em;  /* Size it up */
-  cursor: pointer;
-}
 
-.difficulty-container {
-  display: flex;
-  justify-content: center; 
-  align-items: center;  /* Vertically center */
-  gap: 10px;  /* Optional space */
-}
-
-.lightbulbs {
-  display: flex;
-  gap: 5px;
-  margin-left: 10px;
-  justify-content: center;  /* Center the bulbs */
-}
-
-.difficulty.low {
-  filter: grayscale(100%) opacity(0.5);  /* Grey and faded */
-}
-
-.difficulty.high {
-  color: red;  /* Or use filter for emoji tint */
-  filter: hue-rotate(0deg) saturate(2);  /* Enhance color if needed */
-}
 
 .image-container {
     width: 150px;

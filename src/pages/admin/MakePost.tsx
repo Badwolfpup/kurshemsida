@@ -78,13 +78,11 @@ const MakePost: React.FC = () => {
           <button className="retry-button" onClick={() => {refetch()}} disabled={isFetching}>{isFetching ? 'Laddar...' : 'Försök igen'}</button>
         </div>
       ) : (
-      <div  className='timeline-main'>
-        <div className='post-container'>
+      <div  className='page-main'>
+        <div className='page-header'>
             {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
-            <div className='post-content'>
               <h1>Skapa inlägg</h1>
-              <button className='user-button' onClick={() => setShowNewPostForm(!showNewPostForm)}>{showNewPostForm ? 'Dölj formulär' : 'Nytt inlägg'}</button>
-            </div>
+              <button className='standard-btn' onClick={() => setShowNewPostForm(!showNewPostForm)}>{showNewPostForm ? 'Dölj formulär' : 'Nytt inlägg'}</button>
             <div className={`new-post-form ${showNewPostForm ? '' : 'hidden'}`}>
               <QuillEditor
                 placeholder="Write your post here..."
@@ -94,32 +92,34 @@ const MakePost: React.FC = () => {
               />
             </div>
         </div>
-        {posts.map((post) => (
-          <div key={post.id} className="timeline-post-container">
-              {!editModes[post.id] && (
-              <div className={new Date(post.publishedAt) > new Date() ? 'unpublished' : ''}>
-                <div dangerouslySetInnerHTML={{ __html: post.html }}></div>
-                <p className='post-info'>{post.author} {new Date(post.publishedAt).toLocaleString()}</p>
-                <div className='admin-buttons'>
-                  <button className='edit-button' onClick={() => toggleEditMode(post.id.toString())}>Redigera</button>
-                  <button className='delete-button' onClick={() => deletePost.mutate(post.id)}>Radera</button>
-                </div>
-              </div>
-              )}
-              {editModes[post.id] && (
-                <div className="edit-form">
-                  <QuillEditor
-                    placeholder={"Uppdatera ditt inlägg här..."}
-                    height="400px"
-                    publishOrUpdate={false}
-                    delta={post.delta}
-                    onUpdate={(html, delta, date) => handleUpdatePost(post.id, html, delta, date)}
-                  />
-                  <button className='user-button cancel-edit' onClick={() => toggleEditMode(post.id.toString())}>Ångra</button>
+        <div className='page-content'>
+          {posts.map((post) => (
+            <div key={post.id} className="post-container">
+                {!editModes[post.id] && (
+                <div className={new Date(post.publishedAt) > new Date() ? 'unpublished' : ''}>
+                  <div dangerouslySetInnerHTML={{ __html: post.html }}></div>
+                  <p className='post-info'>{post.author} {new Date(post.publishedAt).toLocaleString()}</p>
+                  <div className='flex-horizontal-right-aligned'>
+                    <button className='edit-btn' onClick={() => toggleEditMode(post.id.toString())}>Redigera</button>
+                    <button className='delete-btn' onClick={() => deletePost.mutate(post.id)}>Radera</button>
+                  </div>
                 </div>
                 )}
-          </div>))
-        }
+                {editModes[post.id] && (
+                  <div className="edit-form">
+                    <QuillEditor
+                      placeholder={"Uppdatera ditt inlägg här..."}
+                      height="400px"
+                      publishOrUpdate={false}
+                      delta={post.delta}
+                      onUpdate={(html, delta, date) => handleUpdatePost(post.id, html, delta, date)}
+                    />
+                    <button className='standard-btn cancel-edit' onClick={() => toggleEditMode(post.id.toString())}>Ångra</button>
+                  </div>
+                  )}
+            </div>))
+          }
+        </div>
       </div>)}
     </div>
 );

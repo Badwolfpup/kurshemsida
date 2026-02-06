@@ -119,7 +119,7 @@ const Login: React.FC<LoginProps> = ({ setShowAboutPage }) => {
     <div className="login-container">
       <h1 className="login-banner">Välkommen till CUL programmeringskurs</h1>
       <form className="login-form" autoComplete='on' onSubmit={handleSubmit}>
-        <button type="button" className="back-to-main user-button" onClick={() =>setShowAboutPage(true)}></button>
+        <button type="button" className="back-to-main standard-btn" onClick={() =>setShowAboutPage(true)}></button>
         {showPassword ? showPasswordInput() : showEmail()}
         <button className="login-button" type="submit">Logga in</button>
       </form>

@@ -19,7 +19,8 @@ const ManageUsers: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<string>("4");
   const [selectedRoleName, setSelectedRoleName] = useState<string>("deltagare");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const { data: users = [] as UserType[], isLoading, isError, error, refetch, isRefetching } = useUsers();
+  const { data: users = [] as UserType[], isLoading, isError, error, refetch, isRefetching } = useUsers(1);
+  const { data: inactiveUsers = [] as UserType[], refetch: refetchInactiveUsers, isLoading: isInactiveUsersLoading, isError: isInactiveUsersError, error: inactiveUsersError, isRefetching: isInactiveUsersRefetching } = useUsers(0);
   const addUserMutation = useAddUser();
   const updateActivityStatusMutation = useUpdateActivityStatus();
   const deleteUserMutation = useDeleteUser();
@@ -29,18 +30,6 @@ const ManageUsers: React.FC = () => {
     navigate('/userprofile', { state: { selectedUser: user } });
   };
 
-  // const changeToAddedUserView = (role: number) => {
-  //   var authLevel = role === 2 ? "teacher" : role === 3 ? "coach" : "student";
-  //   var selectedBtn = document.querySelector('.role-button-selected') as HTMLButtonElement;
-  //   if (selectedBtn && !selectedBtn.id.includes(authLevel)) {
-  //     selectedBtn.classList.remove('role-button-selected');
-  //     selectedBtn.classList.add('role-button');
-  //     var newSelectedBtn = document.getElementById(`${authLevel}-button`) as HTMLButtonElement;
-  //     newSelectedBtn.classList.remove('role-button');
-  //     newSelectedBtn.classList.add('role-button-selected');
-
-  //   }
-  // }
 
   const getNewUserInputs = () => {
     const firstNameInput = (document.querySelector('.add-user-name-inputs input[placeholder="Förnamn"]') as HTMLInputElement).value.trim();
@@ -49,6 +38,8 @@ const ManageUsers: React.FC = () => {
     const telephoneInput = (document.querySelector('.add-user-name-inputs input[placeholder="Telefon (valfritt)"]') as HTMLInputElement).value.trim();
     const authLevelEl = (document.querySelector('.role-combobox') as HTMLSelectElement);
     const authLevelInput = authLevelEl ? parseInt(authLevelEl.value) : 4;
+    const startDateEl = (document.querySelector('.add-user-name-inputs input[placeholder="Startdatum"]') as HTMLInputElement);
+    const startDateInput = startDateEl && startDateEl.value ? new Date(startDateEl.value) : null;
 
     const coachIdEl = document.querySelector('.coach-combobox') as HTMLSelectElement;
     const coachIdInput = coachIdEl && coachIdEl.value ? parseInt(coachIdEl.value) : null;
@@ -56,15 +47,13 @@ const ManageUsers: React.FC = () => {
     const courseInput = courseEl && courseEl.value ? parseInt(courseEl.value) : null;
     const contactIdEl = document.querySelector('.contact-combobox') as HTMLSelectElement;
     const contactIdInput = contactIdEl && contactIdEl.value ? parseInt(contactIdEl.value) : null;
-    console.log(contactIdInput);
-    return { firstName: firstNameInput, lastName: lastNameInput, email: emailInput, telephone: telephoneInput, authLevel: authLevelInput, coachId: coachIdInput,  course: courseInput, contactId: contactIdInput } as AddUserDto;
+    return { firstName: firstNameInput, lastName: lastNameInput, email: emailInput, startDate: startDateInput, telephone: telephoneInput, authLevel: authLevelInput, coachId: coachIdInput,  course: courseInput, contactId: contactIdInput } as AddUserDto;
   }
 
 
   const addCoachComboBox = (): React.ReactNode => {
         return (
-          <div className="combobox-wrapper">
-            <select name='coachId' id="coachId" className="coach-combobox">
+            <select name='coachId' id="coachId" className="standard-select">
               <option value="">Välj coach (valfritt)</option>
               {users.length > 0 ? (
                 users.filter(user => user.authLevel === 3 && user.isActive).map((coach) => (
@@ -74,14 +63,12 @@ const ManageUsers: React.FC = () => {
                 ))
               ) : null}
             </select>
-          </div>
         );
   }
 
     const addContactComboBox = (): React.ReactNode => {
         return (
-          <div className="combobox-wrapper">
-            <select name='contactId' id="contactId" className="contact-combobox coach-combobox">
+          <select  name='contactId' id="contactId" className="standard-select">
               <option value="">Välj kontakt (valfritt)</option>
               {users.length > 0 ? (
                 users.filter(user => user.authLevel <= 2 && user.isActive).map((teacher) => (
@@ -91,34 +78,29 @@ const ManageUsers: React.FC = () => {
                 ))
               ) : null}
             </select>
-          </div>
         );
   }
 
     const addCourseComboBox = (): React.ReactNode => {
         return (
-          <div className="combobox-wrapper">
-            <select name='course' id="course" className="course-combobox">
+            <select name='course' id="course" className="standard-select">
               <option value="" disabled>Välj spår</option>
               <option value="1">Spår 1</option>
               <option value="2">Spår 2</option>
               <option value="3">Spår 3</option>
             </select>
-          </div>
         );
   }
 
     const addRoleComboBox = (): React.ReactNode => {
         return (
-          <div className="combobox-wrapper" >
-            <select name='authLevel' id="authLevel" className="role-combobox" required value={selectedRole} onChange={(e) => { setSelectedRole(e.target.value);}}>
+            <select name='authLevel' id="authLevel" className="standard-select" required value={selectedRole} onChange={(e) => { setSelectedRole(e.target.value);}}>
               <option value="" disabled>Välj roll</option>
               {userType === "Admin" ? <option value="1">Admin</option> : null}
               <option value="2">Lärare</option>
               <option value="3">Coach</option>
               <option value="4">Deltagare</option>
             </select>
-          </div>
         );
   }
 
@@ -148,14 +130,14 @@ const ManageUsers: React.FC = () => {
   }
 
   const changeRole = (e: React.MouseEvent<HTMLButtonElement>, role: number) => {
-    const prevBtnEl = document.querySelector('.role-button-selected') as HTMLButtonElement
+    const prevBtnEl = document.querySelector('.selected-btn') as HTMLButtonElement
     const btnEl = e.target as HTMLButtonElement
     if (prevBtnEl && prevBtnEl !== btnEl) {
-      prevBtnEl.classList.toggle('role-button-selected');
-      btnEl.classList.toggle('role-button-selected'); 
+      prevBtnEl.classList.toggle('selected-btn');
+      btnEl.classList.toggle('selected-btn'); 
     }
     else if (!prevBtnEl) {
-      btnEl.classList.toggle('role-button-selected'); 
+      btnEl.classList.toggle('selected-btn'); 
     }
     setSelectedRoleName(btnEl.textContent ? (btnEl.textContent === 'Coach' ? 'coacher' : btnEl.textContent.toLowerCase()) : "");
     setSelectedRole(role.toString());
@@ -166,8 +148,10 @@ const ManageUsers: React.FC = () => {
     try {
       await deleteUserMutation.mutateAsync({ id: user.id, firstName: user.firstName, lastName: user.lastName } as DeleteUserDto);
       setToastMessage('Användare raderad framgångsrikt!');
+      setTimeout(() => setToastMessage(null), 3000);
     } catch (err) {
       setToastMessage('Kunde inte radera användare. Försök igen senare.');
+      setTimeout(() => setToastMessage(null), 3000);
       return;
     }
   }
@@ -176,8 +160,10 @@ const ManageUsers: React.FC = () => {
     try {
       await updateActivityStatusMutation.mutate(id);
       setToastMessage(`Användarens aktivitet uppdaterad framgångsrikt!`);
+      setTimeout(() => setToastMessage(null), 3000);
     } catch (err) {
       setToastMessage(`Kunde inte uppdatera användarens aktivitet. Försök igen senare.`);
+      setTimeout(() => setToastMessage(null), 3000);
       return;
     }
   }
@@ -187,92 +173,98 @@ const ManageUsers: React.FC = () => {
     addUserMutation.mutate(newUserInputs);
   }
 
-    if (isLoading) return (
+    if (isLoading || isInactiveUsersLoading) return (
     <div className="loading-container">
       <div className="spinner"></div>
       <p>Laddar användare...</p>
     </div>
   );
 
-  if (isError) return (
+  if (isError || isInactiveUsersError) return (
     <div className="error-container">
-      <p>{error.message}</p>
-      <button className="retry-button" onClick={() => {refetch()}} disabled={isRefetching}>{isRefetching ? 'Laddar...' : 'Försök igen'}</button>
+      <p>{error?.message || inactiveUsersError?.message}</p>
+      <button className="retry-button" onClick={() => {refetch(); refetchInactiveUsers();}} disabled={isRefetching || isInactiveUsersRefetching}>{(isRefetching || isInactiveUsersRefetching) ? 'Laddar...' : 'Försök igen'}</button>
     </div>
   );
 
   return (
 
-    <div className="manage-users-container">
+    <div className="page-main" >
       {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
-      <div className="header-section">
+      <div className="page-header">
         <div className='filter-buttons'>
-          {userType === "Admin" && <button id="teacher-button" className='role-button user-button' onClick={async (e) => {changeRole(e, 2)}}>Lärare</button>}
-          <button id="coach-button" className='role-button user-button' onClick={async (e) => {changeRole(e, 3)}}>Coach</button>
-          <button id="student-button" className='role-button-selected user-button' onClick={async (e) => {changeRole(e, 4)}}>Deltagare</button>
-          <button className='role-button' onClick={() => setShowActiveUsers(!showActiveUsers)}>Se {showActiveUsers ? "Inaktiva" : "Aktiva"}</button>
+          {userType === "Admin" && <button id="admin-button" className='standard-btn' onClick={async (e) => {changeRole(e, 1)}}>Admin</button>}
+          {userType === "Admin" && <button id="teacher-button" className='standard-btn' onClick={async (e) => {changeRole(e, 2)}}>Lärare</button>}
+          <button id="coach-button" className='standard-btn' onClick={async (e) => {changeRole(e, 3)}}>Coach</button>
+          <button id="student-button" className='selected-btn standard-btn' onClick={async (e) => {changeRole(e, 4)}}>Deltagare</button>
+          <h2>{`${showActiveUsers ? "Aktiva" : "Inaktiva"} ${selectedRoleName}`}</h2>
+          <button className='greyed-btn ' onClick={() => {refetchInactiveUsers(); setShowActiveUsers(!showActiveUsers);}}>Se {showActiveUsers ? "Inaktiva" : "Aktiva"}</button>
         </div>
-        <h2>{`${showActiveUsers ? "Aktiva" : "Inaktiva"} ${selectedRoleName}`}</h2>
         {addNewUserForm ? 
         (
-          <div className="add-user-form">
-            <div className="add-user-name-inputs">
-              <input type="text" name='firstName' id="firstName" placeholder="Förnamn"  required/>
-              <input type="text" name='lastName' id="lastName" placeholder="Efternamn" required/>
-              <input type="email" name='email' id="email" placeholder="Email" required/>
-              <input type="tel" name='telephone' id="telephone" placeholder="Telefon (valfritt)" />
+          <div>
+            <div className="flex-wrap-horizontal-center add-margin-bottom">
+              <input className='standard-input' type="text" name='firstName' id="firstName" placeholder="Förnamn"  required/>
+              <input className='standard-input' type="text" name='lastName' id="lastName" placeholder="Efternamn" required/>
+              <input className='standard-input' type="email" name='email' id="email" placeholder="Email" required/>
+              <input className='standard-input' type="date" name='startDate' id="startDate" placeholder="Startdatum" />
+              <input className='standard-input' type="tel" name='telephone' id="telephone" placeholder="Telefon (valfritt)" />
               {addRoleComboBox()}
               {selectedRole === "4" && addCourseComboBox()}
               {selectedRole === "4" && addCoachComboBox()}
               {selectedRole === "4" && addContactComboBox()}
             </div>
-            <div className="add-user-buttons">
-              <button className='user-button' onClick={() => {handleAddUser();  setSelectedRole("4"); setAddNewUserForm(false);}}>Lägg till</button>
-              <button className='user-button' onClick={() => {setAddNewUserForm(false); setSelectedRole("4")}}>Avbryt</button>
+            <div className="flex-horizontal-center">
+              <button className='standard-btn' onClick={() => {handleAddUser();  setSelectedRole("4"); setAddNewUserForm(false);}}>Lägg till</button>
+              <button className='standard-btn' onClick={() => {setAddNewUserForm(false); setSelectedRole("4")}}>Avbryt</button>
             </div>
           </div>
         ) :
-          (<button className='user-button' onClick={ async () => setAddNewUserForm(true)}>Lägg till ny</button>)        
+          (<button className='standard-btn' onClick={ async () => setAddNewUserForm(true)}>Lägg till ny</button>)        
         }
       </div>
-      <div className="table-wrapper">
-        <table className="user-table">
-          <thead>
-            <tr>
-              <th>Namn</th>
-              <th>Email</th>
-              <th>Telefon</th>
-              {selectedRole === "4" && <th>Kurs</th>}
-              <th>Roll</th>
-              {selectedRole === "4" && <th>Coach</th>}
-              {selectedRole === "4" && <th>Kontakt</th>}
-              <th>Åtgärd</th>
-            </tr>
-          </thead>
-          <tbody className='table-body'>
-            {users.filter(user => (showActiveUsers ? user.isActive : !user.isActive) && user.authLevel === parseInt(selectedRole)).length === 0 ? (
+      <div className="page-content">
+        <div className='page-table-wrapper'>
+          <table className="page-table">
+            <thead>
               <tr>
-                <td colSpan={9}>Inga {showActiveUsers ? "aktiva" : "inaktiva"} användare hittades.</td>
+                <th>Namn</th>
+                <th>Email</th>
+                <th>Telefon</th>
+                <th>Startdatum</th>
+                {selectedRole === "4" && <th>Kurs</th>}
+                <th>Roll</th>
+                {selectedRole === "4" && <th>Coach</th>}
+                {selectedRole === "4" && <th>Kontakt</th>}
+                <th>Åtgärd</th>
               </tr>
-            ) : (
-              users.filter(user => (showActiveUsers ? user.isActive : !user.isActive) && user.authLevel === parseInt(selectedRole)).map((user, index) => (
-                <tr key={index}>
-                        <td>{user.firstName} {user.lastName}</td>
-                  <td>{user.email}</td>
-                  <td style={{ whiteSpace: 'nowrap' }}>{user.telephone || ""}</td>
-                  {selectedRole === "4" && <td>{user.course}</td>}
-                  <td>{getRole(user.authLevel)}</td>
-                  {selectedRole === "4" && <td>{getCoachName(user.coachId)}</td>}
-                  {selectedRole === "4" && <td>{getContactName(user.contactId)}</td>}
-                  <td className='list-buttons'>
-                    <button className={`user-button ` + (showActiveUsers ? 'delete-button' : '')} onClick={() => showActiveUsers ? handleEditUser(user) : handleDeleteUser(user)}>{showActiveUsers ? "✏️" : "✕"}</button>
-                    <button className="user-button" onClick={() => {user.isActive = !user.isActive; handleUserActivityStatus(user.id)}}>{showActiveUsers ? "Inaktivera" : "Aktivera"}</button>
-                  </td>
+            </thead>
+            <tbody>
+              {(showActiveUsers ? users : inactiveUsers).filter(user => user.authLevel === parseInt(selectedRole)).length === 0 ? (
+                <tr>
+                  <td colSpan={9}>Inga {showActiveUsers ? "aktiva" : "inaktiva"} användare hittades.</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                (showActiveUsers ? users : inactiveUsers).filter(user => user.authLevel === parseInt(selectedRole)).map((user, index) => (
+                  <tr key={index}>
+                          <td>{user.firstName} {user.lastName}</td>
+                    <td>{user.email}</td>
+                    <td style={{ whiteSpace: 'nowrap' }}>{user.telephone || ""}</td>
+                    {selectedRole === "4" && <td>{user.startDate ? new Date(user.startDate).toISOString().split('T')[0] : ""}</td>}
+                    {selectedRole === "4" && <td>{user.course}</td>}
+                    <td>{getRole(user.authLevel)}</td>
+                    {selectedRole === "4" && <td>{getCoachName(user.coachId)}</td>}
+                    {selectedRole === "4" && <td>{getContactName(user.contactId)}</td>}
+                    <td className='flex-horizontal-center'>
+                      <button className={`standard-btn ` + (!showActiveUsers ? 'delete-btn' : '')} onClick={() => showActiveUsers ? handleEditUser(user) : handleDeleteUser(user)}>{showActiveUsers ? "✏️" : "✕"}</button>
+                      <button className="standard-btn" onClick={() => {user.isActive = !user.isActive; handleUserActivityStatus(user.id)}}>{showActiveUsers ? "Inaktivera" : "Aktivera"}</button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

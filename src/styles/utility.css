@@ -1,0 +1,34 @@
+.right-aligned {
+  margin-left: auto;
+} 
+
+.add-margin-bottom-15 {
+  margin-bottom: 15px;
+}
+
+.width-150px {
+  width: 150px;
+}
+
+.difficulty {
+  font-size: 2em;  /* Size it up */
+  cursor: pointer;
+}
+
+.difficulty.low {
+  filter: grayscale(100%) opacity(0.5);  /* Grey and faded */
+}
+
+.difficulty.high {
+  color: red;  /* Or use filter for emoji tint */
+  filter: hue-rotate(0deg) saturate(2);  /* Enhance color if needed */
+}
+
+.no-margin-onY {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.bold {
+  font-weight: bold;
+}

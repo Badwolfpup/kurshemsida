@@ -30,12 +30,12 @@ const Settings: React.FC = () => {
   const { language, setLanguage } = useLanguage();
 
   return (
-    <div className="settings-container">
-      <div className="settings-header">
+    <div className="page-main">
+      <div className="page-header">
         <h1>Preferenser</h1>
       </div>
 
-      <div className="settings-content">
+      <div className="page-content">
         <div className="settings-section">
           <h2>Utseende (Skin)</h2>
           <p className="settings-description">

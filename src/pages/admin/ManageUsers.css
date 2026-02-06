@@ -1,151 +1,16 @@
-.manage-users-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  background: var(--bg-body);
-  height: 95%;
-  border-radius: 12px;
-  font-family: 'Roboto', sans-serif;
-  transition: var(--theme-transition);
-}
-
-.table-wrapper {
-  max-height: 66vh;
-  overflow-y: auto;
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg);
-  background: var(--bg-surface);
-  margin: 10px 0;
-  transition: var(--theme-transition);
-}
-
-.user-table {
-  width: auto;
-  min-width: 60%;
-  border: none;
-  border-collapse: collapse;
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg);
-  background-color: var(--bg-surface);
-  font-family: 'Roboto', sans-serif;
-}
-
-.user-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.header-section {
-  width: calc(100% - 40px);
-  position: relative;
-  text-align: center;
-  margin: 0 auto 20px auto;
-  background: var(--bg-card);
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg);
-  transition: var(--theme-transition);
-}
-
-.header-section h2 {
-  margin-top: 30px;
-}
-
-.add-new-user-btn {
-  position: absolute;
-  right: 5%;
-  top: 30%;
-}
-
-.add-user-name-inputs {
-  display: flex;
-  gap: 10px;
+.add-margin-bottom {
   margin-bottom: 15px;
-  flex-wrap: wrap;
-  justify-content: center;
 }
 
-.add-user-buttons {
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-  margin-top: 15px;
-}
 
-.add-user-name-inputs input,
-.coach-combobox,
-.course-combobox,
-.role-combobox {
-  padding: 12px;
-  border: 2px solid var(--border-default);
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: 'Roboto', sans-serif;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease, var(--theme-transition);
-  background-color: var(--bg-input);
-  color: var(--text-primary);
-}
-
-.add-user-name-inputs input:focus,
-.coach-combobox:focus,
-.course-combobox:focus,
-.role-combobox:focus {
-  border-color: var(--border-focus);
-  box-shadow: 0 0 8px rgba(25, 118, 210, 0.2);
-  outline: none;
-}
-
-.user-table th,
-.user-table td {
-  padding: 15px;
-  text-align: center;
-  border-bottom: 1px solid var(--border-default);
-  min-width: 150px;
-  width: auto;
-  color: var(--text-primary);
-}
-
-.user-table th:nth-child(3),
-.user-table td:nth-child(3) {
-  min-width: 50px;
-}
-
-.user-table th:nth-child(6),
-.user-table td:nth-child(6) {
-  width: auto;
-  min-width: 200px;
-}
-
-.user-table th {
-  background: var(--table-header-bg);
-  font-weight: 600;
-  color: var(--text-primary);
-  border-bottom: 2px solid var(--border-table);
-}
-
-.user-table tbody tr:nth-child(odd) {
-  background-color: var(--table-row-odd);
-}
-
-.user-table tbody tr:nth-child(even) {
-  background-color: var(--table-row-even);
-}
-
-.user-table tbody tr:hover {
-  background: var(--bg-hover);
-  transition: background-color 0.3s ease;
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
 
 .filter-buttons {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
+  position: relative;
   display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: left;
   gap: 10px;
 }
 
@@ -153,39 +18,12 @@
   margin-left: auto;
 }
 
-.role-button {
-  background: var(--bg-surface-alt);
-  color: var(--text-primary);
-  border: 1px solid var(--border-default);
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease, var(--theme-transition);
-  font-weight: 500;
-  box-shadow: var(--shadow-sm);
+.filter-buttons h2 {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
 }
 
-.role-button:hover {
-  background: var(--bg-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
 
-.role-button-selected {
-  background: var(--table-header-bg) !important;
-  /* color: var(--text-primary); */
-  color: black !important;
-  outline: none;
-  box-shadow: var(--shadow-md);
-  font-weight: 600;
-  border-bottom: 2px solid var(--border-table);
-}
-
-.list-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin-top: 10px;
-  margin-right: 10px;
-}
 

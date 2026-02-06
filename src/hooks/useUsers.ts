@@ -2,10 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userService } from '../api/UserService';
 import type { AddUserDto, DeleteUserDto, UpdateUserDto } from '../Types/Dto/UserDto';
 
-export function useUsers() {
+export function useUsers(isActive: number | 1) {
     return useQuery({
         queryKey: ['users'],
-        queryFn: userService.fetchUsers,
+        queryFn: () => userService.fetchUsers(isActive),
         staleTime: 5 * 60 * 1000, // 5 minutes
     })
 }

@@ -3,6 +3,7 @@ export interface AddUserDto {
   lastName: string;
   email: string;
   telephone?: string;
+  startDate?: Date | null;
   authLevel: number; 
   course?: number;
   coachId?: number;
@@ -22,6 +23,7 @@ export interface UpdateUserDto {
   email?: string;
   telephone?: string | null;
   authLevel?: number; 
+  startDate?: Date | null;
   isActive?: boolean ;
   course?: number | null;  
   coachId?: number | null;  

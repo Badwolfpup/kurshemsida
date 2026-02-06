@@ -1,21 +1,42 @@
 
 **TODO**
-Kontaktinfo om oss för coacher 
+AI-genererade frågor
+
 Asserts för övningar
-Swe/Eng
-    Gå igenom alla sidor och lägg till ternary för vilket språk som ska visas
+
 
 LATER
-UI - samma bredd oavsett innehåll.
 UI - Responsivt på olika upplösningar
 Ändra databasen till att hantera permissions
 Sida med länkar till resurser
 Sortera efter kolumner
-
+Ny färg om inte närvarande på schemalagd dag
+    lathund
+Swe/Eng
+    Gå igenom alla sidor och lägg till ternary för vilket språk som ska visas
 
 
 
 **FINISHED TASKS**
+5/2 - 8/2
+Göra om css till definierade styles för div som finns på olika sidor, istället för allt i lokal css
+Kontakt uppdateras när man byter användare
+Kontakt inte kopplad automatiskt till User, endast om man byter i dropdown
+Förtydliga vad tomt schema betyder
+Smidigt sätt för coacher att hitta vår kontaktinfo
+Visa coachvy som admin (lägg till || userType === “Admin)
+Sortera deltagarna på attendance så att de som kommer är överst
+Statistik till coacher
+    Antal närvaro dagar
+    Antal närvarade utifrån schema + %  utifrån schema
+    Senast närvarade dag
+Separerat inläsning av aktiva och inaktiva användare
+Statistik till oss/coacher
+    antal närvarande en viss dag
+    hur många som kommer i snitt på olika pass
+Coacher kan inte kolla närvaro på framtida veckor
+Implementerat Inskrivningdatum
+
 30/1 - 2/2
 Implementera HttpCookie
 Kontakt sparas inte

@@ -9,6 +9,18 @@ import MainContent from './components/MainContent';
 import AboutCourse from './pages/AboutContent/AboutCourse';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools/production';
+import './styles/containers.css';
+import './styles/tables.css';
+import './styles/button.css';
+import './styles/sidebar.css';
+import './styles/spinner.css';
+import './styles/flex-containers.css'
+import './styles/inputs.css';
+import './styles/selects.css';
+import './styles/textelements.css';
+import './styles/utility.css';
+import './styles/textareas.css';
+import './styles/exercise-items.css';
 
 const queryClient = new QueryClient();
 
@@ -24,7 +36,6 @@ const App: React.FC = () => {
     if (isLoading) return; // Wait until loading is complete
     if (isLoggedIn) {
       setShowAboutPage(false);
-  console.log(userType);
 
       if (!showAdmin) navigate('/projects');
       else navigate('/manageusers');

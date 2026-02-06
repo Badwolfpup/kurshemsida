@@ -67,7 +67,7 @@
   justify-content: flex-end;
 }
 
-.edit-button {
+.edit-btn {
   background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
   color: white;
   border: none;
@@ -79,13 +79,13 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.edit-button:hover {
+.edit-btn:hover {
   background: linear-gradient(135deg, #f57c00 0%, #e65100 100%);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.delete-button {
+.delete-btn {
   background: linear-gradient(135deg, #e53935 0%, #d32f2f 100%);
   color: white;
   border: none;
@@ -97,7 +97,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.delete-button:hover {
+.delete-btn:hover {
   background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);

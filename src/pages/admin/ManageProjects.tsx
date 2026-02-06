@@ -96,7 +96,6 @@ const ManageProjects: React.FC = () => {
     const loadProjectIntoEditor = (index: number) => {
         if (index === null) return;
         const project = projects.find(p => p.id === index);
-        console.log(project);
         if (!project) return;
         setSelectedProject(project);  // Set the whole object
     };
@@ -140,7 +139,7 @@ const ManageProjects: React.FC = () => {
             const script = iframe.contentDocument.createElement('script');
             script.textContent = js;
             iframe.contentDocument.body.appendChild(script);
-            console.log(iframe.contentDocument.body.innerHTML);
+            // console.log(iframe.contentDocument.body.innerHTML);
         }
     }
 
@@ -190,71 +189,78 @@ const ManageProjects: React.FC = () => {
     );
 
     return (
-    <div className="manage-projects-container">
+    <div className="page-main">
         {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
-        <div className="create-projects-container">
-            <div className="create-projects-header">
-                <header className="projects-header projects-header-controls">
-                    <h1>Skapa Projekt</h1>
-                    <label htmlFor="projectSelector" className="visually-hidden">Välj projekt:</label>
-                    <select className="project-selector" id="projectSelector" value={selectedProject ? selectedProject.id : ''} onChange={handleProjectChange}>
-                        <option value="">Välj projekt</option>
-                        {projects.map((ex) => (
-                        <option key={ex.id} value={ex.id}>{ex.title}</option>
-                        ))}
-                    </select>
-                    <button id="toggleView" type="button" onClick={toggleCodeEditor}>Skapa nytt projekt</button>
-                </header>  
-            </div>
-            {showEditor && (
-            <div className="project-editor">
-                <div className="title-section">
-                    <textarea id="titleEditor" rows={1} value={selectedProject?.title || ''} onChange={e => setSelectedProject({...selectedProject!, title: e.target.value})} placeholder='Projekttitel här'/>
-                </div>
-                <div className="description-section">
-                    <textarea rows={2} id="descriptionEditor" value={selectedProject?.description || ''} onChange={e => setSelectedProject({...selectedProject!, description: e.target.value})} placeholder='Projektbeskrivning här'/>
-                </div>
-                <div className="html-section">
-                    <textarea rows={5} id="htmlEditor" value={selectedProject?.html || ''} onChange={e => setSelectedProject({...selectedProject!, html: e.target.value})} placeholder='HTML-kod här'/>
-                </div>
-                <div className="css-section">
-                    <textarea rows={5} id="cssEditor" value={selectedProject?.css || ''} onChange={e => setSelectedProject({...selectedProject!, css: e.target.value})} placeholder='CSS-kod här'/>
-                </div>
-                <div className="javascript-section">
-                    <textarea rows={5} id="jsEditor" value={selectedProject?.javascript || ''} onChange={e => setSelectedProject({...selectedProject!, javascript: e.target.value})} placeholder='JavaScript-kod här'/>
-                </div>
-
-                <div className='difficulty-container'>
-                    <input type='radio' name='project-type' value='html' checked={selectedProject?.projectType === 'html'} onChange={() => {
-                        setSelectedProject({...selectedProject!, projectType: 'html'}); 
-                    }}
-                    /> HTML
-                    <input type='radio' name='project-type' value='css' checked={selectedProject?.projectType === 'css'} onChange={() => { 
-                        setSelectedProject({...selectedProject!, projectType: 'css'}); 
-                    }}
-                    /> CSS
-                    <input type='radio' name='project-type' value='javascript' checked={selectedProject?.projectType === 'javascript'} onChange={() => { 
-                        setSelectedProject({...selectedProject!, projectType: 'javascript'}); 
-                    }}  
-                    /> JS
-                    <div className='lightbulbs'>
-                        {selectedProject?.lightbulbs.map((lightbulb, i) => (
-                            <span key={i} className={`difficulty ${lightbulb ? "high" : "low"}`} onClick={changeDifficulty(i)}>💡</span>
-                        ))}
+        <header className="page-header-row-direction">
+            <h2>Skapa Projekt</h2>
+            <label htmlFor="projectSelector" className="visually-hidden">Välj projekt:</label>
+            <select className="standard-select width-150px" id="projectSelector" value={selectedProject ? selectedProject.id : ''} onChange={handleProjectChange}>
+                <option value="">Välj projekt</option>
+                {projects.map((ex) => (
+                    <option key={ex.id} value={ex.id}>{ex.title}</option>
+                ))}
+            </select>
+            <button className="standard-btn" id="toggleView" type="button" onClick={toggleCodeEditor}>Skapa nytt projekt</button>
+        </header> 
+        <div className='projects-content'>
+            <div className="page-content">
+                {showEditor && (
+                <div className="flex-column">
+                    <div className="flex-input-container">
+                        <textarea className='standard-textarea' id="titleEditor" rows={1} value={selectedProject?.title || ''} onChange={e => setSelectedProject({...selectedProject!, title: e.target.value})} placeholder='Projekttitel här'/>
+                    </div>
+                    <div className="flex-input-container">
+                        <textarea className='standard-textarea' rows={2} id="descriptionEditor" value={selectedProject?.description || ''} onChange={e => setSelectedProject({...selectedProject!, description: e.target.value})} placeholder='Projektbeskrivning här'/>
+                    </div>
+                    <div className="flex-input-container">
+                        <textarea className='standard-textarea' rows={5} id="htmlEditor" value={selectedProject?.html || ''} onChange={e => setSelectedProject({...selectedProject!, html: e.target.value})} placeholder='HTML-kod här'/>
+                    </div>
+                    <div className="flex-input-container">
+                        <textarea className='standard-textarea' rows={5} id="cssEditor" value={selectedProject?.css || ''} onChange={e => setSelectedProject({...selectedProject!, css: e.target.value})} placeholder='CSS-kod här'/>
+                    </div>
+                    <div className="flex-input-container">
+                        <textarea className='standard-textarea' rows={10} id="jsEditor" value={selectedProject?.javascript || ''} onChange={e => setSelectedProject({...selectedProject!, javascript: e.target.value})} placeholder='JavaScript-kod här'/>
                     </div>
 
-                </div>
-                <div className="save-button-container">
-                    <button id="saveProjectButton" type="button" onClick={isEditing ? updateProject : addProject}>{isEditing ? "Uppdatera" : "Spara"} projekt</button>
-                    <button id="previewProjectButton" type="button" onClick={previewProject}>Förhandsgranska</button>
-                    <button id="cancelEditButton" type="button" className={`${isEditing ? "delete-button" : ""}`} onClick={isEditing ? () => deleteProject() : resetFrames}>{isEditing ? "Radera" : "Rensa"}</button>
-                </div>
-            </div>)}
-        </div>
-        <iframe className="preview-container">
+                    <div className='flex-horizontal'>
+                        <label className='align-radiotext'>
+                        <input className='standard-input' type='radio' name='project-type' value='html' checked={selectedProject?.projectType === 'html'} onChange={() => {
+                            setSelectedProject({...selectedProject!, projectType: 'html'}); 
+                        }}
+                        /> HTML
+                        </label>
+                        <label className='align-radiotext'>
+                        <input className='standard-input' type='radio' name='project-type' value='css' checked={selectedProject?.projectType === 'css'} onChange={() => { 
+                            setSelectedProject({...selectedProject!, projectType: 'css'}); 
+                        }}
+                        /> CSS
+                        </label>
+                        <label className='align-radiotext'>
+                        <input className='standard-input' type='radio' name='project-type' value='javascript' checked={selectedProject?.projectType === 'javascript'} onChange={() => { 
+                            setSelectedProject({...selectedProject!, projectType: 'javascript'}); 
+                        }}  
+                        /> JS
+                        </label>
+                        <div className='lightbulbs'>
+                            {selectedProject?.lightbulbs.map((lightbulb, i) => (
+                                <span key={i} className={`difficulty ${lightbulb ? "high" : "low"}`} onClick={changeDifficulty(i)}>💡</span>
+                            ))}
+                        </div>
 
-        </iframe>
+                    </div>
+                    <div className="flex-horizontal-center">
+                        <button className='standard-btn' id="saveProjectButton" type="button" onClick={isEditing ? updateProject : addProject}>{isEditing ? "Uppdatera" : "Spara"} projekt</button>
+                        <button className='standard-btn' id="previewProjectButton" type="button" onClick={previewProject}>Förhandsgranska</button>
+                        <button id="cancelEditButton" type="button" className={`${isEditing ? "delete-btn" : "standard-btn"}`} onClick={isEditing ? () => deleteProject() : resetFrames}>{isEditing ? "Radera" : "Rensa"}</button>
+                    </div>
+                </div>)}
+            </div>
+            <div className="page-content">
+            <iframe className="preview-container">
 
+            </iframe>
+            </div>  
+        </div>                       
     </div>
     );
 };

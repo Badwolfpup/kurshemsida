@@ -149,8 +149,8 @@ const Timeline: React.FC = () => {
               <p className='post-info'>{post.author} {new Date(post.publishedAt).toLocaleString()}</p>
               {(userType === 'Admin' || userType === 'Teacher') && (
                 <div className='admin-buttons'>
-                  <button className='edit-button' onClick={() => toggleEditMode(post.id.toString())}>Redigera</button>
-                  <button className='delete-button' onClick={() => deletePost(post.id)}>Radera</button>
+                  <button className='edit-btn' onClick={() => toggleEditMode(post.id.toString())}>Redigera</button>
+                  <button className='delete-btn' onClick={() => deletePost(post.id)}>Radera</button>
                 </div>
               )}
             </div>
@@ -164,7 +164,7 @@ const Timeline: React.FC = () => {
                   delta={post.delta}
                   onPublish={handleUpdate}
                 />
-                <button className='user-button cancel-edit' onClick={() => toggleEditMode(post.id.toString())}>Ångra</button>
+                <button className='standard-btn cancel-edit' onClick={() => toggleEditMode(post.id.toString())}>Ångra</button>
               </div>
               )}
         </div>))}

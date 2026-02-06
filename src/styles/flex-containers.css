@@ -1,0 +1,85 @@
+.flex-horizontal-center {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.flex-horizontal-right-aligned {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.flex-horizontal {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.flex-wrap-horizontal {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+
+
+.flex-wrap-horizontal-center {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.flex-column-horizontal-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.flex-column-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.flex-column-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+
+.flex-input-container
+ {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-radius: 8px;
+  padding: 5px;
+  border: 1px solid #1976d2;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 3px;
+}
+
+.preview-container {
+  width: 35vw;
+  height: 98%;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  flex: 0 0 auto;
+  padding: 0;
+  overflow-y: auto;
+}

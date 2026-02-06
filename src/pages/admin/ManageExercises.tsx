@@ -190,7 +190,6 @@ const ManageExercises: React.FC = () => {
     const loadExerciseIntoEditor = (index: number) => {
         if (index === null) return;
         const exercise = exercises.find(p => p.id === index);
-        console.log(exercise);
         if (!exercise) return;
         setSelectedExercise(exercise);  // Set the whole object
     };
@@ -275,141 +274,141 @@ if (isError) return (
 );
 
 return (
-    <div className="manage-projects-container exercise-container">
+    <div className="page-main">
         {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
-        <div className="create-projects-container exercise-page">
-            <div className="create-projects-header">
-                <header className="projects-header projects-header-controls">
-                    <h1>Skapa Övning</h1>
-                    <label htmlFor="exerciseSelector" className="visually-hidden">Välj övning:</label>
-                    <select className="project-selector" id="exerciseSelector" value={selectedExerciseId ?? ''} onChange={handleExerciseChange}>
-                        <option value="">Välj övning</option>
-                        {exercises.map((ex) => (
-                        <option key={ex.id} value={ex.id}>{ex.title}</option>
-                        ))}
-                    </select>
-                    <button id="toggleView" type="button" onClick={toggleCodeEditor}>Skapa ny övning</button>
-                </header>  
-            </div>
-            {showEditor && (
-            <div className="project-editor exercise-editor">
-                <div className="title-section">
-                    <textarea id="titleExerciseEditor" rows={1} value={selectedExercise?.title || ''} 
-                        onChange={(e) => {
-                            setSelectedExercise(prev => ({...prev!, title: e.target.value}));
-                            setTitle(e.target.value);
-                        }} 
-                        placeholder='Övningstitel här'>{title}</textarea>
-                </div>
-                <div className="description-section">
-                    <textarea rows={2} id="descriptionExerciseEditor" value={selectedExercise?.description || ''} 
-                        onChange={(e) => {
-                            setSelectedExercise(prev => ({...prev!, description: e.target.value}));
-                            setDescription(e.target.value);
-                        }} 
-                        placeholder='Övningsbeskrivning här'>{description}</textarea>
-                </div>
-                <div className="title-section">
-                    <textarea id="expectedResultExerciseEditor" rows={1} value={selectedExercise?.expectedResult || ''}
-                        onChange={(e) => {
-                            setSelectedExercise(prev => ({...prev!, expectedResult: e.target.value}));
-                            setExpectedResult(e.target.value);
-                        }}
-                        placeholder='Förväntat resultat här'>{expectedResult}</textarea>
-                </div>
-                <div className="clues-section">
-                    <div className="clue-input-container">
-                        <textarea
-                            id="clueInput"
-                            rows={2}
-                            value={currentClue}
-                            onChange={(e) => setCurrentClue(e.target.value)}
-                            placeholder='Ledtråd här (max 4)'
-                            disabled={selectedExercise?.clues && selectedExercise.clues.length >= 4}
-                        />
-                        <button
-                            className='user-button'
-                            onClick={addClue}
-                            disabled={!currentClue.trim() || (selectedExercise?.clues && selectedExercise.clues.length >= 4)}
-                        >
-                            Lägg till ledtråd
-                        </button>
+        <header className="page-header-row-direction">
+            <h2>Skapa Övning</h2>
+            <label htmlFor="exerciseSelector" className="visually-hidden">Välj övning:</label>
+            <select className="standard-select width-150px" id="exerciseSelector" value={selectedExerciseId ?? ''} onChange={handleExerciseChange}>
+                <option value="">Välj övning</option>
+                {exercises.map((ex) => (
+                    <option key={ex.id} value={ex.id}>{ex.title}</option>
+                ))}
+            </select>
+            <button className="standard-btn" id="toggleView" type="button" onClick={toggleCodeEditor}>Skapa ny övning</button>
+        </header>  
+        <div className="exercise-content">
+            <div className="page-content">
+                {showEditor && (
+                <div className="flex-column">
+                    <div className="flex-input-container">
+                        <textarea className="standard-textarea" id="titleExerciseEditor" rows={1} value={selectedExercise?.title || ''} 
+                            onChange={(e) => {
+                                setSelectedExercise(prev => ({...prev!, title: e.target.value}));
+                                setTitle(e.target.value);
+                            }} 
+                            placeholder='Övningstitel här'>{title}</textarea>
                     </div>
-                    {selectedExercise?.clues && selectedExercise.clues.length > 0 && (
-                        <div className="clues-display">
-                            {selectedExercise.clues.map((clue, i) => (
-                                <div key={i} className="clue-item">
-                                    <textarea
-                                        rows={2}
-                                        value={clue}
-                                        readOnly
-                                        className="clue-display-text"
-                                    />
-                                    <button
-                                        className='delete-button clue-remove-btn'
-                                        onClick={() => removeClue(i)}
-                                        title="Ta bort ledtråd"
-                                    >
-                                        ✕
-                                    </button>
-                                </div>
+                    <div className="flex-input-container">
+                        <textarea className="standard-textarea" rows={2} id="descriptionExerciseEditor" value={selectedExercise?.description || ''} 
+                            onChange={(e) => {
+                                setSelectedExercise(prev => ({...prev!, description: e.target.value}));
+                                setDescription(e.target.value);
+                            }} 
+                            placeholder='Övningsbeskrivning här'>{description}</textarea>
+                    </div>
+                    <div className="flex-input-container">
+                        <textarea className="standard-textarea" id="expectedResultExerciseEditor" rows={1} value={selectedExercise?.expectedResult || ''}
+                            onChange={(e) => {
+                                setSelectedExercise(prev => ({...prev!, expectedResult: e.target.value}));
+                                setExpectedResult(e.target.value);
+                            }}
+                            placeholder='Förväntat resultat här'>{expectedResult}</textarea>
+                    </div>
+                    <div className="clues-section">
+                        <div className="flex-input-container">
+                            <textarea className="standard-textarea"
+                                id="clueInput"
+                                rows={2}
+                                value={currentClue}
+                                onChange={(e) => setCurrentClue(e.target.value)}
+                                placeholder='Ledtråd här (max 4)'
+                                disabled={selectedExercise?.clues && selectedExercise.clues.length >= 4}
+                            />
+                            <button
+                                className='standard-btn'
+                                onClick={addClue}
+                                disabled={!currentClue.trim() || (selectedExercise?.clues && selectedExercise.clues.length >= 4)}
+                            >
+                                Lägg till ledtråd
+                            </button>
+                        </div>
+                        {selectedExercise?.clues && selectedExercise.clues.length > 0 && (
+                            <div className="clues-display">
+                                {selectedExercise.clues.map((clue, i) => (
+                                    <div key={i} className="clue-item">
+                                        <textarea
+                                            rows={2}
+                                            value={clue}
+                                            readOnly
+                                            className="standard-textarea clue-textarea"
+                                        />
+                                        <button
+                                            className='delete-btn clue-remove-btn'
+                                            onClick={() => removeClue(i)}
+                                            title="Ta bort ledtråd"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <div className="flex-input-container">
+                            <textarea className="standard-textarea"
+                                rows={3}
+                                id="goodToKnowInput"
+                                value={selectedExercise?.goodToKnow || ''}
+                                onChange={(e) => {
+                                    setSelectedExercise(prev => ({...prev!, goodToKnow: e.target.value}));
+                                }}
+                                placeholder='Bra att veta här'
+                            />
+                    </div>
+                    <div className="flex-input-container exercise-javascript-section">
+                        <textarea className="standard-textarea" rows={10} id="jsExerciseEditor" value={selectedExercise?.javascript || ''} 
+                            onChange={(e) => {
+                                setSelectedExercise(prev => ({...prev!, javascript: e.target.value}));
+                                setJavascript(e.target.value);
+                            }} 
+                        placeholder='JavaScript-kod här'>{javascript}</textarea>
+                    </div>
+                    <div className='flex-horizontal'>
+                        <select className="standard-select" id="exerciseTypeSelector" value={selectedExercise?.exerciseType || 'strings'}
+                            onChange={(e) => {
+                                setSelectedExercise(prev => ({...prev!, exerciseType: e.target.value}));
+                            }}>
+                            <option value="strings">Strängar</option>
+                            <option value="numbers">Tal</option>
+                            <option value="conditionals">Villkorsatser</option>
+                            <option value="functions">Funktioner</option>
+                            <option value="loops">Loopar</option>
+                            <option value="arrays">Arrayer</option>
+                            <option value="objects">Objekt</option>
+                            <option value="dom">DOM</option>
+                            <option value="events">Events</option>
+                            <option value="api">Använda API</option>
+                        </select>
+                        <div className='lightbulbs'>
+                            {selectedExercise?.lightbulbs.map((lightbulb, i) => (
+                                <span key={i} className={`difficulty ${lightbulb ? "high" : "low"}`} onClick={changeDifficulty(i)}>💡</span>
                             ))}
                         </div>
-                    )}
-                </div>
-                <div className="good-to-know-section">
-                    <div className="goodtoknow-display">
-                        <textarea
-                            rows={2}
-                            id="goodToKnowInput"
-                            value={selectedExercise?.goodToKnow || ''}
-                            onChange={(e) => {
-                                setSelectedExercise(prev => ({...prev!, goodToKnow: e.target.value}));
-                            }}
-                            placeholder='Bra att veta här'
-                        />
                     </div>
-                </div>
-                <div className="javascript-section exercise-javascript-section">
-                    <textarea rows={5} id="jsExerciseEditor" value={selectedExercise?.javascript || ''} 
-                        onChange={(e) => {
-                            setSelectedExercise(prev => ({...prev!, javascript: e.target.value}));
-                            setJavascript(e.target.value);
-                        }} 
-                    placeholder='JavaScript-kod här'>{javascript}</textarea>
-                </div>
-                <div className='difficulty-container'>
-                    <select className="project-selector" id="exerciseTypeSelector" value={selectedExercise?.exerciseType || 'strings'}
-                        onChange={(e) => {
-                            setSelectedExercise(prev => ({...prev!, exerciseType: e.target.value}));
-                        }}>
-                        <option value="strings">Strängar</option>
-                        <option value="numbers">Tal</option>
-                        <option value="conditionals">Villkorsatser</option>
-                        <option value="functions">Funktioner</option>
-                        <option value="loops">Loopar</option>
-                        <option value="arrays">Arrayer</option>
-                        <option value="objects">Objekt</option>
-                        <option value="dom">DOM</option>
-                        <option value="events">Events</option>
-                        <option value="api">Använda API</option>
-                    </select>
-                    <div className='lightbulbs'>
-                        {selectedExercise?.lightbulbs.map((lightbulb, i) => (
-                            <span key={i} className={`difficulty ${lightbulb ? "high" : "low"}`} onClick={changeDifficulty(i)}>💡</span>
-                        ))}
+                    
+                    <div className="save-button-container">
+                        <button id="saveProjectButton" type="button" onClick={isEditing ? updateExercise : addExercise}>{isEditing ? "Uppdatera" : "Spara"} övning</button>
+                        <button id="previewProjectButton" type="button" onClick={() => setIframeKey(prev => prev + 1)}>Förhandsgranska</button>
+                        <button id="cancelEditButton" type="button" className={`${isEditing ? "delete-btn" : ""}`} onClick={isEditing ? () => deleteExercise() : resetFrames}>{isEditing ? "Radera" : "Rensa"}</button>
                     </div>
-                </div>
-                
-                <div className="save-button-container">
-                    <button id="saveProjectButton" type="button" onClick={isEditing ? updateExercise : addExercise}>{isEditing ? "Uppdatera" : "Spara"} övning</button>
-                    <button id="previewProjectButton" type="button" onClick={() => setIframeKey(prev => prev + 1)}>Förhandsgranska</button>
-                    <button id="cancelEditButton" type="button" className={`${isEditing ? "delete-button" : ""}`} onClick={isEditing ? () => deleteExercise() : resetFrames}>{isEditing ? "Radera" : "Rensa"}</button>
-                </div>
-            </div>)}
-            <iframe key={iframeKey} className="preview-container exercise-preview" ref={iframeRef} title="Exercise Preview"></iframe>
-        </div>
+                </div>)}
+            </div>
+            <div className="page-content">
+                <iframe key={iframeKey} className="preview-container" ref={iframeRef} title="Exercise Preview"></iframe>
 
+            </div>
+        </div>
     </div>
     );
 }

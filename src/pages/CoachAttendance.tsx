@@ -12,12 +12,13 @@ import Toast from "../utils/toastMessage";
 
 
 const CoachAttendance: React.FC = () => {
-    const { userId } = useUser();
+    const { userId, userType } = useUser();
     const [date, setDate] = useState<Date>(new Date());
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
     const [selectedUserId, setSelectedUserId] = useState<number>(0);
-    const { data: users = [] as UserType[], isLoading: isUsersLoading, isError: isUsersError, error: usersError, refetch: refetchUsers, isFetching: isUsersFetching } = useUsers();
+    const [showUserinfo, setShowUserInfo] = useState<boolean>(true);
+    const { data: users = [] as UserType[], isLoading: isUsersLoading, isError: isUsersError, error: usersError, refetch: refetchUsers, isFetching: isUsersFetching } = useUsers(1);
     const { data: attendance = [] as AttendanceType[], isLoading: isAttendanceLoading, isError: isAttendanceError, error: attendanceError, refetch: refetchAttendance, isRefetching: isAttendanceRefetching } = useAttendance(date, 2);
     const { data: noClasses = [] as Date[], isLoading: isNoClassesLoading, isError: isNoClassesError, error: noClassesError, refetch: refetchNoClasses, isRefetching: isNoClassesRefetching } = useNoClasses();
     const updateUserMutation = useUpdateUser();
@@ -47,7 +48,20 @@ const CoachAttendance: React.FC = () => {
 
 
     const changeWeek = (change: boolean) => {
-      setDate(new Date(date.setDate(date.getDate() + (change ? 14 : -14))));
+      const offset = change ? 14 : -14;
+      const newDate = new Date(date);
+      newDate.setDate(newDate.getDate() + offset);
+
+      // Prevent navigating to future weeks
+      if (change) {
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const nextMonday = new Date(today);
+        nextMonday.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1) + 7);
+        if (newDate >= nextMonday) return;
+      }
+
+      setDate(newDate);
     }
 
 
@@ -86,6 +100,64 @@ const CoachAttendance: React.FC = () => {
     return `${user.firstName[0]}.${user.lastName[0]}`;
   }
 
+  const getMonthName = (offset: number): string => {
+    const date = new Date();
+    date.setMonth(date.getMonth() + offset);
+    return date.toLocaleString('sv-SE', { month: 'long' });
+  }
+
+  const getFirstDayOfMonth = (offset: number): Date => {
+    const date = new Date();
+    date.setMonth(date.getMonth() + offset);
+    date.setDate(1);
+    date.setHours(0,0,0,0);
+    return date;
+  }
+
+  const getLastDayOfMonth = (offset: number): Date => {
+    if (offset === 0) return new Date();
+    const date = new Date();
+    date.setMonth(date.getMonth() + offset + 1);
+    date.setDate(0);
+    date.setHours(23,59,59,999);
+    return date;
+  }
+
+  const getWeekday = (date: Date): string => date.toLocaleDateString('sv-SE', { weekday: 'long' });
+
+  const attendsScheduledDay = (weekday: string): boolean => {
+    if (!selectedUser) return false;
+    if (weekday === 'måndag') return selectedUser.scheduledMonAm || selectedUser.scheduledMonPm;
+    if (weekday === 'tisdag') return selectedUser.scheduledTueAm || selectedUser.scheduledTuePm;
+    if (weekday === 'onsdag') return selectedUser.scheduledWedAm || selectedUser.scheduledWedPm;
+    if (weekday === 'torsdag') return selectedUser.scheduledThuAm || selectedUser.scheduledThuPm;
+    return false;
+  }
+
+  const getTotalScheduledDaysInMonth = (monthOffset: number): number => {
+    if (!selectedUser) return 0;
+    const firstday = getFirstDayOfMonth(monthOffset);
+    const lastday = getLastDayOfMonth(monthOffset);
+    let count = 0;
+    for (let d = firstday; d <= lastday; d.setDate(d.getDate() + 1)) {
+      if (attendsScheduledDay(getWeekday(d)) && !noClasses.some(nc => compareDates(new Date(nc), d)) && !!selectedUser.startDate && d >= new Date(selectedUser.startDate)) count++;
+    }
+    return count;
+  }
+
+  const printScheduledDays = (offset: number): string => {
+    if (!selectedUser) return "";
+    const attendedDays = attendance.filter(att => att.userId === selectedUser.id).reduce((acc, att) => acc + att.date.filter(d => {
+      const attDate = new Date(d);
+      const attendance = attDate >= getFirstDayOfMonth(0) && attDate <= getLastDayOfMonth(0);
+      return attendance && attendsScheduledDay(getWeekday(attDate)) && !noClasses.some(nc => compareDates(new Date(nc), attDate)) && !!selectedUser.startDate && attDate >= new Date(selectedUser.startDate);
+    }).length, 0);
+    const totalScheduled = getTotalScheduledDaysInMonth(offset);
+    return `${attendedDays} / ${totalScheduled} (${totalScheduled > 0 ? Math.round(attendedDays / totalScheduled * 100) : 0}%)`;
+  }
+
+  
+
   return (
     <div>
       {isLoading ? (
@@ -99,126 +171,225 @@ const CoachAttendance: React.FC = () => {
           <button className="retry-button" onClick={() => {refetch()}} disabled={isFetching}>{isFetching ? 'Laddar...' : 'Försök igen'}</button>
         </div>
       ) : (
-      <div className="attendence-container">
+      <div className="page-main">
         {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
-        <div className="coach-attendance-header">
-            <h2>Närvarosida</h2>
-              <div className="header-controls">
-                  <div className='navbar'>
-                      <select id="user-dropdown" value={selectedUserId} onChange={(e) => { setSelectedUserId(Number(e.target.value)); setSelectedUser(users.find(u => u.id === Number(e.target.value)) || null); }}>
-                          <option value="0">Alla deltagare</option>
-                          {users.filter(user => user.authLevel === 4 && user.coachId === userId).map(user => (
-                            <option key={user.id} value={user.id}>
-                              {checkInitials(user)}
-                          </option>
-                          ))}
-                      </select>
-                  </div>
-                  <div className="week-picker">
-                    <button className="prev-week-button" onClick={() => changeWeek(false)}>&lt;</button>
-                    <p className="week-select">{week}</p>
-                    <button className="next-week-button" onClick={() => changeWeek(true)}>&gt;</button>
-                  </div>
-              </div>
-              {selectedUserId !== 0 && 
-              <div className="scheduled-days-section">
-                <div className="header-info"><h2>Schemalagda dagar</h2><span>- Du kan ändra själv. Blå färg betyder att deltagaren är tänkt att delta den dagen.</span></div>
-                <div className="attendence-table">
-                  <table>
-                    <thead>
-                      <tr>
-                          <th>Pass</th>
-                          <th>Måndag</th>
-                          <th>Tisdag</th>
-                          <th>Onsdag</th>
-                          <th>Torsdag</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>Förmiddag</td>
-                        <td><button onClick={() => {
-
-                          if (!selectedUser) return;
-                          const updated = {...selectedUser, scheduledMonAm: !selectedUser.scheduledMonAm};
-                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (users.find(u => u.id === selectedUserId)?.scheduledMonAm ? " attended" : "")} ></button></td>
-                        <td><button onClick={() => {
-                          if (!selectedUser) return;
-                          const updated = {...selectedUser, scheduledTueAm: !selectedUser.scheduledTueAm};
-                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (users.find(u => u.id === selectedUserId)?.scheduledTueAm ? " attended" : "")} ></button></td>
-                        <td><button onClick={() => {
-                          if (!selectedUser) return;
-                          const updated = {...selectedUser, scheduledWedAm: !selectedUser.scheduledWedAm};
-                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (users.find(u => u.id === selectedUserId)?.scheduledWedAm ? " attended" : "")} ></button></td>
-                        <td><button onClick={() => {
-                          if (!selectedUser) return;
-                          const updated = {...selectedUser, scheduledThuAm: !selectedUser.scheduledThuAm};
-                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (users.find(u => u.id === selectedUserId)?.scheduledThuAm ? " attended" : "")} ></button></td>  
-                        </tr>
-                      <tr>
-                        <td>Eftermiddag</td>
-                        <td><button onClick={() => {
-                          if (!selectedUser) return;
-                          const updated = {...selectedUser, scheduledMonPm: !selectedUser.scheduledMonPm};
-                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (users.find(u => u.id === selectedUserId)?.scheduledMonPm ? " attended" : "")} ></button></td>
-                        <td><button onClick={() => {
-                          if (!selectedUser) return;
-                          const updated = {...selectedUser, scheduledTuePm: !selectedUser.scheduledTuePm};
-                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (users.find(u => u.id === selectedUserId)?.scheduledTuePm ? " attended" : "")} ></button></td>
-                        <td><button onClick={() => {
-                          if (!selectedUser) return;
-                          const updated = {...selectedUser, scheduledWedPm: !selectedUser.scheduledWedPm};
-                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (users.find(u => u.id === selectedUserId)?.scheduledWedPm ? " attended" : "")} ></button></td>
-                        <td><button onClick={() => {
-                          if (!selectedUser) return;
-                          const updated = {...selectedUser, scheduledThuPm: !selectedUser.scheduledThuPm};
-                          setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent' + (users.find(u => u.id === selectedUserId)?.scheduledThuPm ? " attended" : "")} ></button></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-            </div>}
-
-
-            <div className="legend-container">
-              <div className="week-picker">
-                <button className="attended"></button>
-                <span>Närvaro</span>
-              </div>
-              <div className="week-picker">
-                <button className="absent"></button>
-                <span>Frånvaro</span>
-              </div>
-              <div className="week-picker">
-                <button className="noclass"></button>
-                <span>Ingen lektion</span>
-              </div>
+        <div className="page-header">
+            <div className="flex-horizontal-center">  
+              <h2 className="no-margin-onY">Närvarosida</h2>
+              <select className="standard-select" id="user-dropdown" value={selectedUser?.id || 0} onChange={(e) => {setSelectedUserId(Number(e.target.value)); setSelectedUser(users.find(u => u.id === Number(e.target.value)) || null); }}>
+                  <option value="0">Alla deltagare</option>
+                  {users?.filter(user => (user.authLevel === 4 && (userType === 'Teacher' || userType === 'Admin')) || (user.authLevel === 4 && user.coachId === userId && (selectedUserId !== 0 ? user.id === selectedUserId : true))).map((item, i) => (
+                    <option key={i} value={item.id}>
+                      {checkInitials(item)}
+                  </option>
+                  ))}
+              </select>
             </div>
+              {selectedUser && selectedUser?.id !== 0 && 
+              <>
+                <div className="flex-horizontal-center">
+
+                  <div className="flex-column-center">
+                     <div className="flex-horizontal-center">
+                        <div className="page-table-wrapper center-table">
+                          <h2 className="no-margin-onY">Schemalagda dagar</h2>
+                          <span className="no-margin-onY">Du kan ändra själv. Blå färg betyder att deltagaren är tänkt att delta den dagen. Om ingen dag alls är ibockad betyder det att deltagaren inte har något överrenskommit schema.</span>
+                          <div className="page-table">
+                            <table>
+                              <thead>
+                                <tr>
+                                    <th>Pass</th>
+                                    <th>Måndag</th>
+                                    <th>Tisdag</th>
+                                    <th>Onsdag</th>
+                                    <th>Torsdag</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td>Förmiddag</td>
+                                  <td><button onClick={() => {
+
+                                    if (!selectedUser) return;
+                                    const updated = {...selectedUser, scheduledMonAm: !selectedUser.scheduledMonAm};
+                                    setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent-btn' + (users.find(u => u.id === selectedUserId)?.scheduledMonAm ? " attended-btn" : "")} ></button></td>
+                                  <td><button onClick={() => {
+                                    if (!selectedUser) return;
+                                    const updated = {...selectedUser, scheduledTueAm: !selectedUser.scheduledTueAm};
+                                    setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent-btn' + (users.find(u => u.id === selectedUserId)?.scheduledTueAm ? " attended-btn" : "")} ></button></td>
+                                  <td><button onClick={() => {
+                                    if (!selectedUser) return;
+                                    const updated = {...selectedUser, scheduledWedAm: !selectedUser.scheduledWedAm};
+                                    setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent-btn' + (users.find(u => u.id === selectedUserId)?.scheduledWedAm ? " attended-btn" : "")} ></button></td>
+                                  <td><button onClick={() => {
+                                    if (!selectedUser) return;
+                                    const updated = {...selectedUser, scheduledThuAm: !selectedUser.scheduledThuAm};
+                                    setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent-btn' + (users.find(u => u.id === selectedUserId)?.scheduledThuAm ? " attended-btn" : "")} ></button></td>  
+                                  </tr>
+                                <tr>
+                                  <td>Eftermiddag</td>
+                                  <td><button onClick={() => {
+                                    if (!selectedUser) return;
+                                    const updated = {...selectedUser, scheduledMonPm: !selectedUser.scheduledMonPm};
+                                    setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent-btn' + (users.find(u => u.id === selectedUserId)?.scheduledMonPm ? " attended-btn" : "")} ></button></td>
+                                  <td><button onClick={() => {
+                                    if (!selectedUser) return;
+                                    const updated = {...selectedUser, scheduledTuePm: !selectedUser.scheduledTuePm};
+                                    setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent-btn' + (users.find(u => u.id === selectedUserId)?.scheduledTuePm ? " attended-btn" : "")} ></button></td>
+                                  <td><button onClick={() => {
+                                    if (!selectedUser) return;
+                                    const updated = {...selectedUser, scheduledWedPm: !selectedUser.scheduledWedPm};
+                                    setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent-btn' + (users.find(u => u.id === selectedUserId)?.scheduledWedPm ? " attended-btn" : "")} ></button></td>
+                                  <td><button onClick={() => {
+                                    if (!selectedUser) return;
+                                    const updated = {...selectedUser, scheduledThuPm: !selectedUser.scheduledThuPm};
+                                    setSelectedUser(updated); handleUpdateUser(updated, false); }} className={'absent-btn' + (users.find(u => u.id === selectedUserId)?.scheduledThuPm ? " attended-btn" : "")} ></button></td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      
+                        <div className="page-table-wrapper center-table bottom-feeder">
+                          {showUserinfo && (
+                          <>
+                            <div className="flex-horizontal">
+                              <h2 className="no-margin-onY">Lärare på kursen</h2>
+                              <button className="standard-btn width-150px right-aligned" onClick={() => setShowUserInfo(false)}>Statistik</button>
+                            </div>
+                            <span className="no-margin-onY">Grön färg är den lärare som ni primärt kontaktar angående elevuppföljning.</span>
+                            <div className="page-table">
+                              <table>
+                                <thead>
+                                  <tr>
+                                      <th>Namn</th>
+                                      <th>Telefonnummer</th>
+                                      <th>Email</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                    {users?.filter(u => u.authLevel <= 2 && u.isActive && u.firstName !== 'Alexandra').map((contact) => (
+                                      <tr key={contact.id}>
+                                        <td style={{whiteSpace: 'nowrap'}} className={contact.id === selectedUser?.contactId ? "primary-contact" : ""}>{contact.firstName} {contact.lastName}</td>
+                                        <td className={contact.id === selectedUser?.contactId ? "primary-contact" : ""}>{contact.telephone}</td>
+                                        <td className={contact.id === selectedUser?.contactId ? "primary-contact" : ""}>{contact.email}</td>
+                                      </tr>
+                                    ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </>)}
+                          {!showUserinfo && (
+                          <>
+                              <div className="flex-horizontal">
+                                <h2 className="no-margin-onY">Statistik</h2>
+                                <button className="standard-btn width-150px right-aligned" onClick={() => setShowUserInfo(true)}>Kontaktuppgifter</button>
+                              </div>
+                              {/* <span className="no-margin-onY">Startdatum på kursen: {selectedUser.startDate}</span> */}
+                              <span className="no-margin-onY "><strong>Senaste närvarodag:</strong> {(() => {
+                                const dates = attendance.filter(x => x.userId == selectedUser.id).flatMap(a => a.date);
+                                if (dates.length === 0) return 'Aldrig närvarat';
+                                const latest = dates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
+                                return new Date(latest).toLocaleDateString('sv-SE');
+                              })()}</span>
+                              <div className="page-table">
+                              <table>
+                                <thead>
+                                  <tr>
+                                      <th></th>
+                                      <th>{getMonthName(0)}</th>
+                                      <th>{getMonthName(-1)}</th>
+                                      <th>{getMonthName(-2)}</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                      <tr>
+                                        <td>Antal närvarodagar:</td>
+                                        <td>{attendance.filter(att => att.userId === selectedUser.id).reduce((acc, att) => acc + att.date.filter(d => {
+                                              const attDate = new Date(d);
+                                              return attDate >= getFirstDayOfMonth(0) && attDate <= getLastDayOfMonth(0) && !noClasses.some(nc => compareDates(new Date(nc), attDate)) && !!selectedUser.startDate && attDate >= new Date(selectedUser.startDate);
+;
+                                            }).length, 0)}
+                                        </td>
+                                        <td>{attendance.filter(att => att.userId === selectedUser.id).reduce((acc, att) => acc + att.date.filter(d => {
+                                              const attDate = new Date(d);
+                                              return attDate >= getFirstDayOfMonth(-1) && attDate <= getLastDayOfMonth(-1) && !noClasses.some(nc => compareDates(new Date(nc), attDate)) && !!selectedUser.startDate && attDate >= new Date(selectedUser.startDate);
+                                            }).length, 0)}
+                                        </td>
+                                        <td>{attendance.filter(att => att.userId === selectedUser.id).reduce((acc, att) => acc + att.date.filter(d => {
+                                              const attDate = new Date(d);
+                                              return attDate >= getFirstDayOfMonth(-2) && attDate <= getLastDayOfMonth(-2) && !noClasses.some(nc => compareDates(new Date(nc), attDate)) && !!selectedUser.startDate && attDate >= new Date(selectedUser.startDate);
+                                            }).length, 0)}
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td>Närvaro utifrån schema:</td>
+                                        <td>{printScheduledDays(0)}</td> 
+                                        <td>{printScheduledDays(-1)}</td> 
+                                        <td>{printScheduledDays(-2)}</td> 
+                                             
+                                      </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </>
+                          )}
+                        </div>
+
+
+                    </div>
+                  </div>
+                </div>
+            </>}
         </div>
-        <div className="coach-table">
-          <div className="attendence-table">
-            <table>
+        <div className="page-content">
+          <div className="flex-column-center">
+              <div className="flex-horizontal-center">
+                <div className="flex-horizontal">
+                  <button className="attended-btn"></button>
+                  <span className="span-vertical-center">Närvaro</span>
+                </div>
+                <div className="flex-horizontal">
+                  <button className="absent-btn"></button>
+                  <span className="span-vertical-center">Frånvaro</span>
+                </div>
+                <div className="flex-horizontal">
+                  <button className="noclass-btn"></button>
+                  <span className="span-vertical-center">Ingen lektion</span>
+                </div>
+            </div>
+          <div className="flex-horizontal-center">
+            
+            <div className="flex-horizontal">
+              <button className="standard-btn" onClick={() => changeWeek(false)}>&lt;</button>
+              <p className="span-title-center">{week}</p>
+              <button className="standard-btn" onClick={() => changeWeek(true)}>&gt;</button>
+            </div>
+          </div>
+          </div>
+          <div className="page-table-wrapper">
+            <table className="page-table">
                   <thead>
                     <tr>
                         <th>Namn</th>
-                        <th><div className="date-header"><span>Måndag</span> {dateFormatted(getDate(-6))}</div></th>
-                        <th><div className="date-header"><span>Tisdag</span> {dateFormatted(getDate(-5))}</div></th>
-                        <th><div className="date-header"><span>Onsdag</span> {dateFormatted(getDate(-4))}</div></th>
-                        <th><div className="date-header"><span>Torsdag</span> {dateFormatted(getDate(-3))}</div></th>
-                        <th><div className="date-header"><span>Måndag</span> {dateFormatted(getDate(1))}</div></th>
-                        <th><div className="date-header"><span>Tisdag</span> {dateFormatted(getDate(2))}</div></th>
-                        <th><div className="date-header"><span>Onsdag</span> {dateFormatted(getDate(3))}</div></th>
-                        <th><div className="date-header"><span>Torsdag</span> {dateFormatted(getDate(4))}</div></th>
+                        <th><div className="flex-column-center"><span>Måndag</span> {dateFormatted(getDate(-6))}</div></th>
+                        <th><div className="flex-column-center"><span>Tisdag</span> {dateFormatted(getDate(-5))}</div></th>
+                        <th><div className="flex-column-center"><span>Onsdag</span> {dateFormatted(getDate(-4))}</div></th>
+                        <th><div className="flex-column-center"><span>Torsdag</span> {dateFormatted(getDate(-3))}</div></th>
+                        <th><div className="flex-column-center"><span>Måndag</span> {dateFormatted(getDate(1))}</div></th>
+                        <th><div className="flex-column-center"><span>Tisdag</span> {dateFormatted(getDate(2))}</div></th>
+                        <th><div className="flex-column-center"><span>Onsdag</span> {dateFormatted(getDate(3))}</div></th>
+                        <th><div className="flex-column-center"><span>Torsdag</span> {dateFormatted(getDate(4))}</div></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {users?.filter(x=> x.authLevel === 4 && x.coachId === userId && (selectedUserId !== 0 ? x.id === selectedUserId : true)).map((item, i) => (
+                    {users?.filter(x=> (x.authLevel === 4 && (userType === 'Teacher' || userType === 'Admin')) || (x.authLevel === 4 && x.coachId === userId && (selectedUserId !== 0 ? x.id === selectedUserId : true))).map((item, i) => (
                       <tr key={i}>
                         <td>{checkInitials(item)}</td>
                         {Array.from({ length: 8 }).map((_ : any, index: any) =>
                           { return (
                           <td>
-                            <button key={index} className={'absent' + styleAttendanceButtons(item, getDate(index +1-7))} ></button>
+                            {item.startDate !== null && new Date(item.startDate) <= getDate(index +1-7) && <button key={index} className={'absent-btn' + styleAttendanceButtons(item, getDate(index +1-7))} ></button>}
                           </td> );
                           })
                         }
