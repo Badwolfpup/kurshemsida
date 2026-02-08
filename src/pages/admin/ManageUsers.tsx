@@ -29,8 +29,7 @@ const ManageUsers: React.FC = () => {
   const [selectedRoleName, setSelectedRoleName] = useState<string>("deltagare");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [newUser, setNewUser] = useState<AddUserDto>(defaultNewUser);
-  const { data: users = [] as UserType[], isLoading, isError, error, refetch, isRefetching } = useUsers(1);
-  const { data: inactiveUsers = [] as UserType[], refetch: refetchInactiveUsers, isLoading: isInactiveUsersLoading, isError: isInactiveUsersError, error: inactiveUsersError, isRefetching: isInactiveUsersRefetching } = useUsers(0);
+  const { data: users = [] as UserType[], isLoading, isError, error, refetch, isRefetching } = useUsers();
   const addUserMutation = useAddUser();
   const updateActivityStatusMutation = useUpdateActivityStatus();
   const deleteUserMutation = useDeleteUser();
@@ -180,17 +179,17 @@ const ManageUsers: React.FC = () => {
     });
   }
 
-    if (isLoading || isInactiveUsersLoading) return (
+    if (isLoading) return (
     <div className="loading-container">
       <div className="spinner"></div>
       <p>Laddar användare...</p>
     </div>
   );
 
-  if (isError || isInactiveUsersError) return (
+  if (isError) return (
     <div className="error-container">
-      <p>{error?.message || inactiveUsersError?.message}</p>
-      <button className="retry-button" onClick={() => {refetch(); refetchInactiveUsers();}} disabled={isRefetching || isInactiveUsersRefetching}>{(isRefetching || isInactiveUsersRefetching) ? 'Laddar...' : 'Försök igen'}</button>
+      <p>{error?.message}</p>
+      <button className="retry-button" onClick={() => {refetch();}} disabled={isRefetching}>{isRefetching ? 'Laddar...' : 'Försök igen'}</button>
     </div>
   );
 
@@ -205,7 +204,7 @@ const ManageUsers: React.FC = () => {
           <button id="coach-button" className='standard-btn' onClick={async (e) => {changeRole(e, 3)}}>Coach</button>
           <button id="student-button" className='selected-btn standard-btn' onClick={async (e) => {changeRole(e, 4)}}>Deltagare</button>
           <h2>{`${showActiveUsers ? "Aktiva" : "Inaktiva"} ${selectedRoleName}`}</h2>
-          <button className='greyed-btn ' onClick={() => {refetchInactiveUsers(); setShowActiveUsers(!showActiveUsers);}}>Se {showActiveUsers ? "Inaktiva" : "Aktiva"}</button>
+          <button className='greyed-btn ' onClick={() => { setShowActiveUsers(!showActiveUsers);}}>Se {showActiveUsers ? "Inaktiva" : "Aktiva"}</button>
         </div>
         {addNewUserForm ? 
         (
@@ -238,7 +237,7 @@ const ManageUsers: React.FC = () => {
                 <th>Namn</th>
                 <th>Email</th>
                 <th>Telefon</th>
-                <th>Startdatum</th>
+                {selectedRole === "4" && <th>Startdatum</th>}
                 {selectedRole === "4" && <th>Kurs</th>}
                 <th>Roll</th>
                 {selectedRole === "4" && <th>Coach</th>}
@@ -247,12 +246,12 @@ const ManageUsers: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {(showActiveUsers ? users : inactiveUsers).filter(user => user.authLevel === parseInt(selectedRole)).length === 0 ? (
+              {users.filter(user => (showActiveUsers ? user.isActive : !user.isActive) && user.authLevel === parseInt(selectedRole)).length === 0 ? (
                 <tr>
                   <td colSpan={9}>Inga {showActiveUsers ? "aktiva" : "inaktiva"} användare hittades.</td>
                 </tr>
               ) : (
-                (showActiveUsers ? users : inactiveUsers).filter(user => user.authLevel === parseInt(selectedRole)).map((user, index) => (
+                users.filter(user => (showActiveUsers ? user.isActive : !user.isActive) && user.authLevel === parseInt(selectedRole)).map((user, index) => (
                   <tr key={index}>
                           <td>{user.firstName} {user.lastName}</td>
                     <td>{user.email}</td>
@@ -264,7 +263,7 @@ const ManageUsers: React.FC = () => {
                     {selectedRole === "4" && <td>{getContactName(user.contactId)}</td>}
                     <td className='flex-horizontal-center'>
                       <button className={`standard-btn ` + (!showActiveUsers ? 'delete-btn' : '')} onClick={() => showActiveUsers ? handleEditUser(user) : handleDeleteUser(user)}>{showActiveUsers ? "✏️" : "✕"}</button>
-                      <button className="standard-btn" onClick={() => {user.isActive = !user.isActive; handleUserActivityStatus(user.id)}}>{showActiveUsers ? "Inaktivera" : "Aktivera"}</button>
+                      <button className="standard-btn" onClick={() => {handleUserActivityStatus(user.id)}}>{showActiveUsers ? "Inaktivera" : "Aktivera"}</button>
                     </td>
                   </tr>
                 ))

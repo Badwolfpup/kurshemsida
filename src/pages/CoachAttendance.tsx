@@ -19,7 +19,7 @@ const CoachAttendance: React.FC = () => {
     const [selectedUserId, setSelectedUserId] = useState<number>(0);
     const [selectedCoachId, setSelectedCoachId] = useState<number>(0);
     const [showUserinfo, setShowUserInfo] = useState<boolean>(true);
-    const { data: users = [] as UserType[], isLoading: isUsersLoading, isError: isUsersError, error: usersError, refetch: refetchUsers, isFetching: isUsersFetching } = useUsers(1);
+    const { data: users = [] as UserType[], isLoading: isUsersLoading, isError: isUsersError, error: usersError, refetch: refetchUsers, isFetching: isUsersFetching } = useUsers();
     const { data: attendance = [] as AttendanceType[], isLoading: isAttendanceLoading, isError: isAttendanceError, error: attendanceError, refetch: refetchAttendance, isRefetching: isAttendanceRefetching } = useAttendance(date, 2);
     const { data: noClasses = [] as Date[], isLoading: isNoClassesLoading, isError: isNoClassesError, error: noClassesError, refetch: refetchNoClasses, isRefetching: isNoClassesRefetching } = useNoClasses();
     const updateUserMutation = useUpdateUser();

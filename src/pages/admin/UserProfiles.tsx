@@ -32,7 +32,7 @@ const UserProfiles: React.FC = () => {
   const [selectedCoach, setSelectedCoach] = useState<string>("");
   const { data: projects = [] as ProjectType[]} = useProjects();
   // const { data: exercises = [] as ExerciseType[]} = useExercises();
-  const { data: users = [] as UserType[], refetch, isRefetching, isLoading, isError, error } = useUsers(1);
+  const { data: users = [] as UserType[], refetch, isRefetching, isLoading, isError, error } = useUsers();
   const updateUserMutation = useUpdateUser();
 
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({

@@ -12,8 +12,6 @@ export interface AddUserDto {
 
 export interface DeleteUserDto {
   id: number;
-  firstName: string;
-  lastName: string;
 }
 
 export interface UpdateUserDto {

@@ -2,9 +2,9 @@ import type UserType from "../Types/User";
 import type { AddUserDto, UpdateUserDto, DeleteUserDto } from "../Types/Dto/UserDto";
 
 export const userService = {
-    fetchUsers: async (isActive: number | 1): Promise<UserType[]> => {
+    fetchUsers: async (): Promise<UserType[]> => {
 
-        const response = await fetch(`/api/fetch-users/${isActive}`, {
+        const response = await fetch(`/api/fetch-users`, {
             credentials: 'include',
         });
         responseAction(response);
@@ -38,7 +38,7 @@ export const userService = {
       return true;    
     },
     deleteUser: async (user: DeleteUserDto) => {
-        const prompt = window.confirm(`Är du säker på att du vill ta bort användaren ${user.firstName} ${user.lastName}? Detta kan inte ångras.`);
+        const prompt = window.confirm(`Är du säker på att du vill ta bort användaren? Detta kan inte ångras.`);
         if (!prompt) return;
         const response = await fetch('/api/delete-user', {
             method: 'DELETE',
@@ -58,7 +58,7 @@ export const userService = {
             headers: {
             'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ userId })
+            body: JSON.stringify({ id: userId })
         });
         if (!response.ok) {
             throw new Error(`Failed to update user activity status: ${response.status}`);
