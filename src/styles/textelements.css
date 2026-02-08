@@ -18,3 +18,9 @@
 .center-text {
     text-align: center;
 }
+
+.text-wrap {
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}

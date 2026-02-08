@@ -47,7 +47,7 @@ const Attendance: React.FC = () => {
   }
   const styleAttendanceButtons = (user: UserType, date: Date): string => {
     const isNoClass = noClasses.filter(d => compareDates(new Date(d), date)).length > 0;
-    if (isNoClass) return " noclass";
+    if (isNoClass) { return " noclass-btn"; }
     const result = attendance.filter(x => x.userId === user.id).filter(dates => dates.date.some(d => compareDates(new Date(d), date))
     ).length > 0;
     return result ? " attended-btn" : "";
@@ -143,7 +143,7 @@ const Attendance: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {users?.filter(x=> x.authLevel === 4 && x.isActive).sort((a, b) => {
+                      {users?.filter(x=> x.authLevel === 4 && x.isActive && x.startDate && new Date(x.startDate) <= getDate(4)).sort((a, b) => {
                         const fourWeeksAgo = new Date();
                         fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
                         const countAttendance = (userId: number) => {
@@ -159,7 +159,7 @@ const Attendance: React.FC = () => {
                           {Array.from({ length: 4 }).map((_ : any, index: any) =>
                             { return (
                             <td key={index}>
-                              <button onClick={() => { if (noClasses.filter(d => compareDates(new Date(d), getDate(index +1))).length === 0) updateAttendanceMutation.mutate({ userId: item.id, date: getDate(index +1).toISOString() } as UpdateAttendanceDto)}} className={'absent-btn' + styleAttendanceButtons(item, getDate(index +1))} ></button>
+                              {item.startDate !== null && new Date(item.startDate) <= getDate(index + 2) && <button onClick={() => { if (noClasses.filter(d => compareDates(new Date(d), getDate(index +1))).length === 0) updateAttendanceMutation.mutate({ userId: item.id, date: getDate(index +1).toISOString() } as UpdateAttendanceDto)}} className={'absent-btn' + styleAttendanceButtons(item, getDate(index +1))} ></button>}
                               {/* <button key={index} onClick={() => updateAttendanceMutation.mutate({ userId: item.id, date: getDate(index +1).toISOString() } as UpdateAttendanceDto)} className={'absent' + (hasAttended(item, getDate(index +1)) ? " attended" : "")} ></button> */}
                             </td> );
                             })

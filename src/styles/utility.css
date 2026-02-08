@@ -29,6 +29,10 @@
   margin-bottom: 0;
 }
 
+.no-margin-bottom {
+  margin-bottom: 0;
+}
+
 .bold {
   font-weight: bold;
 }

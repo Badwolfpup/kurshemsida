@@ -16,6 +16,12 @@
   align-items: center;
 }
 
+.flex-horizontal-flex-start {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
 .flex-wrap-horizontal {
   display: flex;
   gap: 10px;

@@ -17,6 +17,7 @@ const CoachAttendance: React.FC = () => {
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
     const [selectedUserId, setSelectedUserId] = useState<number>(0);
+    const [selectedCoachId, setSelectedCoachId] = useState<number>(0);
     const [showUserinfo, setShowUserInfo] = useState<boolean>(true);
     const { data: users = [] as UserType[], isLoading: isUsersLoading, isError: isUsersError, error: usersError, refetch: refetchUsers, isFetching: isUsersFetching } = useUsers(1);
     const { data: attendance = [] as AttendanceType[], isLoading: isAttendanceLoading, isError: isAttendanceError, error: attendanceError, refetch: refetchAttendance, isRefetching: isAttendanceRefetching } = useAttendance(date, 2);
@@ -64,7 +65,7 @@ const CoachAttendance: React.FC = () => {
       setDate(newDate);
     }
 
-
+    
     const getDate = (offset: number): Date => {
       const today = new Date();
       const monday = new Date(date);
@@ -84,10 +85,10 @@ const CoachAttendance: React.FC = () => {
 
   const styleAttendanceButtons = (user: UserType, date: Date): string => {
     const isNoClass = noClasses.filter(d => compareDates(new Date(d), date)).length > 0;
-    if (isNoClass) return " noclass";
+    if (isNoClass) return " noclass-btn";
     const result = attendance.filter(x => x.userId === user.id).filter(dates => dates.date.some(d => compareDates(new Date(d), date))
     ).length > 0;
-    return result ? " attended" : "";
+    return result ? " attended-btn" : "";
   };
 
   const dateFormatted = (date: Date): string => date.toLocaleDateString('sv-SE', {  day: 'numeric', month: 'short' });
@@ -178,12 +179,22 @@ const CoachAttendance: React.FC = () => {
               <h2 className="no-margin-onY">Närvarosida</h2>
               <select className="standard-select" id="user-dropdown" value={selectedUser?.id || 0} onChange={(e) => {setSelectedUserId(Number(e.target.value)); setSelectedUser(users.find(u => u.id === Number(e.target.value)) || null); }}>
                   <option value="0">Alla deltagare</option>
-                  {users?.filter(user => (user.authLevel === 4 && (userType === 'Teacher' || userType === 'Admin')) || (user.authLevel === 4 && user.coachId === userId && (selectedUserId !== 0 ? user.id === selectedUserId : true))).map((item, i) => (
+                  {users?.filter(user => (user.authLevel === 4 && (userType === 'Teacher' || userType === 'Admin') && user.coachId === selectedCoachId) || 
+                  (user.authLevel === 4 && userType === 'Coach' && user.coachId === userId)).map((item, i) => (
                     <option key={i} value={item.id}>
                       {checkInitials(item)}
                   </option>
                   ))}
               </select>
+              {(userType === 'Admin' || userType ==='Teacher') &&
+                <select className="standard-select" value={selectedCoachId || 0} onChange={(e) => setSelectedCoachId(Number(e.target.value))} >
+                  <option value="0">Alla coacher</option>
+                  {users?.filter(user => user.authLevel === 3).map((coach, i) => (
+                    <option key={i} value={coach.id}>
+                      {coach.firstName} {coach.lastName}
+                    </option>
+                  ))}
+                </select>}
             </div>
               {selectedUser && selectedUser?.id !== 0 && 
               <>
@@ -285,7 +296,7 @@ const CoachAttendance: React.FC = () => {
                                 <h2 className="no-margin-onY">Statistik</h2>
                                 <button className="standard-btn width-150px right-aligned" onClick={() => setShowUserInfo(true)}>Kontaktuppgifter</button>
                               </div>
-                              {/* <span className="no-margin-onY">Startdatum på kursen: {selectedUser.startDate}</span> */}
+                              <span className="no-margin-onY"><strong>Startdatum på kursen:</strong> {selectedUser?.startDate ? new Date(selectedUser.startDate).toLocaleDateString('sv-SE') : 'Ej angivet'}</span>
                               <span className="no-margin-onY "><strong>Senaste närvarodag:</strong> {(() => {
                                 const dates = attendance.filter(x => x.userId == selectedUser.id).flatMap(a => a.date);
                                 if (dates.length === 0) return 'Aldrig närvarat';
@@ -383,13 +394,14 @@ const CoachAttendance: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {users?.filter(x=> (x.authLevel === 4 && (userType === 'Teacher' || userType === 'Admin')) || (x.authLevel === 4 && x.coachId === userId && (selectedUserId !== 0 ? x.id === selectedUserId : true))).map((item, i) => (
+                    {users?.filter(x=> ((x.authLevel === 4 && x.coachId === selectedCoachId && (selectedUserId !== 0 ? x.id === selectedUserId : true) && (userType === 'Teacher' || userType === 'Admin')) ||
+                    (x.authLevel === 4 && userType === 'Coach' && x.coachId === userId && (selectedUserId !== 0 ? x.id === selectedUserId : true))) && x.startDate && new Date(x.startDate) <= getDate(4)).map((item, i) => (
                       <tr key={i}>
                         <td>{checkInitials(item)}</td>
                         {Array.from({ length: 8 }).map((_ : any, index: any) =>
                           { return (
                           <td>
-                            {item.startDate !== null && new Date(item.startDate) <= getDate(index +1-7) && <button key={index} className={'absent-btn' + styleAttendanceButtons(item, getDate(index +1-7))} ></button>}
+                            {item.startDate !== null && new Date(item.startDate) <= getDate(index +2-7) && <button key={index} className={'absent-btn' + styleAttendanceButtons(item, getDate(index +1-7))} ></button>}
                           </td> );
                           })
                         }

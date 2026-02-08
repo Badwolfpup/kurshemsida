@@ -11,6 +11,15 @@ import type { AddUserDto, DeleteUserDto } from '../../Types/Dto/UserDto';
 
 
 
+const defaultNewUser: AddUserDto = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  telephone: '',
+  startDate: null,
+  authLevel: 4,
+};
+
 const ManageUsers: React.FC = () => {
   const navigate = useNavigate();
   const {userType} = useUser();
@@ -19,41 +28,24 @@ const ManageUsers: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<string>("4");
   const [selectedRoleName, setSelectedRoleName] = useState<string>("deltagare");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [newUser, setNewUser] = useState<AddUserDto>(defaultNewUser);
   const { data: users = [] as UserType[], isLoading, isError, error, refetch, isRefetching } = useUsers(1);
   const { data: inactiveUsers = [] as UserType[], refetch: refetchInactiveUsers, isLoading: isInactiveUsersLoading, isError: isInactiveUsersError, error: inactiveUsersError, isRefetching: isInactiveUsersRefetching } = useUsers(0);
   const addUserMutation = useAddUser();
   const updateActivityStatusMutation = useUpdateActivityStatus();
   const deleteUserMutation = useDeleteUser();
 
-
+  console.log(users);
   const handleEditUser = (user: UserType) => {
     navigate('/userprofile', { state: { selectedUser: user } });
   };
 
 
-  const getNewUserInputs = () => {
-    const firstNameInput = (document.querySelector('.add-user-name-inputs input[placeholder="Förnamn"]') as HTMLInputElement).value.trim();
-    const lastNameInput = (document.querySelector('.add-user-name-inputs input[placeholder="Efternamn"]') as HTMLInputElement).value.trim();
-    const emailInput = (document.querySelector('.add-user-name-inputs input[placeholder="Email"]') as HTMLInputElement).value.trim();
-    const telephoneInput = (document.querySelector('.add-user-name-inputs input[placeholder="Telefon (valfritt)"]') as HTMLInputElement).value.trim();
-    const authLevelEl = (document.querySelector('.role-combobox') as HTMLSelectElement);
-    const authLevelInput = authLevelEl ? parseInt(authLevelEl.value) : 4;
-    const startDateEl = (document.querySelector('.add-user-name-inputs input[placeholder="Startdatum"]') as HTMLInputElement);
-    const startDateInput = startDateEl && startDateEl.value ? new Date(startDateEl.value) : null;
-
-    const coachIdEl = document.querySelector('.coach-combobox') as HTMLSelectElement;
-    const coachIdInput = coachIdEl && coachIdEl.value ? parseInt(coachIdEl.value) : null;
-    const courseEl = document.querySelector('.course-combobox') as HTMLSelectElement;
-    const courseInput = courseEl && courseEl.value ? parseInt(courseEl.value) : null;
-    const contactIdEl = document.querySelector('.contact-combobox') as HTMLSelectElement;
-    const contactIdInput = contactIdEl && contactIdEl.value ? parseInt(contactIdEl.value) : null;
-    return { firstName: firstNameInput, lastName: lastNameInput, email: emailInput, startDate: startDateInput, telephone: telephoneInput, authLevel: authLevelInput, coachId: coachIdInput,  course: courseInput, contactId: contactIdInput } as AddUserDto;
-  }
 
 
   const addCoachComboBox = (): React.ReactNode => {
         return (
-            <select name='coachId' id="coachId" className="standard-select">
+            <select name='coachId' id="coachId" className="standard-select" value={newUser.coachId ?? ''} onChange={(e) => setNewUser(prev => ({ ...prev, coachId: e.target.value ? parseInt(e.target.value) : undefined }))}>
               <option value="">Välj coach (valfritt)</option>
               {users.length > 0 ? (
                 users.filter(user => user.authLevel === 3 && user.isActive).map((coach) => (
@@ -68,7 +60,7 @@ const ManageUsers: React.FC = () => {
 
     const addContactComboBox = (): React.ReactNode => {
         return (
-          <select  name='contactId' id="contactId" className="standard-select">
+          <select name='contactId' id="contactId" className="standard-select" value={newUser.contactId ?? ''} onChange={(e) => setNewUser(prev => ({ ...prev, contactId: e.target.value ? parseInt(e.target.value) : undefined }))}>
               <option value="">Välj kontakt (valfritt)</option>
               {users.length > 0 ? (
                 users.filter(user => user.authLevel <= 2 && user.isActive).map((teacher) => (
@@ -83,7 +75,7 @@ const ManageUsers: React.FC = () => {
 
     const addCourseComboBox = (): React.ReactNode => {
         return (
-            <select name='course' id="course" className="standard-select">
+            <select name='course' id="course" className="standard-select" value={newUser.course ?? ''} onChange={(e) => setNewUser(prev => ({ ...prev, course: e.target.value ? parseInt(e.target.value) : undefined }))}>
               <option value="" disabled>Välj spår</option>
               <option value="1">Spår 1</option>
               <option value="2">Spår 2</option>
@@ -169,8 +161,23 @@ const ManageUsers: React.FC = () => {
   }
    
   const handleAddUser = async () => {
-    const newUserInputs = getNewUserInputs();
-    addUserMutation.mutate(newUserInputs);
+    if (!newUser.firstName.trim() || !newUser.lastName.trim() || !newUser.email.trim()) {
+      setToastMessage('Vänligen fyll i alla obligatoriska fält.');
+      setTimeout(() => setToastMessage(null), 3000);
+      return;
+    }
+
+    addUserMutation.mutate({ ...newUser, authLevel: parseInt(selectedRole) }, {
+      onSuccess: () => {
+        setNewUser(defaultNewUser);
+        setToastMessage('Användare tillagd!');
+        setTimeout(() => setToastMessage(null), 3000);
+      },
+      onError: () => {
+        setToastMessage('Kunde inte lägga till användare.');
+        setTimeout(() => setToastMessage(null), 3000);
+      }
+    });
   }
 
     if (isLoading || isInactiveUsersLoading) return (
@@ -204,11 +211,11 @@ const ManageUsers: React.FC = () => {
         (
           <div>
             <div className="flex-wrap-horizontal-center add-margin-bottom">
-              <input className='standard-input' type="text" name='firstName' id="firstName" placeholder="Förnamn"  required/>
-              <input className='standard-input' type="text" name='lastName' id="lastName" placeholder="Efternamn" required/>
-              <input className='standard-input' type="email" name='email' id="email" placeholder="Email" required/>
-              <input className='standard-input' type="date" name='startDate' id="startDate" placeholder="Startdatum" />
-              <input className='standard-input' type="tel" name='telephone' id="telephone" placeholder="Telefon (valfritt)" />
+              <input className='standard-input add-user' type="text" name='firstName' id="firstName" placeholder="Förnamn" required value={newUser.firstName} onChange={(e) => setNewUser(prev => ({ ...prev, firstName: e.target.value }))} />
+              <input className='standard-input add-user' type="text" name='lastName' id="lastName" placeholder="Efternamn" required value={newUser.lastName} onChange={(e) => setNewUser(prev => ({ ...prev, lastName: e.target.value }))} />
+              <input className='standard-input add-user' type="email" name='email' id="email" placeholder="Email" required value={newUser.email} onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))} />
+              <input className='standard-input add-user' type="date" name='startDate' id="startDate" placeholder="Startdatum" value={newUser.startDate ? new Date(newUser.startDate).toISOString().split('T')[0] : ''} onChange={(e) => setNewUser(prev => ({ ...prev, startDate: e.target.value ? new Date(e.target.value) : null }))} />
+              <input className='standard-input add-user' type="tel" name='telephone' id="telephone" placeholder="Telefon (valfritt)" value={newUser.telephone ?? ''} onChange={(e) => setNewUser(prev => ({ ...prev, telephone: e.target.value }))} />
               {addRoleComboBox()}
               {selectedRole === "4" && addCourseComboBox()}
               {selectedRole === "4" && addCoachComboBox()}
@@ -216,7 +223,7 @@ const ManageUsers: React.FC = () => {
             </div>
             <div className="flex-horizontal-center">
               <button className='standard-btn' onClick={() => {handleAddUser();  setSelectedRole("4"); setAddNewUserForm(false);}}>Lägg till</button>
-              <button className='standard-btn' onClick={() => {setAddNewUserForm(false); setSelectedRole("4")}}>Avbryt</button>
+              <button className='standard-btn' onClick={() => {setAddNewUserForm(false); setSelectedRole("4"); setNewUser(defaultNewUser);}}>Avbryt</button>
             </div>
           </div>
         ) :
