@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './AdminSidebar.css';
 
 interface AdminSidebarProps {
   isOpen: boolean;
@@ -21,19 +20,19 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen, onBack }
         <Link to="/manageusers">Hantera användare</Link>
       </div>
       <div className="menu-link">
-        <Link to="/makepost">Skapa inlägg</Link>
-      </div>
-      <div className="menu-link">
         <Link to="/attendance">Närvarohantering</Link>
       </div>
       <div className="menu-link">
+        <Link to="/makepost">Skapa eventinlägg</Link>
+      </div>
+      {/* <div className="menu-link">
         <Link to="/manage-projects">Projekt</Link>
       </div>
       <div className="menu-link">
         <Link to="/manage-exercises">Övningar</Link>
-      </div>
+      </div> */}
       <div className="menu-link">
-        <Link to="/adminsettings">Allmäna Inställningar</Link>
+        <Link to="/adminsettings">Admin Inställningar</Link>
       </div>
       <div className="menu-link">
         <button onClick={onBack}>Tillbaka</button> {/* Use onBack */}

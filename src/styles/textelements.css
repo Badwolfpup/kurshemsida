@@ -24,3 +24,24 @@
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
+
+
+/* TEXTAREAS */
+.standard-textarea {
+    font-family: "Fira Mono", "Consolas", monospace;
+    font-size: 1em;
+    background: none;
+    border: none;
+    resize: vertical;
+    color: #1565c0;
+    outline: none;
+    padding: 10px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.standard-textarea::placeholder
+{
+  color: #90caf9;
+  font-style: italic;
+}

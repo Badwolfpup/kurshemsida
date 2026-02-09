@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import 'quill/dist/quill.snow.css';
-import './MakePost.css';
-import '../../styles/button.css';
 import { processDeltaForImages } from '../../utils/imageUtils';
 import QuillEditor from '../../utils/quillEditor';
 import Toast from '../../utils/toastMessage';

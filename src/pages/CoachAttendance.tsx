@@ -1,7 +1,5 @@
 import React from "react";
 import { useState } from "react";
-import './CoachAttendance.css';
-import '../styles/spinner.css';
 import { useUser } from "../context/UserContext";
 import type UserType from "../Types/User";
 import type AttendanceType from "../Types/Attendance";

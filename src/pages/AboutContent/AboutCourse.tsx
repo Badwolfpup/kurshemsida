@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import './AboutCourse.css';
 import Events from './Events';
+import Presentation from './Presentation';
+import Activities from './Activities';
+import Locale from './Locale';
+import Teachers from './Teachers';
+import GetStarted from './GetStarted';
+import omkursen from '../../assets/images/Omkursen.png';
+import handledare from '../../assets/images/handledare.png';
+import aktiviteter from '../../assets/images/aktiviteter.png';
+import lokaler from '../../assets/images/lokaler.png';
 
 interface AboutCourseProps {
   setShowAboutPage: (value: boolean) => void;
@@ -27,37 +36,55 @@ const AboutCourse: React.FC<AboutCourseProps> = ({ setShowAboutPage }) => {
           <button onClick={() => setShowAboutPage(false)}>Logga in</button>
         </div>
         <div className="about-course-container">
-          <div 
-            className={`course-card course-presentation ${selectedCard === 'presentation' ? 'expanded' : ''}`} 
+          <div
+            className={`course-card course-presentation ${selectedCard === 'presentation' ? 'expanded' : ''}`}
             onClick={() => handleCardClick('presentation')}
           >
             {selectedCard === 'presentation' && backButton()}
-            <h2>Kurs Presentation</h2>
-            <p>Lär dig grunderna i programmering med fokus på praktiska projekt...</p>
+            {selectedCard === 'presentation' && <Presentation />}
+            {selectedCard !== 'presentation' && (
+              <>
+                <img className="height-auto" src={omkursen}/>
+              </>
+            )}
           </div>
-          <div 
-            className={`course-card course-activities ${selectedCard === 'activities' ? 'expanded' : ''}`} 
+          <div
+            className={`course-card course-activities ${selectedCard === 'activities' ? 'expanded' : ''}`}
             onClick={() => handleCardClick('activities')}
           >
             {selectedCard === 'activities' && backButton()}
-            <h2>Kurs Aktiviteter</h2>
-            <p>Utforska interaktiva övningar och utmaningar...</p>
+            {selectedCard === 'activities' && <Activities />}
+            {selectedCard !== 'activities' && (
+              <>
+                <img className="height-auto" src={aktiviteter}/>
+
+              </>
+            )}
           </div>
-          <div 
-            className={`course-card course-locale ${selectedCard === 'locale' ? 'expanded' : ''}`} 
+          <div
+            className={`course-card course-locale ${selectedCard === 'locale' ? 'expanded' : ''}`}
             onClick={() => handleCardClick('locale')}
           >
             {selectedCard === 'locale' && backButton()}
-            <h2>Kurs Plats</h2>
-            <p>Online eller på campus – flexibla alternativ...</p>
+            {selectedCard === 'locale' && <Locale />}
+            {selectedCard !== 'locale' && (
+              <>
+                <img className="height-auto" src={lokaler}/>
+              </>
+            )}
           </div>
-          <div 
-            className={`course-card course-instructor ${selectedCard === 'instructor' ? 'expanded' : ''}`} 
+          <div
+            className={`course-card course-instructor ${selectedCard === 'instructor' ? 'expanded' : ''}`}
             onClick={() => handleCardClick('instructor')}
           >
             {selectedCard === 'instructor' && backButton()}
-            <h2>Kurs Instruktör</h2>
-            <p>Möt våra erfarna lärare som guidar dig...</p>
+            {selectedCard === 'instructor' && <Teachers />}
+            {selectedCard !== 'instructor' && (
+              <>
+                <img className="height-auto" src={handledare}/>
+
+              </>
+            )}
           </div>
             <div 
             className={`course-card course-events ${selectedCard === 'events' ? 'expanded' : ''}`} 
@@ -67,18 +94,21 @@ const AboutCourse: React.FC<AboutCourseProps> = ({ setShowAboutPage }) => {
             {selectedCard === 'events' && <Events />}
             {selectedCard !== 'events' && (
               <>
-                <h2>Kurs Aktuella Händelser</h2>
-                <p>Delta i spännande evenemang och workshops...</p>
+                <h2>På gång</h2>
               </>
             )}
           </div>
-                    <div 
-            className={`course-card course-get-started ${selectedCard === 'get-started' ? 'expanded' : ''}`} 
+                    <div
+            className={`course-card course-get-started ${selectedCard === 'get-started' ? 'expanded' : ''}`}
             onClick={() => handleCardClick('get-started')}
           >
             {selectedCard === 'get-started' && backButton()}
-            <h2>Kurs Kom igång</h2>
-            <p>Kom igång att koda med våra enkla guider och resurser...</p>
+            {selectedCard === 'get-started' && <GetStarted />}
+            {selectedCard !== 'get-started' && (
+              <>
+                <h2>Kom igång</h2>
+              </>
+            )}
           </div>
         </div>
       </div>

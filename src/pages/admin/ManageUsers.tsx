@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './ManageUsers.css';
-import '../../styles/button.css';
-import '../../styles/spinner.css';
 import { useUser } from '../../context/UserContext';
 import Toast from '../../utils/toastMessage';
 import { useUsers, useAddUser, useUpdateActivityStatus, useDeleteUser } from '../../hooks/useUsers';
@@ -234,6 +231,7 @@ const ManageUsers: React.FC = () => {
           <table className="page-table">
             <thead>
               <tr>
+              <th>#</th>
                 <th>Namn</th>
                 <th>Email</th>
                 <th>Telefon</th>
@@ -253,7 +251,8 @@ const ManageUsers: React.FC = () => {
               ) : (
                 users.filter(user => (showActiveUsers ? user.isActive : !user.isActive) && user.authLevel === parseInt(selectedRole)).map((user, index) => (
                   <tr key={index}>
-                          <td>{user.firstName} {user.lastName}</td>
+                    <td>{index + 1}</td>
+                    <td>{user.firstName} {user.lastName}</td>
                     <td>{user.email}</td>
                     <td style={{ whiteSpace: 'nowrap' }}>{user.telephone || ""}</td>
                     {selectedRole === "4" && <td>{user.startDate ? new Date(user.startDate).toISOString().split('T')[0] : ""}</td>}

@@ -1,79 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import './Events.css';
+import React from 'react';
+import type PostType from '../../Types/PostType';
+import { usePosts } from '../../hooks/usePosts';
 
-interface Post {
-  id: number;
-  html: string;
-  delta: string;
-  publishedAt: Date;
-  author: string;
-  pinned: number;
-}
+
+
 
 const Events: React.FC = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data : posts = [] as PostType[], isLoading, isError, error, isFetching, refetch } = usePosts();
 
-  const fetchPosts = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch('/api/fetch-posts');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const posts: Post[] = await response.json();
-      posts.sort((a, b) => {
-        // Pinned posts first
-        if (a.pinned !== b.pinned) {
-          return b.pinned - a.pinned;
-        }
-        // Then by published date descending
-        return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
-      });
-      setPosts(posts);
-    }
-    catch (error) {
-      console.error('Failed to fetch posts:', error);
-      setError('Kunde inte ladda inlägg. Försök igen senare.');
-    }
-    finally {
-      setLoading(false);
-    }
-  }
+  if (isLoading) return (
+    <div className="events-content">
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Laddar händelser...</p>
+      </div>
+    </div>
+  );
 
-  useEffect(() => {
-    const getPosts = async () => await fetchPosts();
-    getPosts();
-  }, []);
-
-
-
-
+  if (isError) return (
+    <div className="events-content">
+      <div className="error-container">
+        <p>{error?.message}</p>
+        <button className="retry-button" onClick={() => {refetch();}} disabled={isFetching}>
+          {isFetching ? 'Laddar...' : 'Försök igen'}
+        </button>
+      </div>
+    </div>
+  );
 
   return (
-    <>
-      {loading && (
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Laddar inlägg...</p>
+    <div className="events-content">
+      <h2>På Gång</h2>
+
+      <div className="events-intro">
+        <p>
+          Håll dig uppdaterad om kommande evenemang, aktiviteter och viktiga datum!
+          Här hittar du information om allt från gästföreläsningar och företagsbesök
+          till specialarrangemang och deadlines. Kolla in regelbundet för att inte
+          missa något spännande.
+        </p>
+      </div>
+
+      {posts.length > 0 ? (
+        <div className="events-list">
+          {posts.map((post) => (
+            <div key={post.id} className="event-card">
+              <div className="event-content" dangerouslySetInnerHTML={{ __html: post.html }}></div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="no-events">
+          <div className="no-events-icon">📅</div>
+          <h3>Inga kommande händelser</h3>
+          <p>Det finns inga planerade evenemang just nu. Kom tillbaka snart för uppdateringar!</p>
         </div>
       )}
-
-      {error && (
-        <div className="error-container">
-          <p>{error}</p>
-          <button className="retry-button" onClick={fetchPosts}>Försök igen</button>
-        </div>
-      )}
-
-      {!loading && !error && posts.map((post) => (
-        <div key={post.id} className="event-post">
-          <div dangerouslySetInnerHTML={{ __html: post.html }}></div>
-        </div>
-      ))}
-    </>
+    </div>
   );
 };
 

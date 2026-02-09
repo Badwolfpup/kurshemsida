@@ -1,10 +1,6 @@
 
 import React, { useState, useEffect} from 'react';
 import { useLocation } from 'react-router-dom';
-import '../../styles/button.css';
-import '../../styles/selects.css';
-import '../../styles/spinner.css';
-import './UserProfiles.css';
 import Toast from '../../utils/toastMessage';
 import { useUser } from '../../context/UserContext';
 import type UserType from '../../Types/User';

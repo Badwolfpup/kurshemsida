@@ -1,7 +1,6 @@
 
 **TODO**
-Mixtra med temeprature och se skillnaden
-Koppla upp mot deepseek
+
 Spara övningar o projekt?
     se bara egna tidigare eller andras?
     snabbare
@@ -29,6 +28,8 @@ visar inte deltagaren om dess startdatum var efter nuvarande datuminterval visas
 visar återigen röda knappar om dagen markerats som inställd
 AI-genererade övningar emd Asserts
 AI-genererade projekt
+Mixtra med temeprature och se skillnaden
+Koppla upp mot deepseek
 
 5/2 - 6/2
 Göra om css till definierade styles för div som finns på olika sidor, istället för allt i lokal css

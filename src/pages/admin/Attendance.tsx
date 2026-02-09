@@ -7,8 +7,6 @@ import { useUsers } from "../../hooks/useUsers";
 import { useNoClasses, useUpdateNoClasses } from "../../hooks/useNoClass";
 import { useAttendance, useUpdateAttendance, useGetWeek } from "../../hooks/useAttendance";
 import Toast from '../../utils/toastMessage';
-import './Attendance.css';
-import '../../styles/spinner.css'
 
 
 const Attendance: React.FC = () => {
