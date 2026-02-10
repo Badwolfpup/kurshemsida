@@ -1,5 +1,6 @@
 import React from 'react';
 import placeholderImage from '../../assets/images/dummypic.png';
+import './Teachers.css';
 
 const Teachers: React.FC = () => {
   const teachers = [
@@ -27,10 +28,10 @@ const Teachers: React.FC = () => {
   ];
 
   return (
-    <div className="teachers-content">
+    <div className="about-content">
       <h2>Våra Lärare</h2>
 
-      <div className="teachers-intro">
+      <div className="about-intro">
         <p>
           Möt vårt dedikerade team av lärare och mentorer som alla brinner för att hjälpa dig
           utvecklas som programmerare. Vi kommer från olika bakgrunder och har olika

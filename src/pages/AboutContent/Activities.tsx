@@ -1,11 +1,12 @@
 import React from 'react';
+import './Activities.css';
 
 const Activities: React.FC = () => {
   return (
-    <div className="activities-content">
+    <div className="about-content">
       <h2>Kursaktiviteter</h2>
 
-      <div className="activities-intro">
+      <div className="about-intro">
         <p>
           Vi erbjuder en mängd olika aktiviteter varje vecka för att hjälpa dig utvecklas
           som programmerare. Här är vår fasta veckorutin samt specialevenemang som vi
@@ -13,7 +14,7 @@ const Activities: React.FC = () => {
         </p>
       </div>
 
-      <div className="activities-section">
+      <div className="about-section">
         <h3>Veckans Schema</h3>
         <div className="weekly-activities">
           <div className="activity-card monday">
@@ -107,47 +108,6 @@ const Activities: React.FC = () => {
               <span className="tag">Avslappnat</span>
               <span className="tag">Fika</span>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="activities-section special-section">
-        <h3>Företagsbesök & Gästföreläsningar</h3>
-        <div className="special-activities">
-          <p className="special-intro">
-            Vi bjuder regelbundet in mjukvaruföretag för att ge dig insikt i hur det är
-            att arbeta som professionell programmerare. Våra gäster delar med sig av sina
-            erfarenheter, pratar om sina projekt och svarar på frågor om karriärvägar
-            inom IT-branschen.
-          </p>
-
-          <div className="companies-visited">
-            <h4>Tidigare företagsbesök:</h4>
-            <div className="companies-grid">
-              <div className="company-card">
-                <div className="company-icon">🏢</div>
-                <div className="company-name">AppTech</div>
-              </div>
-              <div className="company-card">
-                <div className="company-icon">🏢</div>
-                <div className="company-name">Hiab</div>
-              </div>
-              <div className="company-card">
-                <div className="company-icon">🏢</div>
-                <div className="company-name">Xlent</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="special-benefits">
-            <h4>Vad ger företagsbesöken?</h4>
-            <ul>
-              <li>Insikt i verkliga arbetsuppgifter för programmerare</li>
-              <li>Förståelse för företagskultur och arbetsmetoder</li>
-              <li>Möjlighet att ställa frågor direkt till yrkesverksamma</li>
-              <li>Nätverkande och möjliga framtida jobbkontakter</li>
-              <li>Inspiration för din egen karriärväg</li>
-            </ul>
           </div>
         </div>
       </div>

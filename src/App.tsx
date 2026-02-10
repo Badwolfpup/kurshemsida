@@ -19,6 +19,7 @@ import './styles/inputs.css';
 import './styles/selects.css';
 import './styles/textelements.css';
 import './styles/utility.css';
+import './styles/aboutcontent.css';
 import './styles/oddStyles.css';
 
 const queryClient = new QueryClient();

@@ -21,6 +21,11 @@ Swe/Eng
 
 
 **FINISHED TASKS**
+10/2 
+Flyttat företag till event
+Fixat css för Startsidan
+Fixat statstiksidan så att den visar korrekt siffror
+
 7/2 - 8/2
 CoachAttendance - lägg till select för oss admin så vi kan filtrera likadant som coacher
 visar inte närvaroknapp innan startdatum

@@ -1,12 +1,13 @@
 import React from 'react';
 import placeholderImage from '../../assets/images/dummypic.png';
+import './Locale.css';
 
 const Locale: React.FC = () => {
   return (
-    <div className="locale-content">
+    <div className="about-content">
       <h2>Våra Lokaler</h2>
 
-      <div className="locale-intro">
+      <div className="about-intro">
         <p>
           Vi har dedicerade rum för olika aktiviteter, alla utrustade med det material och
           den utrustning som behövs. Våra lokaler är säkra och privata – alla dörrar har

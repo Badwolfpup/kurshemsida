@@ -4,7 +4,7 @@ import type { UpdateAttendanceDto } from '../Types/Dto/AttendanceDto';
 
 export function useAttendance(date: Date, count: number) {
     return useQuery({
-        queryKey: ['attendance', date],
+        queryKey: ['attendance', date, count],
         queryFn: () => attendanceService.fetchAttendance(date, count),
         staleTime: 5 * 60 * 1000, // 5 minutes
     })

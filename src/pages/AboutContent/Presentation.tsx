@@ -1,11 +1,12 @@
 import React from 'react';
+import './Presentation.css';
 
 const Presentation: React.FC = () => {
   return (
-    <div className="presentation-content">
+    <div className="about-content">
       <h2>Välkommen till CUL Programmering!</h2>
 
-      <div className="presentation-intro">
+      <div className="about-intro">
         <p>
           Hos oss erbjuder vi en unik och inkluderande programmeringsmiljö där du kan utvecklas
           i din egen takt, på dina egna villkor. Vi tror på att alla kan lära sig programmera

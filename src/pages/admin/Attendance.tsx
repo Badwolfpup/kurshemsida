@@ -13,9 +13,11 @@ const Attendance: React.FC = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [date, setDate] = useState<Date>(new Date());
   const [showStats, setShowStats] = useState<boolean>(false);
+  const [statsDate] = useState<Date>(() => new Date());
   const { data: users = [] as UserType[], isLoading: isUsersLoading, isError: isUsersError, error: usersError, refetch: refetchUsers, isRefetching: isUsersRefetching } = useUsers();
   const { data: noClasses = [] as Date[], isLoading: isNoClassesLoading, isError: isNoClassesError, error: noClassesError, refetch: refetchNoClasses, isRefetching: isNoClassesRefetching } = useNoClasses();
   const { data: attendance = [] as AttendanceType[], isLoading: isAttendanceLoading, isError: isAttendanceError, error: attendanceError, refetch: refetchAttendance, isRefetching: isAttendanceRefetching } = useAttendance(date, 1);
+  const { data: statsAttendance = [] as AttendanceType[] } = useAttendance(statsDate, 18);
   const { data: week } = useGetWeek(date, 1);
   const updateAttendanceMutation = useUpdateAttendance();
   const updateNoClassesMutation = useUpdateNoClasses();
@@ -84,14 +86,30 @@ const Attendance: React.FC = () => {
     return date;
   }
 
-  const numberOfWeekdaysInMonth = (weekday: number, month: number, year: number): number => {
+  const numberOfWeekdaysInMonth = (weekday: number, month: number, year: number, upToDay?: number): number => {
     // weekday: 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const maxDay = upToDay ?? new Date(year, month + 1, 0).getDate();
     let count = 0;
-    for (let day = 1; day <= daysInMonth; day++) {
+    for (let day = 1; day <= maxDay; day++) {
       if (new Date(year, month, day).getDay() === weekday) count++;
     }
     return count;
+  }
+
+  const getAverageAttendance = (weekday: number, monthOffset: number): number => {
+    const firstDay = getFirstDayOfMonth(monthOffset);
+    const lastDay = getLastDayOfMonth(monthOffset);
+
+    const totalAttendance = statsAttendance.reduce((sum, att) =>
+      sum + att.date.filter(d => {
+        const attDate = new Date(d);
+        return attDate.getDay() === weekday && attDate >= firstDay && attDate <= lastDay;
+      }).length, 0);
+
+    const upToDay = monthOffset === 0 ? new Date().getDate() : undefined;
+    const weekdayCount = numberOfWeekdaysInMonth(weekday, firstDay.getMonth(), firstDay.getFullYear(), upToDay);
+
+    return weekdayCount > 0 ? Math.round(totalAttendance / weekdayCount) : 0;
   }
 
   return (
@@ -180,31 +198,31 @@ const Attendance: React.FC = () => {
                     <tbody>
                       <tr>
                         <td>Måndag</td>
-                        <td>{Math.round(attendance.filter(att => att.date.some(d => { const attDate = new Date(d); return attDate.getDay() === 1 && attDate >= getFirstDayOfMonth(0) && attDate <= getLastDayOfMonth(0)})).length / numberOfWeekdaysInMonth(1, getFirstDayOfMonth(0).getMonth(), getFirstDayOfMonth(0).getFullYear()))}</td>
-                        <td>{Math.round(attendance.filter(att => att.date.some(d => { const attDate = new Date(d); return attDate.getDay() === 1 && attDate >= getFirstDayOfMonth(-1) && attDate <= getLastDayOfMonth(-1)})).length / numberOfWeekdaysInMonth(1, getFirstDayOfMonth(-1).getMonth(), getFirstDayOfMonth(-1).getFullYear()))}</td>
-                        <td>{Math.round(attendance.filter(att => att.date.some(d => { const attDate = new Date(d); return attDate.getDay() === 1 && attDate >= getFirstDayOfMonth(-2) && attDate <= getLastDayOfMonth(-2)})).length / numberOfWeekdaysInMonth(1, getFirstDayOfMonth(-2).getMonth(), getFirstDayOfMonth(-2).getFullYear()))}</td>
-                        <td>{Math.round(attendance.filter(att => att.date.some(d => { const attDate = new Date(d); return attDate.getDay() === 1 && attDate >= getFirstDayOfMonth(-3) && attDate <= getLastDayOfMonth(-3)})).length / numberOfWeekdaysInMonth(1, getFirstDayOfMonth(-3).getMonth(), getFirstDayOfMonth(-3).getFullYear()))}</td>
+                        <td>{getAverageAttendance(1, 0)}</td>
+                        <td>{getAverageAttendance(1, -1)}</td>
+                        <td>{getAverageAttendance(1, -2)}</td>
+                        <td>{getAverageAttendance(1, -3)}</td>
                       </tr>
                       <tr>
                         <td>Tisdag</td>
-                        <td>{Math.round(attendance.filter(att => att.date.some(d => { const attDate = new Date(d); return attDate.getDay() === 2 && attDate >= getFirstDayOfMonth(0) && attDate <= getLastDayOfMonth(0)})).length / numberOfWeekdaysInMonth(2, getFirstDayOfMonth(0).getMonth(), getFirstDayOfMonth(0).getFullYear()))}</td>
-                        <td>{Math.round(attendance.filter(att => att.date.some(d => { const attDate = new Date(d); return attDate.getDay() === 2 && attDate >= getFirstDayOfMonth(-1) && attDate <= getLastDayOfMonth(-1)})).length / numberOfWeekdaysInMonth(2, getFirstDayOfMonth(-1).getMonth(), getFirstDayOfMonth(-1).getFullYear()))}</td>
-                        <td>{Math.round(attendance.filter(att => att.date.some(d => { const attDate = new Date(d); return attDate.getDay() === 2 && attDate >= getFirstDayOfMonth(-2) && attDate <= getLastDayOfMonth(-2)})).length / numberOfWeekdaysInMonth(2, getFirstDayOfMonth(-2).getMonth(), getFirstDayOfMonth(-2).getFullYear()))}</td>
-                        <td>{Math.round(attendance.filter(att => att.date.some(d => { const attDate = new Date(d); return attDate.getDay() === 2 && attDate >= getFirstDayOfMonth(-3) && attDate <= getLastDayOfMonth(-3)})).length / numberOfWeekdaysInMonth(2, getFirstDayOfMonth(-3).getMonth(), getFirstDayOfMonth(-3).getFullYear()))}</td>
+                        <td>{getAverageAttendance(2, 0)}</td>
+                        <td>{getAverageAttendance(2, -1)}</td>
+                        <td>{getAverageAttendance(2, -2)}</td>
+                        <td>{getAverageAttendance(2, -3)}</td>
                       </tr>
                       <tr>
                         <td>Onsdag</td>
-                        <td>{Math.round(attendance.filter(att => att.date.some(d => { const attDate = new Date(d); return attDate.getDay() === 3 && attDate >= getFirstDayOfMonth(0) && attDate <= getLastDayOfMonth(0)})).length / numberOfWeekdaysInMonth(3, getFirstDayOfMonth(0).getMonth(), getFirstDayOfMonth(0).getFullYear()))}</td>
-                        <td>{Math.round(attendance.filter(att => att.date.some(d => { const attDate = new Date(d); return attDate.getDay() === 3 && attDate >= getFirstDayOfMonth(-1) && attDate <= getLastDayOfMonth(-1)})).length / numberOfWeekdaysInMonth(3, getFirstDayOfMonth(-1).getMonth(), getFirstDayOfMonth(-1).getFullYear()))}</td>
-                        <td>{Math.round(attendance.filter(att => att.date.some(d => { const attDate = new Date(d); return attDate.getDay() === 3 && attDate >= getFirstDayOfMonth(-2) && attDate <= getLastDayOfMonth(-2)})).length / numberOfWeekdaysInMonth(3, getFirstDayOfMonth(-2).getMonth(), getFirstDayOfMonth(-2).getFullYear()))}</td>
-                        <td>{Math.round(attendance.filter(att => att.date.some(d => { const attDate = new Date(d); return attDate.getDay() === 3 && attDate >= getFirstDayOfMonth(-3) && attDate <= getLastDayOfMonth(-3)})).length / numberOfWeekdaysInMonth(3, getFirstDayOfMonth(-3).getMonth(), getFirstDayOfMonth(-3).getFullYear()))}</td>
+                        <td>{getAverageAttendance(3, 0)}</td>
+                        <td>{getAverageAttendance(3, -1)}</td>
+                        <td>{getAverageAttendance(3, -2)}</td>
+                        <td>{getAverageAttendance(3, -3)}</td>
                       </tr>
                       <tr>
                         <td>Torsdag</td>
-                        <td>{Math.round(attendance.filter(att => att.date.some(d => { const attDate = new Date(d); return attDate.getDay() === 4 && attDate >= getFirstDayOfMonth(0) && attDate <= getLastDayOfMonth(0)})).length / numberOfWeekdaysInMonth(4, getFirstDayOfMonth(0).getMonth(), getFirstDayOfMonth(0).getFullYear()))}</td>
-                        <td>{Math.round(attendance.filter(att => att.date.some(d => { const attDate = new Date(d); return attDate.getDay() === 4 && attDate >= getFirstDayOfMonth(-1) && attDate <= getLastDayOfMonth(-1)})).length / numberOfWeekdaysInMonth(4, getFirstDayOfMonth(-1).getMonth(), getFirstDayOfMonth(-1).getFullYear()))}</td>
-                        <td>{Math.round(attendance.filter(att => att.date.some(d => { const attDate = new Date(d); return attDate.getDay() === 4 && attDate >= getFirstDayOfMonth(-2) && attDate <= getLastDayOfMonth(-2)})).length / numberOfWeekdaysInMonth(4, getFirstDayOfMonth(-2).getMonth(), getFirstDayOfMonth(-2).getFullYear()))}</td>
-                        <td>{Math.round(attendance.filter(att => att.date.some(d => { const attDate = new Date(d); return attDate.getDay() === 4 && attDate >= getFirstDayOfMonth(-3) && attDate <= getLastDayOfMonth(-3)})).length / numberOfWeekdaysInMonth(4, getFirstDayOfMonth(-3).getMonth(), getFirstDayOfMonth(-3).getFullYear()))}</td>
+                        <td>{getAverageAttendance(4, 0)}</td>
+                        <td>{getAverageAttendance(4, -1)}</td>
+                        <td>{getAverageAttendance(4, -2)}</td>
+                        <td>{getAverageAttendance(4, -3)}</td>
                       </tr>
                     </tbody>
                   </table>

@@ -1,11 +1,12 @@
 import React from 'react';
+import './GetStarted.css';
 
 const GetStarted: React.FC = () => {
   return (
-    <div className="getstarted-content">
+    <div className="about-content">
       <h2>Kom Igång med Kodning</h2>
 
-      <div className="getstarted-intro">
+      <div className="about-intro">
         <p>
           Vill du börja lära dig programmering redan innan du ansluter dig till kursen?
           Här är våra rekommenderade resurser som hjälper dig att komma igång på egen hand.
@@ -14,7 +15,7 @@ const GetStarted: React.FC = () => {
       </div>
 
       {/* Learning Platforms Section */}
-      <div className="getstarted-section">
+      <div className="about-section">
         <h3>Lärplattformar</h3>
         <div className="resources-grid">
           <div className="resource-card">
@@ -96,7 +97,7 @@ const GetStarted: React.FC = () => {
       </div>
 
       {/* Practice Platforms Section */}
-      <div className="getstarted-section">
+      <div className="about-section">
         <h3>Träningsplattformar</h3>
         <div className="resources-grid">
           <div className="resource-card">
@@ -162,7 +163,7 @@ const GetStarted: React.FC = () => {
       </div>
 
       {/* Tools Section */}
-      <div className="getstarted-section">
+      <div className="about-section">
         <h3>Verktyg du behöver</h3>
         <div className="resources-grid">
           <div className="resource-card highlight-card">
