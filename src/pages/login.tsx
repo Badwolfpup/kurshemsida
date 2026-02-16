@@ -1,130 +1,178 @@
-import React, { useState } from 'react';
-import { useUser } from '../context/UserContext';
-import './Login.css';
+import { useState } from "react";
+import { authService } from "@/api/AuthService";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { Mail, ArrowRight, Loader2, UserRound, KeyRound } from "lucide-react";
+import "./Login.css";
 
-interface LoginProps {
-  setShowAboutPage: (value: boolean) => void;
-}
+export default function Login() {
+  const [email, setEmail] = useState("");
+  const [passcode, setPasscode] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [step, setStep] = useState<"email" | "passcode">("email");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const { enterAsGuest, login } = useAuth();
+  const navigate = useNavigate();
 
-const Login: React.FC<LoginProps> = ({ setShowAboutPage }) => {
-  const [inputValue, setInputValue] = useState<string>('');
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [password, setPassword] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [rememberMe, setRememberMe] = useState<boolean>(false);
-  const { login } = useUser();
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSendEmail = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!showPassword) 
-    {
-      const response = await fetch('/api/email-validation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: inputValue })
-      });
-      if (!response.ok) {
-        const mailinput = document.getElementById("email-instructions")
-        if (mailinput) mailinput.innerText = "Ogiltig email. Försök igen."
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      if (data > 0) {
-        setEmail(inputValue);
-        setPassword(data);
-        setShowPassword(true);
-      } else if (data === "Passcode sent to your email.") {
-        setEmail(inputValue);
-        setShowPassword(true);
-      }
-      else if (data ==="guest") {
-        setEmail(inputValue);
-        setPassword("");
-        setShowPassword(true);
-      }
-      else  {
-        alert("Ogiltig e-postadress. Försök igen.");
-      }
+    if (!email.trim()) return;
+    setLoading(true);
+    setError("");
+
+    const result = await authService.emailValidation(email.trim());
+    setLoading(false);
+
+    if (!result.ok) {
+      setError(result.error || "Ogiltig e-postadress.");
+      return;
     }
-    else {
-      const response = await fetch('/api/passcode-validation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, passcode: password, rememberMe: rememberMe })
-      });
-      if (!response.ok) {
-        const passcodeInput = document.getElementById("passcode-instructions");
-        if (passcodeInput) 
-        {
-          const text = await response.text();
-          try {
-              const errorData = JSON.parse(text);
-              passcodeInput.innerText = errorData.detail || errorData.title || "Ett oväntat fel uppstod";
-          } catch (e) {
-              passcodeInput.innerText = text;
-          }
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      else login();
 
-      // const data = await response.json();
-
-      // if (data.token) login(data.token);
-      // else alert("Ogiltig lösenkod. Försök igen.");
+    // In dev mode the backend may return the passcode directly
+    if (typeof result.data === "number" && result.data > 0) {
+      setPasscode(String(result.data));
     }
-  }
 
-  const showEmail = () => {
-    return (
-      <div className="login-input-container">
-      <h3 id="email-instructions" className="login-instructions">Ange din e-post för att logga in</h3>
-        <input
-          type="email"
-          className="login-input"
-          id="email"
-          autoComplete='email'
-          placeholder="Skriv din e-post här för att logga in"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          required
-        />
-        <div className='checkbox-container'>
-          <span>Kom ihåg mig</span><input type="checkbox" id="rememberMe" name="rememberMe" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
-        </div>
-      </div>
-      )
-  }
+    setStep("passcode");
+  };
 
-  const showPasswordInput = () => {
-    return (
-      <div className="login-input-container">
-         <h3 id="passcode-instructions" className="login-instructions">Ange det engångslösenord som skickades till din e-post</h3>
-          <input
-          type="password"
-          className="login-input"
-          placeholder="Ange lösenkod här"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <div className='checkbox-container'>
-          <span>Kom ihåg mig</span><input type="checkbox" name="rememberMe" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)}/>
-        </div>
-      </div>
-    )
-  }
+  const handleValidatePasscode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedPasscode = passcode.trim();
+    if (!trimmedPasscode || isNaN(Number(trimmedPasscode))) {
+      setError("Vänligen ange en giltig lösenkod.");
+      return;
+    }
+    setLoading(true);
+    setError("");
+
+    const result = await authService.passcodeValidation(
+      email,
+      Number(trimmedPasscode),
+      rememberMe,
+    );
+    setLoading(false);
+
+    if (!result.ok) {
+      setError(result.error || "Felaktig lösenkod.");
+      return;
+    }
+
+    await login();
+    navigate("/");
+  };
+
+  const handleGuest = () => {
+    enterAsGuest();
+    navigate("/");
+  };
 
   return (
-    <div className="login-container">
-      <h1 className="login-banner">Välkommen till CUL programmeringskurs</h1>
-      <form className="login-form" autoComplete='on' onSubmit={handleSubmit}>
-        <button type="button" className="back-to-main standard-btn" onClick={() =>setShowAboutPage(true)}></button>
-        {showPassword ? showPasswordInput() : showEmail()}
-        <button className="login-button" type="submit">Logga in</button>
-      </form>
+    <div className='login'>
+      <div className='login__card'>
+        <div className='login__logo'>
+          <div className='login__logo-icon'>CUL</div>
+          <h1 className='login__title'>CUL Programmering</h1>
+        </div>
+        <p className='login__subtitle'>
+          {step === "email"
+            ? "Logga in med din e-postadress."
+            : `Ange lösenkoden som skickades till ${email}`}
+        </p>
+
+        {step === "email" ? (
+          <form onSubmit={handleSendEmail} className='login__form'>
+            <div className='login__field'>
+              <Mail className='login__field-icon' />
+              <input
+                type='email'
+                placeholder='din@email.se'
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className='login__input'
+                required
+                autoFocus
+              />
+            </div>
+            <label className='login__remember'>
+              <input
+                type='checkbox'
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              Kom ihåg mig
+            </label>
+            <button
+              type='submit'
+              className='login__btn login__btn--primary'
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader2 className='login__spinner' />
+              ) : (
+                <>
+                  Skicka lösenkod <ArrowRight className='login__btn-icon' />
+                </>
+              )}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleValidatePasscode} className='login__form'>
+            <div className='login__field'>
+              <KeyRound className='login__field-icon' />
+              <input
+                type='text'
+                inputMode='numeric'
+                placeholder='Ange lösenkod'
+                value={passcode}
+                onChange={(e) => setPasscode(e.target.value)}
+                className='login__input'
+                required
+                autoFocus
+              />
+            </div>
+            <button
+              type='submit'
+              className='login__btn login__btn--primary'
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader2 className='login__spinner' />
+              ) : (
+                <>
+                  Logga in <ArrowRight className='login__btn-icon' />
+                </>
+              )}
+            </button>
+            <button
+              type='button'
+              className='login__btn login__btn--ghost'
+              onClick={() => {
+                setStep("email");
+                setPasscode("");
+                setError("");
+              }}
+            >
+              Ändra e-post
+            </button>
+          </form>
+        )}
+
+        {error && <p className='login__error'>{error}</p>}
+
+        <div className='login__divider'>
+          <span>eller</span>
+        </div>
+
+        <button
+          className='login__btn login__btn--outline'
+          onClick={handleGuest}
+        >
+          <UserRound className='login__btn-icon' />
+          Fortsätt som gäst
+        </button>
+      </div>
     </div>
   );
-};
-
-export default Login;
+}

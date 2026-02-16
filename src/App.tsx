@@ -1,89 +1,108 @@
-import './App.css'
-import React, { useState, useEffect} from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useUser } from './context/UserContext';
-import Login from './pages/Login';
-import Sidebar from './components/Sidebar';
-import AdminSidebar from './components/AdminSidebar';
-import MainContent from './components/MainContent';
-import AboutCourse from './pages/AboutContent/AboutCourse';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools/production';
-import './styles/containers.css';
-import './styles/tables.css';
-import './styles/button.css';
-import './styles/sidebar.css';
-import './styles/spinner.css';
-import './styles/flex-containers.css'
-import './styles/inputs.css';
-import './styles/selects.css';
-import './styles/textelements.css';
-import './styles/utility.css';
-import './styles/aboutcontent.css';
-import './styles/oddStyles.css';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/hooks/useTheme";
+import { AppLayout } from "@/components/AppLayout";
+
+// Pages
+import Login from "./pages/Login";
+import NotFound from "./pages/NotFound";
+import Index from "./pages/Index";
+import Projekt from "./pages/Projekt";
+import Ovningar from "./pages/Ovningar";
+import Portfolio from "./pages/Portfolio";
+import Admin from "./pages/Admin";
+import Terminal from "./pages/Terminal";
+import Preferenser from "./pages/Preferenser";
+import CoachSettings from "./pages/CoachSettings";
+import CoachTickets from "./pages/CoachTickets";
+import CoachMyParticipants from "./pages/CoachMyParticipants";
+import CoachContact from "./pages/CoachContact";
+import CoachProjects from "./pages/CoachProjects";
+import Deltagare from "./pages/Deltagare";
 
 const queryClient = new QueryClient();
 
+function AppRoutes() {
+  const { isGuest, loading, isLoggedIn } = useAuth();
+  useTheme();
 
-const App: React.FC = () => {
-  const { isLoggedIn, isLoading, logout: contextLogout, userType } = useUser();
-  const [isOpen, setIsOpen] = useState(true);
-  const [showAdmin, setShowAdmin] = useState(false);
-  const [showAboutPage, setShowAboutPage] = useState(true);
-  const navigate = useNavigate();
-;
-  useEffect(() => {
-    if (isLoading) return; // Wait until loading is complete
-    if (isLoggedIn) {
-      setShowAboutPage(false);
-
-      if (!showAdmin) navigate('/projects');
-      else navigate('/manageusers');
-    }
-    else if (!showAboutPage) navigate('/login');
-
-    else navigate('/');
-  }, [isLoggedIn, showAboutPage, isLoading]);
-
-  const logout = () => {
-    contextLogout();
-    setShowAboutPage(true);
-    navigate('/');
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-muted-foreground">Laddar...</p>
+      </div>
+    );
   }
 
-  const handleAdminClick = () => {
-    setShowAdmin(true);
-    navigate('/manageusers'); // Navigate to default admin page
-  };
+  // Not logged in and not guest → show login
+  if (!isLoggedIn && !isGuest) {
+    return (
+      <Routes>
+        <Route path='/login' element={<Login />} />
+        <Route path='*' element={<Navigate to='/login' replace />} />
+      </Routes>
+    );
+  }
 
-  const handleAdminBack = () => {
-    setShowAdmin(false);
-    navigate('/projects'); // Navigate back to home or timeline
-  };
+  // Guest → only homepage
+  if (isGuest && !isLoggedIn) {
+    return (
+      <Routes>
+        <Route
+          path='/'
+          element={
+            <AppLayout>
+              <Index />
+            </AppLayout>
+          }
+        />
+        <Route path='*' element={<Navigate to='/' replace />} />
+      </Routes>
+    );
+  }
 
-
+  // Logged in → full access
   return (
-    <QueryClientProvider client={queryClient}>
-      {isLoggedIn && !showAboutPage ? (
-        <div className="app">
-          {showAdmin && (userType === "Admin" || userType === "Teacher") ? (
-            <AdminSidebar isOpen={isOpen} setIsOpen={setIsOpen} onBack={handleAdminBack} />
-          ) : (
-            <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} logout={logout} onAdminClick={handleAdminClick}/>
-          )}
-          <MainContent setShowAboutPage={setShowAboutPage} />
-        </div>
-      ) : showAboutPage ? (
-        <AboutCourse setShowAboutPage={setShowAboutPage} />
-      ) : (
-        <Login setShowAboutPage={setShowAboutPage} />
-      )}
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <AppLayout>
+      <Routes>
+        <Route path='/' element={<Index />} />
+        <Route path='/projekt' element={<Projekt />} />
+        <Route path='/ovningar' element={<Ovningar />} />
+        <Route path='/portfolio' element={<Portfolio />} />
+        <Route path='/deltagare' element={<Deltagare />} />
+        <Route path='/preferenser' element={<Preferenser />} />
+        <Route path='/admin' element={<Admin />} />
+        <Route path='/terminal' element={<Terminal />} />
+        {/* Coach routes */}
+        <Route path='/mina-deltagare' element={<CoachMyParticipants />} />
+        <Route path='/arenden' element={<CoachTickets />} />
+        <Route path='/kontakt' element={<CoachContact />} />
+        <Route path='/coach-installningar' element={<CoachSettings />} />
+        <Route path='/profil' element={<Preferenser />} />
+        <Route path='/coach-projekt' element={<CoachProjects />} />
+        <Route path='/login' element={<Navigate to='/' replace />} />
+        <Route path='*' element={<NotFound />} />
+      </Routes>
+    </AppLayout>
   );
-
-
-
 }
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;

@@ -1,59 +1,124 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 33% 98%;
+    --foreground: 215 30% 14%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 30% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 30% 14%;
+
+    --primary: 215 85% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 94%;
+    --secondary-foreground: 215 30% 25%;
+
+    --muted: 210 25% 95%;
+    --muted-foreground: 215 15% 50%;
+
+    --accent: 195 85% 42%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 25% 90%;
+    --input: 214 25% 90%;
+    --ring: 215 85% 45%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 215 30% 14%;
+    --sidebar-foreground: 210 25% 85%;
+    --sidebar-primary: 215 85% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 30% 20%;
+    --sidebar-accent-foreground: 210 25% 92%;
+    --sidebar-border: 215 25% 22%;
+    --sidebar-ring: 215 85% 55%;
+    --sidebar-muted: 215 20% 40%;
+
+    /* Custom tokens */
+    --gradient-hero: linear-gradient(135deg, hsl(215 85% 45%), hsl(195 85% 42%));
+    --gradient-card: linear-gradient(160deg, hsl(0 0% 100%), hsl(210 33% 97%));
+    --shadow-card: 0 4px 24px -4px hsl(215 30% 14% / 0.08);
+    --shadow-card-hover: 0 12px 40px -8px hsl(215 30% 14% / 0.15);
+    --shadow-nav: 0 1px 3px hsl(215 30% 14% / 0.06);
+  }
+
+  .dark {
+    --background: 215 30% 8%;
+    --foreground: 210 25% 92%;
+    --card: 215 28% 12%;
+    --card-foreground: 210 25% 92%;
+    --popover: 215 28% 12%;
+    --popover-foreground: 210 25% 92%;
+    --primary: 215 85% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 25% 18%;
+    --secondary-foreground: 210 25% 85%;
+    --muted: 215 25% 16%;
+    --muted-foreground: 215 15% 55%;
+    --accent: 195 85% 48%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 215 25% 20%;
+    --input: 215 25% 20%;
+    --ring: 215 85% 55%;
+    --sidebar-background: 215 30% 6%;
+    --sidebar-foreground: 210 25% 85%;
+    --sidebar-primary: 215 85% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 30% 14%;
+    --sidebar-accent-foreground: 210 25% 92%;
+    --sidebar-border: 215 25% 14%;
+    --sidebar-ring: 215 85% 55%;
+  }
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: var(--bg-body);
-  color: var(--text-primary);
-  transition: var(--theme-transition);
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', sans-serif;
+    @apply tracking-tight;
+  }
 }
 
-a {
-  font-weight: 500;
-  color: var(--text-link);
-  text-decoration: inherit;
-  transition: color 0.3s ease;
-}
+@layer utilities {
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
 
-a:hover {
-  color: var(--text-link-hover);
-}
+  .gradient-card {
+    background: var(--gradient-card);
+  }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-  color: var(--text-primary);
-}
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
 
-button {
-  border-radius: 8px;
-  border: 1px solid var(--border-default);
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: var(--bg-surface);
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: border-color 0.25s, var(--theme-transition);
-}
+  .shadow-card-hover {
+    box-shadow: var(--shadow-card-hover);
+  }
 
-button:hover {
-  border-color: var(--color-primary);
-}
-
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  .shadow-nav {
+    box-shadow: var(--shadow-nav);
+  }
 }

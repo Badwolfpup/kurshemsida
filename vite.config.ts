@@ -1,18 +1,23 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import path from "path";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
   server: {
     proxy: {
-      '/api': {
-        target: 'https://localhost:5001', // Your backend URL/port
+      "/api": {
+        target: "https://localhost:5001",
         changeOrigin: true,
         secure: false,
       },
-      '/images': {
-        target: 'https://localhost:5001', // Same backend
+      "/images": {
+        target: "https://localhost:5001",
         changeOrigin: true,
         secure: false,
       },
@@ -20,7 +25,6 @@ export default defineConfig({
   },
   // build: {
   //   outDir: '../../kursserver/kursserver/wwwroot',
-  //   emptyOutDir: true, // This nukes the folder before putting new files in
+  //   emptyOutDir: true,
   // },
-})
-
+});
