@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAttendance, useUpdateAttendance } from "@/hooks/useAttendance";
+import { useNoClasses, useUpdateNoClasses } from "@/hooks/useNoClass";
 import { useUsers } from "@/hooks/useUsers";
 import { useToast } from "@/hooks/use-toast";
 
@@ -31,6 +32,7 @@ function weekLabel(dates: Date[]) {
   return `Vecka ${weekNum}, ${y}`;
 }
 
+
 export default function AdminAttendance() {
   const [weekOffset, setWeekOffset] = useState(0);
   const dates = useMemo(() => getWeekDates(weekOffset), [weekOffset]);
@@ -40,6 +42,8 @@ export default function AdminAttendance() {
   const students = useMemo(() => allUsers.filter((u) => u.isActive && u.authLevel === 4), [allUsers]);
   const { data: attendanceData = [], isLoading: attendanceLoading } = useAttendance(weekStartDate, 2);
   const updateAttendance = useUpdateAttendance();
+  const { data: noClasses = [], isLoading: noClassesLoading } = useNoClasses();
+  const updateNoClasses = useUpdateNoClasses();
 
   const hasAttended = (userId: number, date: Date): boolean => {
     const ua = attendanceData.find((a) => a.userId === userId);
@@ -47,6 +51,8 @@ export default function AdminAttendance() {
     const ds = dateKey(date);
     return ua.date.some((d) => dateKey(new Date(d)) === ds);
   };
+
+  const isNoClass = (date: Date): boolean => noClasses.some((x) => x.getTime() === date.getTime());
 
   const toggleAttendance = async (userId: number, date: Date) => {
     try {
@@ -100,6 +106,7 @@ export default function AdminAttendance() {
                 <TableHead className="min-w-[180px]">Deltagare</TableHead>
                 {dates.map((d, i) => (
                   <TableHead key={i} className="text-center">
+                    <Checkbox destructive={isNoClass(d)} checked={isNoClass(d)} onCheckedChange={() => updateNoClasses.mutate(dateKey(d))} />
                     <div className="text-xs text-muted-foreground">{dayNames[i]}</div>
                     <div className="text-sm font-semibold">{formatDate(d)}</div>
                   </TableHead>
@@ -117,7 +124,7 @@ export default function AdminAttendance() {
                   </TableCell>
                   {dates.map((d) => (
                     <TableCell key={dateKey(d)} className="px-2 cursor-pointer" onClick={() => toggleAttendance(student.id, d)}>
-                      <div className="flex justify-center pointer-events-none"><Checkbox checked={hasAttended(student.id, d)} tabIndex={-1} /></div>
+                      <div className="flex justify-center pointer-events-none"><Checkbox destructive={isNoClass(d)} checked={isNoClass(d) || hasAttended(student.id, d)} tabIndex={-1} /></div>
                     </TableCell>
                   ))}
                 </TableRow>
