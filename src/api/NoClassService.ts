@@ -8,8 +8,7 @@ export const noClassService = {
         const data = await response.json();
         return data.map((x: { id:number, date:string}) => new Date(x.date));
     },
-    async updateNoClasses(date: Date): Promise<boolean> {
-        const dateString = date.toISOString().split('T')[0]; 
+    async updateNoClasses(dateString: string): Promise<boolean> {
         const response = await fetch(`/api/noclass/${dateString}`, {
             credentials: 'include',
             method: 'POST',

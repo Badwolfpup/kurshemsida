@@ -16,12 +16,14 @@ function getWeekStartDate(offset: number) {
 
 function getWeekDates(offset: number) {
   const monday = getWeekStartDate(offset);
-  return [0, 1, 2, 3, 4].map((d) => { const date = new Date(monday); date.setDate(monday.getDate() + d); return date; });
+  return [0, 1, 2, 3].map((d) => { const date = new Date(monday); date.setDate(monday.getDate() + d); return date; });
 }
 
 const dayNames = ["Måndag", "Tisdag", "Onsdag", "Torsdag", "Fredag"];
 function formatDate(d: Date) { return `${d.getDate()}/${d.getMonth() + 1}`; }
-function dateKey(d: Date) { return d.toISOString().split("T")[0]; }
+// function dateKey(d: Date) { return d.toISOString().split("T")[0]; }
+function dateKey(d: Date) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+
 function weekLabel(dates: Date[]) {
   const y = dates[0].getFullYear();
   const oneJan = new Date(y, 0, 1);
@@ -34,7 +36,6 @@ export default function AdminAttendance() {
   const dates = useMemo(() => getWeekDates(weekOffset), [weekOffset]);
   const weekStartDate = useMemo(() => getWeekStartDate(weekOffset), [weekOffset]);
   const { toast } = useToast();
-
   const { data: allUsers = [], isLoading: usersLoading } = useUsers();
   const students = useMemo(() => allUsers.filter((u) => u.isActive && u.authLevel === 4), [allUsers]);
   const { data: attendanceData = [], isLoading: attendanceLoading } = useAttendance(weekStartDate, 2);
@@ -44,7 +45,7 @@ export default function AdminAttendance() {
     const ua = attendanceData.find((a) => a.userId === userId);
     if (!ua) return false;
     const ds = dateKey(date);
-    return ua.date.some((d) => new Date(d).toISOString().split("T")[0] === ds);
+    return ua.date.some((d) => dateKey(new Date(d)) === ds);
   };
 
   const toggleAttendance = async (userId: number, date: Date) => {
