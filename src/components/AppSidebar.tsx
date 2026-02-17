@@ -81,8 +81,10 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, isGuest } = useAuth();
   const { isAdmin, isCoach } = useUserRole();
+
+  if (isGuest) return null;
 
   const handleLogout = async () => {
     await signOut();
