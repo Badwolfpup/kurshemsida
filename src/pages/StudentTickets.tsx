@@ -20,7 +20,11 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { useTickets, useAddTicket, useMarkTicketViewed } from '@/hooks/useTickets';
+import {
+  useTickets,
+  useAddTicket,
+  useMarkTicketViewed,
+} from '@/hooks/useTickets';
 import { useUsers } from '@/hooks/useUsers';
 import TicketReplyThread from '@/components/tickets/TicketReplyThread';
 import TimeSuggestionDisplay from '@/components/tickets/TimeSuggestionDisplay';
@@ -100,7 +104,10 @@ const StudentTickets = () => {
   };
 
   const formatTime = (iso: string) =>
-    new Date(iso).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+    new Date(iso).toLocaleTimeString('sv-SE', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
 
   if (isLoading) {
     return (
@@ -150,12 +157,14 @@ const StudentTickets = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   {t.hasUnread && (
-                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold">!</span>
+                    <span className="flex items-center justify-center w-8 h-6 rounded-sm px-5 bg-destructive text-destructive-foreground text-xs font-bold">
+                      Nytt!
+                    </span>
                   )}
                   <Badge
                     variant={
                       t.status === 'Open'
-                        ? 'destructive'
+                        ? 'yellow'
                         : t.status === 'InProgress'
                           ? 'default'
                           : 'secondary'
@@ -174,21 +183,24 @@ const StudentTickets = () => {
               {t.acceptedStartTime ? (
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-foreground">
-                    Tidsförslag: {formatTime(t.acceptedStartTime)}–{t.acceptedEndTime ? formatTime(t.acceptedEndTime) : ''}
+                    Tidsförslag: {formatTime(t.acceptedStartTime)}–
+                    {t.acceptedEndTime ? formatTime(t.acceptedEndTime) : ''}
                   </span>
-                  <Badge variant="secondary" className="text-xs">Godkänd</Badge>
+                  <Badge variant="green" className="text-xs">
+                    Godkänd
+                  </Badge>
                 </div>
-              ) : (
-                !expandedTicket || expandedTicket !== t.id ? (
-                  <p className="text-foreground whitespace-pre-wrap line-clamp-2">
-                    {t.message}
-                  </p>
-                ) : null
-              )}
+              ) : !expandedTicket || expandedTicket !== t.id ? (
+                <p className="text-foreground whitespace-pre-wrap line-clamp-2">
+                  {t.message}
+                </p>
+              ) : null}
 
               {expandedTicket === t.id && (
                 <>
-                  <p className="text-foreground whitespace-pre-wrap">{t.message}</p>
+                  <p className="text-foreground whitespace-pre-wrap">
+                    {t.message}
+                  </p>
                   {(t.type === 'session' || t.type === 'question') && (
                     <TimeSuggestionDisplay ticketId={t.id} isRecipient={true} />
                   )}
@@ -213,7 +225,14 @@ const StudentTickets = () => {
             />
             <Select
               value={form.type}
-              onValueChange={(v) => setForm({ ...form, type: v, recipientId: v === 'other' || v === 'bug' ? '' : form.recipientId })}
+              onValueChange={(v) =>
+                setForm({
+                  ...form,
+                  type: v,
+                  recipientId:
+                    v === 'other' || v === 'bug' ? '' : form.recipientId,
+                })
+              }
             >
               <SelectTrigger>
                 <SelectValue />
