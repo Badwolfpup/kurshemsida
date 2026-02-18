@@ -12,6 +12,8 @@
   height: 100vh;
   overflow-y: auto;
   flex-shrink: 0;
+  scrollbar-color: #3f4c5f hsl(var(--sidebar-background)); /* For Firefox */
+  scrollbar-width: thin;
 }
 
 .sidebar--expanded {
@@ -76,13 +78,13 @@
   align-items: center;
   justify-content: center;
   color: hsl(var(--primary-foreground));
-  font-family: "Space Grotesk", sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
   font-size: 0.875rem;
 }
 
 .sidebar__logo-text {
-  font-family: "Space Grotesk", sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 600;
   font-size: 0.875rem;
   color: hsl(var(--sidebar-accent-foreground));

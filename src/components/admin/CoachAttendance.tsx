@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUsers, useUpdateUser } from "@/hooks/useUsers";
@@ -11,17 +12,21 @@ import { useNoClasses } from "@/hooks/useNoClass";
 import type UserType from "@/Types/User";
 import type AttendanceType from "@/Types/Attendance";
 
-const CoachAttendance: React.FC = () => {
+interface CoachAttendanceProps {
+  seluser: UserType;
+}
+
+const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null }) => {
   const { user } = useAuth();
   const userId = user?.id || 0;
   const authLevel = user?.authLevel || 5;
   const userType = authLevel <= 2 ? "Admin" : authLevel === 3 ? "Coach" : "Student";
 
   const [date, setDate] = useState<Date>(new Date());
-  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
-  const [selectedUserId, setSelectedUserId] = useState<number>(0);
+  const [selectedUser, setSelectedUser] = useState<UserType | null>(seluser || null);
+  const [selectedUserId, setSelectedUserId] = useState<number>(seluser?.id || 0);
   const [selectedCoachId, setSelectedCoachId] = useState<number>(0);
-  const [showUserinfo, setShowUserInfo] = useState<boolean>(true);
+
   const { toast } = useToast();
 
   const { data: users = [], isLoading: isUsersLoading, isError: isUsersError, error: usersError, refetch: refetchUsers, isFetching: isUsersFetching } = useUsers();
@@ -163,9 +168,9 @@ const CoachAttendance: React.FC = () => {
       ) : (
         <>
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Närvarosida</h2>
+            <h2 className="text-2xl font-bold">Elevsida</h2>
             <div className="flex gap-2">
-              <Select value={selectedUser?.id.toString() || "0"} onValueChange={(value) => { setSelectedUserId(Number(value)); setSelectedUser(users.find((u) => u.id === Number(value)) || null); }}>
+              {seluser === null && <Select value={selectedUser?.id.toString() || "0"} onValueChange={(value) => { setSelectedUserId(Number(value)); setSelectedUser(users.find((u) => u.id === Number(value)) || null); }}>
                 <SelectTrigger className="w-48"><SelectValue placeholder="Alla deltagare" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="0">Alla deltagare</SelectItem>
@@ -173,14 +178,14 @@ const CoachAttendance: React.FC = () => {
                     <SelectItem key={item.id} value={item.id.toString()}>{checkInitials(item)}</SelectItem>
                   ))}
                 </SelectContent>
-              </Select>
+              </Select>}
               {userType === "Admin" && (
                 <Select value={selectedCoachId.toString()} onValueChange={(value) => setSelectedCoachId(Number(value))}>
                   <SelectTrigger className="w-48"><SelectValue placeholder="Alla coacher" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="0">Alla coacher</SelectItem>
                     {users?.filter((u) => u.authLevel === 3).map((coach) => (
-                      <SelectItem key={coach.id} value={coach.id.toString()}>{coach.firstName} {coach.lastName}</SelectItem>
+                      <SelectItem key={coach.id} value={coach.id.toString()}>{authLevel === 3 ? `${coach.firstName[0]}.${coach.lastName[0]}` : `${coach.firstName} ${coach.lastName}`}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -189,152 +194,165 @@ const CoachAttendance: React.FC = () => {
           </div>
 
           {selectedUser && selectedUser.id !== 0 && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Schemalagda dagar</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Blå färg betyder att deltagaren är tänkt att delta den dagen.</p>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Pass</TableHead>
-                        <TableHead>Måndag</TableHead>
-                        <TableHead>Tisdag</TableHead>
-                        <TableHead>Onsdag</TableHead>
-                        <TableHead>Torsdag</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>Förmiddag</TableCell>
-                        {(["scheduledMonAm", "scheduledTueAm", "scheduledWedAm", "scheduledThuAm"] as const).map((field) => (
-                          <TableCell key={field}>
-                            <Button variant={users.find((u) => u.id === selectedUserId)?.[field] ? "default" : "outline"} size="sm" onClick={() => {
-                              if (!selectedUser) return;
-                              const updated = { ...selectedUser, [field]: !selectedUser[field] };
-                              setSelectedUser(updated);
-                              handleUpdateUser(updated, false);
-                            }}>{users.find((u) => u.id === selectedUserId)?.[field] ? "Ja" : "Nej"}</Button>
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>Eftermiddag</TableCell>
-                        {(["scheduledMonPm", "scheduledTuePm", "scheduledWedPm", "scheduledThuPm"] as const).map((field) => (
-                          <TableCell key={field}>
-                            <Button variant={users.find((u) => u.id === selectedUserId)?.[field] ? "default" : "outline"} size="sm" onClick={() => {
-                              if (!selectedUser) return;
-                              const updated = { ...selectedUser, [field]: !selectedUser[field] };
-                              setSelectedUser(updated);
-                              handleUpdateUser(updated, false);
-                            }}>{users.find((u) => u.id === selectedUserId)?.[field] ? "Ja" : "Nej"}</Button>
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    </TableBody>
-                  </Table>
+            <Tabs defaultValue="narvaro">
+              <TabsList className="mb-6">
+                <TabsTrigger value="narvaro">Närvaro</TabsTrigger>
+                <TabsTrigger value="schema">Schemalagda dagar</TabsTrigger>
+                <TabsTrigger value="kontaktinfo">Kontaktinfo</TabsTrigger>
+                <TabsTrigger value="larare">Lärare på kursen</TabsTrigger>
+                <TabsTrigger value="progression">Progression</TabsTrigger>
+                <TabsTrigger value="statistik">Statistik</TabsTrigger>
+              </TabsList>
+              <TabsContent value="narvaro">
+                <div className="flex items-center justify-center gap-4 mb-4">
+                  <div className="flex items-center gap-2"><div className="w-4 h-4 bg-blue-500 rounded-full"></div><span>Närvaro</span></div>
+                  <div className="flex items-center gap-2"><div className="w-4 h-4 bg-white-300 rounded-full border border-blue-500"></div><span>Ej närvarande</span></div>
+                  <div className="flex items-center gap-2"><div className="w-4 h-4 bg-red-500 rounded-full"></div><span>Inställd lektion</span></div>
                 </div>
 
-                <div>
-                  {showUserinfo ? (
-                    <>
-                      <div className="flex justify-between items-center mb-2">
-                        <h3 className="text-lg font-semibold">Lärare på kursen</h3>
-                        <Button variant="outline" size="sm" onClick={() => setShowUserInfo(false)}>Statistik</Button>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-4">Grön färg är den lärare som ni primärt kontaktar angående elevuppföljning.</p>
-                      <Table>
-                        <TableHeader><TableRow><TableHead>Namn</TableHead><TableHead>Telefonnummer</TableHead><TableHead>Email</TableHead></TableRow></TableHeader>
-                        <TableBody>
-                          {users?.filter((u) => u.authLevel <= 2 && u.isActive).map((contact) => (
-                            <TableRow key={contact.id}>
-                              <TableCell className={contact.id === selectedUser?.contactId ? "bg-green-100" : ""}>{contact.firstName} {contact.lastName}</TableCell>
-                              <TableCell className={contact.id === selectedUser?.contactId ? "bg-green-100" : ""}>{contact.telephone}</TableCell>
-                              <TableCell className={contact.id === selectedUser?.contactId ? "bg-green-100" : ""}>{contact.email}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex justify-between items-center mb-2">
-                        <h3 className="text-lg font-semibold">Statistik</h3>
-                        <Button variant="outline" size="sm" onClick={() => setShowUserInfo(true)}>Kontaktuppgifter</Button>
-                      </div>
-                      <p className="text-sm"><strong>Startdatum:</strong> {selectedUser?.startDate ? new Date(selectedUser.startDate).toLocaleDateString("sv-SE") : "Ej angivet"}</p>
-                      <p className="text-sm"><strong>Senaste närvarodag:</strong> {(() => {
-                        const dates = attendance.filter((x) => x.userId === selectedUser.id).flatMap((a) => a.date);
-                        if (dates.length === 0) return "Aldrig närvarat";
-                        const latest = dates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
-                        return new Date(latest).toLocaleDateString("sv-SE");
-                      })()}</p>
-                      <Table>
-                        <TableHeader><TableRow><TableHead></TableHead><TableHead>{getMonthName(0)}</TableHead><TableHead>{getMonthName(-1)}</TableHead><TableHead>{getMonthName(-2)}</TableHead></TableRow></TableHeader>
-                        <TableBody>
-                          <TableRow>
-                            <TableCell>Närvaro utifrån schema:</TableCell>
-                            <TableCell>{printScheduledDays(0)}</TableCell>
-                            <TableCell>{printScheduledDays(-1)}</TableCell>
-                            <TableCell>{printScheduledDays(-2)}</TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    </>
-                  )}
+                <div className="flex items-center justify-center gap-4 mb-4">
+                  <Button variant="outline" onClick={() => changeWeek(false)}>&#8592;</Button>
+                  <span className="font-semibold">{week}</span>
+                  <Button variant="outline" onClick={() => changeWeek(true)}>&#8594;</Button>
                 </div>
-              </div>
-            </div>
+
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Namn</TableHead>
+                      <TableHead>Mån {dateFormatted(getDate(-6))}</TableHead>
+                      <TableHead>Tis {dateFormatted(getDate(-5))}</TableHead>
+                      <TableHead>Ons {dateFormatted(getDate(-4))}</TableHead>
+                      <TableHead>Tor {dateFormatted(getDate(-3))}</TableHead>
+                      <TableHead className="border-l-2 border-border">Mån {dateFormatted(getDate(1))}</TableHead>
+                      <TableHead>Tis {dateFormatted(getDate(2))}</TableHead>
+                      <TableHead>Ons {dateFormatted(getDate(3))}</TableHead>
+                      <TableHead>Tor {dateFormatted(getDate(4))}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users?.filter((x) =>
+                      ((x.authLevel === 4 && x.coachId === selectedCoachId && (selectedUserId !== 0 ? x.id === selectedUserId : true) && userType === "Admin") ||
+                      (x.authLevel === 4 && userType === "Coach" && x.coachId === userId && (selectedUserId !== 0 ? x.id === selectedUserId : true))) &&
+                      x.startDate && new Date(x.startDate) <= getDate(4)
+                    ).map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell>{checkInitials(item)}</TableCell>
+                        {Array.from({ length: 8 }).map((_, index) => (
+                          <TableCell key={index} className={`text-center${index === 4 ? " border-l-2 border-border" : ""}`}>
+                            {item.startDate !== null && new Date(item.startDate) <= getDate(index + 2 - 7) && (
+                              <Checkbox
+                                checked={attendance.filter((x) => x.userId === item.id).filter((dates) => dates.date.some((d) => compareDates(new Date(d), getDate(index + 1 - 7)))).length > 0}
+                                onCheckedChange={() => { console.log("Toggle attendance for", item.id, getDate(index + 1 - 7)); }}
+                              />
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TabsContent>
+              <TabsContent value="schema">
+                <p className="text-sm text-muted-foreground mb-4">Du kan själv ändra deltagarens schema</p>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Pass</TableHead>
+                      <TableHead>Måndag</TableHead>
+                      <TableHead>Tisdag</TableHead>
+                      <TableHead>Onsdag</TableHead>
+                      <TableHead>Torsdag</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>Förmiddag</TableCell>
+                      {(["scheduledMonAm", "scheduledTueAm", "scheduledWedAm", "scheduledThuAm"] as const).map((field) => (
+                        <TableCell key={field}>
+                          <Button variant={users.find((u) => u.id === selectedUserId)?.[field] ? "default" : "outline"} size="sm" onClick={() => {
+                            if (!selectedUser) return;
+                            const updated = { ...selectedUser, [field]: !selectedUser[field] };
+                            setSelectedUser(updated);
+                            handleUpdateUser(updated, false);
+                          }}>{users.find((u) => u.id === selectedUserId)?.[field] ? "Ja" : "Nej"}</Button>
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Eftermiddag</TableCell>
+                      {(["scheduledMonPm", "scheduledTuePm", "scheduledWedPm", "scheduledThuPm"] as const).map((field) => (
+                        <TableCell key={field}>
+                          <Button variant={users.find((u) => u.id === selectedUserId)?.[field] ? "default" : "outline"} size="sm" onClick={() => {
+                            if (!selectedUser) return;
+                            const updated = { ...selectedUser, [field]: !selectedUser[field] };
+                            setSelectedUser(updated);
+                            handleUpdateUser(updated, false);
+                          }}>{users.find((u) => u.id === selectedUserId)?.[field] ? "Ja" : "Nej"}</Button>
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TabsContent>
+              <TabsContent value="larare">
+                <p className="text-sm text-muted-foreground mb-4">Grön färg är den lärare som ni primärt kontaktar angående elevuppföljning.</p>
+                <Table>
+                  <TableHeader><TableRow><TableHead>Namn</TableHead><TableHead>Telefonnummer</TableHead><TableHead>Email</TableHead></TableRow></TableHeader>
+                  <TableBody>
+                    {users?.filter((u) => u.authLevel <= 2 && u.isActive).map((contact) => (
+                      <TableRow key={contact.id}>
+                        <TableCell className={contact.id === selectedUser?.contactId ? "bg-green-100" : ""}>{contact.firstName} {contact.lastName}</TableCell>
+                        <TableCell className={contact.id === selectedUser?.contactId ? "bg-green-100" : ""}>{contact.telephone}</TableCell>
+                        <TableCell className={contact.id === selectedUser?.contactId ? "bg-green-100" : ""}>{contact.email}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TabsContent>
+              <TabsContent value="statistik">
+                <p className="text-sm"><strong>Startdatum:</strong> {selectedUser?.startDate ? new Date(selectedUser.startDate).toLocaleDateString("sv-SE") : "Ej angivet"}</p>
+                <p className="text-sm"><strong>Senaste närvarodag:</strong> {(() => {
+                  const dates = attendance.filter((x) => x.userId === selectedUser.id).flatMap((a) => a.date);
+                  if (dates.length === 0) return "Aldrig närvarat";
+                  const latest = dates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
+                  return new Date(latest).toLocaleDateString("sv-SE");
+                })()}</p>
+                <Table>
+                  <TableHeader><TableRow><TableHead></TableHead><TableHead>{getMonthName(0)}</TableHead><TableHead>{getMonthName(-1)}</TableHead><TableHead>{getMonthName(-2)}</TableHead></TableRow></TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>Närvaro utifrån schema:</TableCell>
+                      <TableCell>{printScheduledDays(0)}</TableCell>
+                      <TableCell>{printScheduledDays(-1)}</TableCell>
+                      <TableCell>{printScheduledDays(-2)}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TabsContent>
+              <TabsContent value="kontaktinfo">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Namn</TableHead>
+                      <TableHead>Telefonnummer</TableHead>
+                      <TableHead>Email</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>{authLevel === 3 ? `${selectedUser.firstName[0]}.${selectedUser.lastName[0]}` : `${selectedUser.firstName} ${selectedUser.lastName}`}</TableCell>
+                      <TableCell>{selectedUser.telephone}</TableCell>
+                      <TableCell>{selectedUser.email}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TabsContent>
+              <TabsContent value="progression">
+              </TabsContent>
+            </Tabs>
           )}
 
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className="flex items-center gap-2"><div className="w-4 h-4 bg-green-500 rounded"></div><span>Närvaro</span></div>
-            <div className="flex items-center gap-2"><div className="w-4 h-4 bg-red-500 rounded"></div><span>Frånvaro</span></div>
-            <div className="flex items-center gap-2"><div className="w-4 h-4 bg-gray-300 rounded"></div><span>Ingen lektion</span></div>
-          </div>
-
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <Button variant="outline" onClick={() => changeWeek(false)}>&#8592;</Button>
-            <span className="font-semibold">{week}</span>
-            <Button variant="outline" onClick={() => changeWeek(true)}>&#8594;</Button>
-          </div>
-
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Namn</TableHead>
-                <TableHead>Mån {dateFormatted(getDate(-6))}</TableHead>
-                <TableHead>Tis {dateFormatted(getDate(-5))}</TableHead>
-                <TableHead>Ons {dateFormatted(getDate(-4))}</TableHead>
-                <TableHead>Tor {dateFormatted(getDate(-3))}</TableHead>
-                <TableHead>Mån {dateFormatted(getDate(1))}</TableHead>
-                <TableHead>Tis {dateFormatted(getDate(2))}</TableHead>
-                <TableHead>Ons {dateFormatted(getDate(3))}</TableHead>
-                <TableHead>Tor {dateFormatted(getDate(4))}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users?.filter((x) =>
-                ((x.authLevel === 4 && x.coachId === selectedCoachId && (selectedUserId !== 0 ? x.id === selectedUserId : true) && userType === "Admin") ||
-                (x.authLevel === 4 && userType === "Coach" && x.coachId === userId && (selectedUserId !== 0 ? x.id === selectedUserId : true))) &&
-                x.startDate && new Date(x.startDate) <= getDate(4)
-              ).map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{checkInitials(item)}</TableCell>
-                  {Array.from({ length: 8 }).map((_, index) => (
-                    <TableCell key={index} className="text-center">
-                      {item.startDate !== null && new Date(item.startDate) <= getDate(index + 2 - 7) && (
-                        <Checkbox
-                          checked={attendance.filter((x) => x.userId === item.id).filter((dates) => dates.date.some((d) => compareDates(new Date(d), getDate(index + 1 - 7)))).length > 0}
-                          onCheckedChange={() => { console.log("Toggle attendance for", item.id, getDate(index + 1 - 7)); }}
-                        />
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
         </>
       )}
     </div>
