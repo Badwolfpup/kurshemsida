@@ -1,6 +1,7 @@
-import { Bell, Menu, LogIn } from "lucide-react";
+import { Menu, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { KomIgangDialog } from "@/components/KomIgangDialog";
+import { NewsDialog } from "@/components/NewsDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useNavigate } from "react-router-dom";
@@ -40,17 +41,7 @@ export function TopNav({ onMenuToggle }: TopNavProps) {
 
       <div className='topnav__actions'>
         {isLoggedIn && <KomIgangDialog />}
-        {isLoggedIn && (
-          <Button
-            variant='ghost'
-            size='sm'
-            className='text-muted-foreground gap-2 text-sm relative'
-          >
-            <Bell className='h-4 w-4' />
-            <span className='topnav__nyheter-label'>Nyheter</span>
-            <span className='absolute top-1 right-1 w-2 h-2 bg-accent rounded-full' />
-          </Button>
-        )}
+        {isLoggedIn && <NewsDialog />}
         {isLoggedIn ? (
           avatarUrl ? (
             <img
