@@ -25,7 +25,7 @@ const menuItems = [
   { id: "projects", label: "Hantera projekt", icon: FolderKanban },
   { id: "posts", label: "Nyheter & Event", icon: Megaphone },
   { id: "attendance", label: "Närvarohantering", icon: CalendarCheck },
-  { id: "coach-attendance", label: "Coach Närvarohantering", icon: CalendarCheck },
+  { id: "coach-attendance", label: "Deltagarprofiler", icon: CalendarCheck },
   { id: "tickets", label: "Inkomna ärenden", icon: Ticket },
   { id: "settings", label: "Admin Inställningar", icon: Settings },
 ] as const;
