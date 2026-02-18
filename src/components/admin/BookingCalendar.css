@@ -34,6 +34,7 @@
 .booking-calendar--workhours .rbc-event--declined {
   width: 50% !important;
 }
+<<<<<<< HEAD
 
 /* Past day columns */
 .booking-calendar--workhours .rbc-day--past {
@@ -52,3 +53,5 @@
 .dark .booking-calendar--workhours .rbc-today {
   background: rgba(99, 102, 241, 0.20);
 }
+=======
+>>>>>>> 1e58298 (Improvements to the bookin feature)

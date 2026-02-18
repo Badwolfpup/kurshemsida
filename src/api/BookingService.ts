@@ -22,7 +22,10 @@ export interface Booking {
   note: string;
   meetingType: string;
   status: string;
+<<<<<<< HEAD
   reason?: string;
+=======
+>>>>>>> 1e58298 (Improvements to the bookin feature)
   seen?: boolean;
   rescheduledBy?: string;
 }
@@ -30,6 +33,7 @@ export interface Booking {
 // Get free (available) time slots for coaches to book
 export async function getAvailabilities(): Promise<Availability[]> {
   const res = await fetch(`${API_URL}/free`, { credentials: 'include' });
+<<<<<<< HEAD
   return res.json();
 }
 
@@ -37,6 +41,8 @@ export async function getAvailabilities(): Promise<Availability[]> {
 export async function getAvailabilityById(id: number): Promise<Availability> {
   const res = await fetch(`${API_URL}/${id}`, { credentials: 'include' });
   if (!res.ok) throw new Error(`Failed to fetch availability (${res.status})`);
+=======
+>>>>>>> 1e58298 (Improvements to the bookin feature)
   return res.json();
 }
 
@@ -114,6 +120,7 @@ export async function bookAvailability(data: {
     const text = await res.text();
     throw new Error(text || `Booking failed (${res.status})`);
   }
+<<<<<<< HEAD
   return res.json();
 }
 
@@ -142,6 +149,8 @@ export async function createAdminAppointment(data: {
     const text = await res.text();
     throw new Error(text || `Appointment creation failed (${res.status})`);
   }
+=======
+>>>>>>> 1e58298 (Improvements to the bookin feature)
   return res.json();
 }
 
@@ -151,18 +160,28 @@ export async function getBookings(): Promise<Booking[]> {
   return res.json();
 }
 
+<<<<<<< HEAD
 // Update booking status (accept/decline) — for admin/teacher
 export async function updateBookingStatus(id: number, status: string, reason?: string): Promise<Booking> {
+=======
+// Update booking status (accept/decline) — for admin
+export async function updateBookingStatus(id: number, status: string): Promise<Booking> {
+>>>>>>> 1e58298 (Improvements to the bookin feature)
   const res = await fetch(`${API_URL}/bookings/${id}/status`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
+<<<<<<< HEAD
     body: JSON.stringify({ status, reason: reason ?? '' })
+=======
+    body: JSON.stringify({ status })
+>>>>>>> 1e58298 (Improvements to the bookin feature)
   });
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || `Status update failed (${res.status})`);
   }
+<<<<<<< HEAD
   return res.json();
 }
 
@@ -193,6 +212,8 @@ export async function rescheduleBooking(id: number, startTime: string, endTime: 
     const text = await res.text();
     throw new Error(text || `Reschedule failed (${res.status})`);
   }
+=======
+>>>>>>> 1e58298 (Improvements to the bookin feature)
   return res.json();
 }
 
