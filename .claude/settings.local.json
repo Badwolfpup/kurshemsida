@@ -3,7 +3,13 @@
     "allow": [
       "WebSearch",
       "WebFetch(domain:www.google.com)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)",
+      "Bash(cmd /c:*)",
+      "Bash(dotnet build:*)",
+      "Bash(npm run build:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(dotnet ef database update:*)"
     ]
   }
 }

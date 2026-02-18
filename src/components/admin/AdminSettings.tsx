@@ -15,7 +15,7 @@ export default function AdminSettings() {
 
   const addNoClassDay = () => {
     if (!noClassDate) return;
-    updateNoClasses.mutate(new Date(noClassDate), {
+    updateNoClasses.mutate(noClassDate, {
       onSuccess: () => {
         toast({ title: "Ledig dag tillagd", description: `${noClassDate} har markerats som ledig.` });
         setNoClassDate("");

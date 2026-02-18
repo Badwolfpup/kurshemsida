@@ -7,8 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useUsers, useAddUser, useUpdateUser, useUpdateActivityStatus } from "@/hooks/useUsers";
+import { useUserRole } from "@/hooks/useUserRole";
 import type UserType from "@/Types/User";
 
 const STUDENT_AUTH_LEVEL = 4;
@@ -29,10 +31,23 @@ export default function AdminUsers() {
   const [form, setForm] = useState(emptyForm);
   const { toast } = useToast();
 
+  const { role } = useUserRole();
+  const [activeTab, setActiveTab] = useState<"admin" | "larare" | "coach" | "deltagare">("deltagare");
+
+  const adminUsers = useMemo(() => users.filter((u) => u.authLevel === ADMIN_AUTH_LEVEL), [users]);
+  const teachers = useMemo(() => users.filter((u) => u.authLevel === TEACHER_AUTH_LEVEL), [users]);
   const coaches = useMemo(() => users.filter((u) => u.authLevel === COACH_AUTH_LEVEL), [users]);
   const admins = useMemo(() => users.filter((u) => u.authLevel === ADMIN_AUTH_LEVEL || u.authLevel === TEACHER_AUTH_LEVEL), [users]);
   const deltagare = useMemo(() => users.filter((u) => u.authLevel === STUDENT_AUTH_LEVEL), [users]);
-  const filtered = deltagare.filter((p) => showInactive ? !p.isActive : p.isActive);
+
+  const tabUsers = useMemo(() => {
+    switch (activeTab) {
+      case "admin":     return adminUsers;
+      case "larare":    return teachers;
+      case "coach":     return coaches;
+      case "deltagare": return deltagare.filter((p) => showInactive ? !p.isActive : p.isActive);
+    }
+  }, [activeTab, adminUsers, teachers, coaches, deltagare, showInactive]);
 
   const openAdd = () => { setEditId(null); setForm(emptyForm); setDialogOpen(true); };
   const openEdit = (p: UserType) => {
@@ -87,12 +102,25 @@ export default function AdminUsers() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         <Button onClick={openAdd} className="gap-2"><Plus className="h-4 w-4" /> Lägg till deltagare</Button>
-        <Button variant={showInactive ? "default" : "outline"} onClick={() => setShowInactive(!showInactive)} className="gap-2">
-          {showInactive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-          {showInactive ? "Visa aktiva" : "Se inaktiva"}
-        </Button>
-        <Badge variant="secondary">{filtered.length} {showInactive ? "inaktiva" : "aktiva"} deltagare</Badge>
+        {activeTab === "deltagare" && (
+          <>
+            <Button variant={showInactive ? "default" : "outline"} onClick={() => setShowInactive(!showInactive)} className="gap-2">
+              {showInactive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+              {showInactive ? "Visa aktiva" : "Se inaktiva"}
+            </Button>
+            <Badge variant="secondary">{tabUsers.length} {showInactive ? "inaktiva" : "aktiva"} deltagare</Badge>
+          </>
+        )}
       </div>
+
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+        <TabsList className="mb-4">
+          {role === "Admin" && <TabsTrigger value="admin">Admin</TabsTrigger>}
+          <TabsTrigger value="larare">Lärare</TabsTrigger>
+          <TabsTrigger value="coach">Coach</TabsTrigger>
+          <TabsTrigger value="deltagare">Deltagare</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
         <Table>
@@ -104,8 +132,8 @@ export default function AdminUsers() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Inga {showInactive ? "inaktiva" : "aktiva"} deltagare.</TableCell></TableRow>}
-            {filtered.map((p) => (
+            {tabUsers.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Inga användare.</TableCell></TableRow>}
+            {tabUsers.map((p) => (
               <TableRow key={p.id}>
                 <TableCell className="font-medium">{p.firstName} {p.lastName}</TableCell>
                 <TableCell>{p.email || "—"}</TableCell>
