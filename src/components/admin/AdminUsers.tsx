@@ -3,6 +3,8 @@ import { Plus, Pencil, UserCheck, UserX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Select,
   SelectContent,
@@ -51,12 +53,74 @@ const emptyForm = {
   contactId: '__none__',
 };
 
+type TabValue = 'admin' | 'larare' | 'coach' | 'deltagare';
+
+function UserTable({
+  rows,
+  emptyLabel,
+  onEdit,
+  onToggle,
+}: {
+  rows: UserType[];
+  emptyLabel: string;
+  onEdit: (u: UserType) => void;
+  onToggle: (id: number, active: boolean) => void;
+}) {
+  return (
+    <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Namn</TableHead>
+            <TableHead className="hidden sm:table-cell">E-post</TableHead>
+            <TableHead>Telefon</TableHead>
+            <TableHead className="text-right">Åtgärder</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                {emptyLabel}
+              </TableCell>
+            </TableRow>
+          )}
+          {rows.map((u) => (
+            <TableRow key={u.id}>
+              <TableCell className="font-medium">
+                {u.firstName} {u.lastName}
+              </TableCell>
+              <TableCell className="hidden sm:table-cell">{u.email || '—'}</TableCell>
+              <TableCell>{u.telephone || '—'}</TableCell>
+              <TableCell className="text-right space-x-1">
+                <Button variant="ghost" size="icon" onClick={() => onEdit(u)}>
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => onToggle(u.id, u.isActive)}>
+                  {u.isActive ? (
+                    <UserX className="h-4 w-4" />
+                  ) : (
+                    <UserCheck className="h-4 w-4" />
+                  )}
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
 export default function AdminUsers() {
+  const { user } = useAuth();
+  const role = user?.role;
   const { data: users = [], isLoading: loading } = useUsers();
   const addUserMutation = useAddUser();
   const updateUserMutation = useUpdateUser();
   const toggleActivityMutation = useUpdateActivityStatus();
   const [showInactive, setShowInactive] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabValue>('deltagare');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -228,86 +292,114 @@ export default function AdminUsers() {
         </Badge>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>
         <TabsList className="mb-4">
-          {role === "Admin" && <TabsTrigger value="admin">Admin</TabsTrigger>}
+          {role === 'Admin' && <TabsTrigger value="admin">Admin</TabsTrigger>}
           <TabsTrigger value="larare">Lärare</TabsTrigger>
           <TabsTrigger value="coach">Coach</TabsTrigger>
           <TabsTrigger value="deltagare">Deltagare</TabsTrigger>
         </TabsList>
-      </Tabs>
 
-      <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Namn</TableHead>
-              <TableHead className="hidden sm:table-cell">E-post</TableHead>
-              <TableHead>Telefon</TableHead>
-              <TableHead className="hidden sm:table-cell">Startdatum</TableHead>
-              <TableHead className="hidden sm:table-cell">Spår</TableHead>
-              <TableHead>Jobbcoach</TableHead>
-              <TableHead>Kontakt</TableHead>
-              <TableHead className="text-right">Åtgärder</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.length === 0 && (
-              <TableRow>
-                <TableCell
-                  colSpan={8}
-                  className="text-center text-muted-foreground py-8"
-                >
-                  Inga {showInactive ? 'inaktiva' : 'aktiva'} deltagare.
-                </TableCell>
-              </TableRow>
-            )}
-            {filtered.map((p) => (
-              <TableRow key={p.id}>
-                <TableCell className="font-medium">
-                  {p.firstName} {p.lastName}
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  {p.email || '—'}
-                </TableCell>
-                <TableCell>{p.telephone || '—'}</TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  {p.startDate
-                    ? new Date(p.startDate).toLocaleDateString('sv-SE')
-                    : '—'}
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  <Badge variant="outline">
-                    {p.course ? `Spår ${p.course}` : '—'}
-                  </Badge>
-                </TableCell>
-                <TableCell>{getCoachName(p.coachId)}</TableCell>
-                <TableCell>{getContactName(p.contactId)}</TableCell>
-                <TableCell className="text-right space-x-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => openEdit(p)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => toggleActive(p.id, p.isActive)}
-                  >
-                    {p.isActive ? (
-                      <UserX className="h-4 w-4" />
-                    ) : (
-                      <UserCheck className="h-4 w-4" />
-                    )}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+        {/* Admin tab */}
+        {role === 'Admin' && (
+          <TabsContent value="admin">
+            <UserTable
+              rows={users.filter((u) => u.authLevel === ADMIN_AUTH_LEVEL)}
+              emptyLabel="Inga admins."
+              onEdit={openEdit}
+              onToggle={toggleActive}
+            />
+          </TabsContent>
+        )}
+
+        {/* Lärare tab */}
+        <TabsContent value="larare">
+          <UserTable
+            rows={users.filter((u) => u.authLevel === TEACHER_AUTH_LEVEL)}
+            emptyLabel="Inga lärare."
+            onEdit={openEdit}
+            onToggle={toggleActive}
+          />
+        </TabsContent>
+
+        {/* Coach tab */}
+        <TabsContent value="coach">
+          <UserTable
+            rows={users.filter((u) => u.authLevel === COACH_AUTH_LEVEL)}
+            emptyLabel="Inga coacher."
+            onEdit={openEdit}
+            onToggle={toggleActive}
+          />
+        </TabsContent>
+
+        {/* Deltagare tab */}
+        <TabsContent value="deltagare">
+          <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Namn</TableHead>
+                  <TableHead className="hidden sm:table-cell">E-post</TableHead>
+                  <TableHead>Telefon</TableHead>
+                  <TableHead className="hidden sm:table-cell">Startdatum</TableHead>
+                  <TableHead className="hidden sm:table-cell">Spår</TableHead>
+                  <TableHead>Jobbcoach</TableHead>
+                  <TableHead>Kontakt</TableHead>
+                  <TableHead className="text-right">Åtgärder</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                      Inga {showInactive ? 'inaktiva' : 'aktiva'} deltagare.
+                    </TableCell>
+                  </TableRow>
+                )}
+                {filtered.map((p) => (
+                  <TableRow key={p.id}>
+                    <TableCell className="font-medium">
+                      {p.firstName} {p.lastName}
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {p.email || '—'}
+                    </TableCell>
+                    <TableCell>{p.telephone || '—'}</TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {p.startDate
+                        ? new Date(p.startDate).toLocaleDateString('sv-SE')
+                        : '—'}
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <Badge variant="outline">
+                        {p.course ? `Spår ${p.course}` : '—'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{getCoachName(p.coachId)}</TableCell>
+                    <TableCell>{getContactName(p.contactId)}</TableCell>
+                    <TableCell className="text-right space-x-1">
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(p)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => toggleActive(p.id, p.isActive)}
+                      >
+                        {p.isActive ? (
+                          <UserX className="h-4 w-4" />
+                        ) : (
+                          <UserCheck className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent
