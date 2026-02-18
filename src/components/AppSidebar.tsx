@@ -47,7 +47,6 @@ function getMainNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
       { title: "Mina deltagare", url: "/mina-deltagare", icon: Users },
       { title: "Ärenden", url: "/arenden", icon: Ticket },
       { title: "Kontakt", url: "/kontakt", icon: Contact },
-      { title: "Projekt", url: "/coach-projekt", icon: FolderKanban },
       { title: "Kalender: Boka intro", url: "/coach-booking", icon: CalendarIcon },
       { title: "Profil", url: "/profil", icon: UserCircle },
     );
