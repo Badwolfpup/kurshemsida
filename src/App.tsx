@@ -8,7 +8,8 @@ import { useTheme } from "@/hooks/useTheme";
 import { AppLayout } from "@/components/AppLayout";
 
 // Pages
-import Login from "./pages/Login";
+import AdminSchedule from "./components/admin/AdminSchedule";
+import Login from "./pages/login";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 import Projekt from "./pages/Projekt";
@@ -22,6 +23,7 @@ import CoachTickets from "./pages/CoachTickets";
 import CoachMyParticipants from "./pages/CoachMyParticipants";
 import CoachContact from "./pages/CoachContact";
 import CoachProjects from "./pages/CoachProjects";
+import CoachBookingView from "./pages/CoachBookingView";
 import Deltagare from "./pages/Deltagare";
 
 const queryClient = new QueryClient();
@@ -78,6 +80,7 @@ function AppRoutes() {
         <Route path='/preferenser' element={<Preferenser />} />
         <Route path='/admin' element={<Admin />} />
         <Route path='/terminal' element={<Terminal />} />
+        <Route path='/admin-schedule' element={<AdminSchedule />} />
         {/* Coach routes */}
         <Route path='/mina-deltagare' element={<CoachMyParticipants />} />
         <Route path='/arenden' element={<CoachTickets />} />
@@ -85,6 +88,7 @@ function AppRoutes() {
         <Route path='/coach-installningar' element={<CoachSettings />} />
         <Route path='/profil' element={<Preferenser />} />
         <Route path='/coach-projekt' element={<CoachProjects />} />
+        <Route path='/coach-booking' element={<CoachBookingView />} />
         <Route path='/login' element={<Navigate to='/' replace />} />
         <Route path='*' element={<NotFound />} />
       </Routes>
