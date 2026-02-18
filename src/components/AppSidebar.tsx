@@ -14,6 +14,7 @@ import {
   Ticket,
   Contact,
   UserCircle,
+  Calendar as CalendarIcon
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -37,6 +38,7 @@ function getMainNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
       { title: "Övningar", url: "/ovningar", icon: Dumbbell },
       { title: "Projekt", url: "/projekt", icon: FolderKanban },
       { title: "Deltagare", url: "/deltagare", icon: Users },
+      { title: "Kalender & Bokning", url: "/admin-schedule", icon: CalendarIcon },
       { title: "Profil", url: "/profil", icon: UserCircle },
       { title: "Terminal", url: "/terminal", icon: TerminalIcon },
     );
@@ -46,6 +48,7 @@ function getMainNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
       { title: "Ärenden", url: "/arenden", icon: Ticket },
       { title: "Kontakt", url: "/kontakt", icon: Contact },
       { title: "Projekt", url: "/coach-projekt", icon: FolderKanban },
+      { title: "Kalender: Boka intro", url: "/coach-booking", icon: CalendarIcon },
       { title: "Profil", url: "/profil", icon: UserCircle },
     );
   } else {
