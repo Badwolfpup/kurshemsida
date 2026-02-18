@@ -1,16 +1,25 @@
-import { Users } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUsers } from "@/hooks/useUsers";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { CircleUserRound, CalendarDays, Laptop } from "lucide-react";
+import { useState } from "react";
+import CoachAttendance from "@/components/admin/CoachAttendance";
+import { Button } from "@/components/ui/button";
+
 
 const CoachMyParticipants = () => {
   const { user } = useAuth();
-  const { data: allUsers = [], isLoading } = useUsers();
+  const { data: users = [], isLoading } = useUsers();
+  const [showAttendance, setShowAttendance] = useState<boolean>(false);
+  const [selectedParticipant, setSelectedParticipant] = useState<number | null>(null);
 
-  const participants = allUsers.filter(
+  const participants = users.filter(
     (u) => u.authLevel === 4 && u.isActive && u.coachId === user?.id
   );
+
+
 
   if (isLoading) {
     return (
@@ -18,6 +27,18 @@ const CoachMyParticipants = () => {
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
+  }
+
+  if (showAttendance && selectedParticipant !== null) {
+    const participant = participants.find((p) => p.id === selectedParticipant);
+    return (
+      <div className="p-6 lg:p-10 max-w-6xl mx-auto">
+        <Button variant="ghost" size="sm" onClick={() => { setShowAttendance(false); setSelectedParticipant(null); }} className="gap-2 text-muted-foreground mb-6">
+          <ArrowLeft className="h-4 w-4" /> Tillbaka
+        </Button>
+        <CoachAttendance seluser={participant} />
+      </div>
+    )
   }
 
   return (
@@ -35,9 +56,9 @@ const CoachMyParticipants = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Namn</TableHead>
-              <TableHead>Telefon</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Startdatum</TableHead>
+              {/* <TableHead >Kontaktinfo</TableHead>
+              <TableHead>Progression</TableHead>
+              <TableHead>Närvaro</TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -49,11 +70,12 @@ const CoachMyParticipants = () => {
               </TableRow>
             )}
             {participants.map((p) => (
-              <TableRow key={p.id}>
-                <TableCell className="font-medium">{p.firstName} {p.lastName}</TableCell>
-                <TableCell>{p.telephone || "—"}</TableCell>
-                <TableCell>{p.email}</TableCell>
-                <TableCell>{p.startDate ? new Date(p.startDate).toLocaleDateString("sv-SE") : "—"}</TableCell>
+              <TableRow key={p.id} onClick={() => { setSelectedParticipant(p.id); setShowAttendance(true); }} className="cursor-pointer hover:bg-accent/50" >
+                <TableCell className="font-medium">{p.firstName[0]}.{p.lastName[0]}</TableCell>
+                {/* <TableCell><CircleUserRound className="inline h-8 w-8 ml-4" onClick={() => { setSelectedParticipant(p.id); setShowAttendance(true); }}/></TableCell>
+                <TableCell><Laptop className="inline h-8 w-8 ml-4" /></TableCell>
+                <TableCell><CalendarDays className="inline h-8 w-8 ml-4" /></TableCell> */}
+
               </TableRow>
             ))}
           </TableBody>

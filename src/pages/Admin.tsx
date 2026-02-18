@@ -42,7 +42,7 @@ const Admin = () => {
       case "exercises": return <AdminExercises />;
       case "projects": return <AdminProjects />;
       case "posts": return <AdminPosts />;
-      case "coach-attendance": return <CoachAttendance />;
+      case "coach-attendance": return <CoachAttendance seluser={null} />;
       case "tickets": return <AdminTickets />;
       case "settings": return <AdminSettings />;
       default: return null;
