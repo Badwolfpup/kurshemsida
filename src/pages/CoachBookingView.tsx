@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Calendar, dateFnsLocalizer, type NavigateAction } from 'react-big-calendar';
 import { addDays, addWeeks, format, getDay, isBefore, startOfWeek, subWeeks } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '@/components/admin/BookingCalendar.css';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import TimeGrid from 'react-big-calendar/lib/TimeGrid';
 import { bookAvailability, getAvailabilities, getVisibleBookings, type Availability, type Booking } from '@/api/BookingService';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,6 +30,46 @@ const localizer = dateFnsLocalizer({
 });
 
 const ADMIN_COLORS = ['#2563eb', '#c6a04a', '#b45309', '#be123c', '#4338ca', '#0369a1', '#8b5cf6', '#7c2d12'];
+
+const DAY_NAMES = ['', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'];
+
+// Custom 4-day view (Mon–Thu)
+function fourDayRange(date: Date) {
+  const start = startOfWeek(date, { locale: sv });
+  return [start, addDays(start, 1), addDays(start, 2), addDays(start, 3)];
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+class FourDayView extends React.Component<any> {
+  render() {
+    const { date, localizer: loc, min, max, scrollToTime, enableAutoScroll, ...props } = this.props;
+    const range = fourDayRange(date);
+    return React.createElement(TimeGrid, {
+      ...props,
+      range,
+      eventOffset: 15,
+      localizer: loc,
+      min: min || loc.startOf(new Date(), 'day'),
+      max: max || loc.endOf(new Date(), 'day'),
+      scrollToTime: scrollToTime || loc.startOf(new Date(), 'day'),
+      enableAutoScroll: enableAutoScroll ?? true,
+    });
+  }
+}
+
+// Static methods required by react-big-calendar
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(FourDayView as any).range = fourDayRange;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(FourDayView as any).navigate = (date: Date, action: NavigateAction) => {
+  switch (action) {
+    case 'PREV': return addDays(date, -7);
+    case 'NEXT': return addDays(date, 7);
+    default: return date;
+  }
+};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(FourDayView as any).title = () => '';
 
 interface CalendarEvent {
   id: string;
@@ -60,7 +102,7 @@ function getFreeSegments(avail: Availability, bookings: Booking[]): { start: Dat
 
   // Sort bookings by start time
   const sorted = bookings
-    .filter((b) => b.adminAvailabilityId === avail.id)
+    .filter((b) => b.adminAvailabilityId === avail.id && b.status !== 'declined')
     .map((b) => ({ start: new Date(b.startTime), end: new Date(b.endTime) }))
     .sort((a, b) => a.start.getTime() - b.start.getTime());
 
@@ -142,7 +184,7 @@ function CoachBookingView() {
         availData.filter((a: Availability) => {
           const start = new Date(a.startTime);
           const end = new Date(a.endTime);
-          return !a.isBooked && isWithinWorkHours(start, end);
+          return isWithinWorkHours(start, end);
         })
       );
       setBookings(bookingData);
@@ -193,6 +235,8 @@ function CoachBookingView() {
 
     // Bookings as events
     for (const b of bookings) {
+      // Declined bookings from others are not shown
+      if (b.status === 'declined' && b.coachId !== coachId) continue;
       const bStart = new Date(b.startTime);
       const bEnd = new Date(b.endTime);
       if (!isWithinWorkHours(bStart, bEnd)) continue;
@@ -201,9 +245,15 @@ function CoachBookingView() {
       const adminName = adminNameMap.get(b.adminId) || `Admin ${b.adminId}`;
       const color = adminColorMap.get(b.adminId) || '#6b7280';
 
+      const titleMap: Record<string, string> = {
+        pending: 'Inväntar svar',
+        accepted: 'Godkänd',
+        declined: 'Nekad',
+      };
+
       result.push({
         id: `booking-${b.id}`,
-        title: isOwn ? 'Din bokning' : 'Bokad',
+        title: isOwn ? titleMap[b.status] || 'Din bokning' : 'Bokad',
         start: bStart,
         end: bEnd,
         allDay: false,
@@ -220,24 +270,76 @@ function CoachBookingView() {
     return result;
   }, [availabilities, bookings, adminNameMap, adminColorMap, coachId]);
 
+  const openBookingDialog = (avail: Availability, freeStart: Date, freeEnd: Date, clickedTime: Date) => {
+    const freeStartTotal = freeStart.getHours() * 60 + freeStart.getMinutes();
+    const freeEndTotal = freeEnd.getHours() * 60 + freeEnd.getMinutes();
+
+    // Snap clicked time down to nearest 30-min boundary
+    const totalMinutes = clickedTime.getHours() * 60 + clickedTime.getMinutes();
+    const snapped = Math.floor(totalMinutes / 30) * 30;
+
+    const startTotal = Math.max(freeStartTotal, Math.min(snapped, freeEndTotal - 30));
+    const endTotal = Math.min(startTotal + 30, freeEndTotal);
+
+    setSelectedFreeSlot({ availability: avail, start: freeStart, end: freeEnd });
+    setStartHour(Math.floor(startTotal / 60));
+    setStartMinute(startTotal % 60);
+    setEndHour(Math.floor(endTotal / 60));
+    setEndMinute(endTotal % 60);
+    setShowBookingDialog(true);
+    setNote('');
+    setStudentId(null);
+    setMeetingType(null);
+  };
+
+  // Custom event component for free slots — intercepts click to get Y position → clicked time
+  const FreeEventComponent = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return ({ event }: { event: any }) => {
+      const calEvent = event as CalendarEvent;
+      if (calEvent.resource.type !== 'free') return <span>{calEvent.title}</span>;
+
+      const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation();
+        const rect = e.currentTarget.getBoundingClientRect();
+        const relativeY = e.clientY - rect.top;
+        const fraction = Math.max(0, Math.min(1, relativeY / rect.height));
+
+        const freeStart = calEvent.resource.freeStart!;
+        const freeEnd = calEvent.resource.freeEnd!;
+        const durationMinutes = (freeEnd.getTime() - freeStart.getTime()) / 60000;
+        const clickedOffsetMinutes = fraction * durationMinutes;
+        const clickedTime = new Date(freeStart.getTime() + clickedOffsetMinutes * 60000);
+
+        openBookingDialog(calEvent.resource.availability!, freeStart, freeEnd, clickedTime);
+      };
+
+      return (
+        <div onClick={handleClick} style={{ height: '100%', width: '100%', cursor: 'pointer' }}>
+          {calEvent.title}
+        </div>
+      );
+    };
+  // openBookingDialog is stable (defined inline, depends on state setters only)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSelectSlot = ({ start }: { start: Date }) => {
+    // Handles clicks on empty grid cells (not on events)
+    for (const avail of availabilities) {
+      const freeSegs = getFreeSegments(avail, bookings);
+      for (const seg of freeSegs) {
+        if (start >= seg.start && start < seg.end && isWithinWorkHours(seg.start, seg.end)) {
+          openBookingDialog(avail, seg.start, seg.end, start);
+          return;
+        }
+      }
+    }
+  };
+
   const handleSelectEvent = (event: CalendarEvent) => {
-    if (event.resource.type === 'free' && event.resource.availability && event.resource.freeStart && event.resource.freeEnd) {
-      const freeStart = event.resource.freeStart;
-      const freeEnd = event.resource.freeEnd;
-      setSelectedFreeSlot({
-        availability: event.resource.availability,
-        start: freeStart,
-        end: freeEnd,
-      });
-      setStartHour(freeStart.getHours());
-      setStartMinute(freeStart.getMinutes());
-      setEndHour(freeEnd.getHours());
-      setEndMinute(freeEnd.getMinutes());
-      setShowBookingDialog(true);
-      setNote('');
-      setStudentId(null);
-      setMeetingType(null);
-    } else if (event.resource.type === 'my-booking' && event.resource.booking) {
+    // Only handles non-free events (my-booking)
+    if (event.resource.type === 'my-booking' && event.resource.booking) {
       setSelectedBooking(event.resource.booking);
       setShowBookingDetails(true);
     }
@@ -266,8 +368,8 @@ function CoachBookingView() {
         studentId: meetingType === 'intro' ? null : studentId,
         note,
         meetingType,
-        startTime: bookingStart.toISOString(),
-        endTime: bookingEnd.toISOString(),
+        startTime: format(bookingStart, "yyyy-MM-dd'T'HH:mm:ss"),
+        endTime: format(bookingEnd, "yyyy-MM-dd'T'HH:mm:ss"),
       });
       toast({ title: 'Bokning skickad', description: 'Tiden är reserverad och admin ser nu din förfrågan.' });
       setShowBookingDialog(false);
@@ -309,7 +411,9 @@ function CoachBookingView() {
       return { style: { ...base, backgroundColor: event.resource.color || '#6b7280', color: '#fff' } };
     }
     if (event.resource.type === 'my-booking') {
-      return { style: { ...base, backgroundColor: '#22c55e', color: '#fff' } };
+      const status = event.resource.booking?.status;
+      const colorMap: Record<string, string> = { pending: '#f59e0b', accepted: '#22c55e', declined: '#ef4444' };
+      return { style: { ...base, backgroundColor: colorMap[status || ''] || '#6b7280', color: '#fff' } };
     }
     if (event.resource.type === 'other-booking') {
       return { style: { ...base, backgroundColor: '#ef4444', color: '#fff', opacity: 0.7, cursor: 'default' } };
@@ -363,7 +467,7 @@ function CoachBookingView() {
 
           {(() => {
             const weekStart = startOfWeek(currentDate, { locale: sv });
-            const weekEnd = addDays(weekStart, 4); // Mon-Fri
+            const weekEnd = addDays(weekStart, 3); // Mon-Thu
             const thisWeekStart = startOfWeek(new Date(), { locale: sv });
             const canGoBack = isBefore(thisWeekStart, weekStart);
             return (
@@ -385,6 +489,7 @@ function CoachBookingView() {
             );
           })()}
           <div style={{ height: 600 }}>
+            {/* @ts-expect-error custom fourDay view not in type defs */}
             <Calendar<CalendarEvent>
               localizer={localizer}
               className="booking-calendar--workhours"
@@ -392,8 +497,8 @@ function CoachBookingView() {
               startAccessor={(e) => e.start}
               endAccessor={(e) => e.end}
               titleAccessor={(e) => e.title}
-              defaultView="week"
-              views={['week']}
+              defaultView="fourDay"
+              views={{ fourDay: FourDayView as never }}
               step={30}
               timeslots={1}
               toolbar={false}
@@ -401,9 +506,15 @@ function CoachBookingView() {
               max={new Date(1970, 0, 1, WORKDAY_END_HOUR, 0, 0)}
               date={currentDate}
               onNavigate={setCurrentDate}
+              selectable
+              onSelectSlot={handleSelectSlot}
               onSelectEvent={handleSelectEvent}
               eventPropGetter={eventStyleGetter}
-              formats={{ timeGutterFormat: 'HH:mm' }}
+              components={{ event: FreeEventComponent }}
+              formats={{
+                timeGutterFormat: 'HH:mm',
+                dayFormat: (date: Date) => `${DAY_NAMES[getDay(date)] || ''} ${format(date, 'd/M')}`,
+              }}
               messages={{
                 today: 'Idag',
                 next: 'Nästa',

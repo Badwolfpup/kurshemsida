@@ -7,9 +7,6 @@
   display: none;
 }
 
-.booking-calendar--workhours .rbc-time-header-content > .rbc-row:first-child {
-  display: none;
-}
 
 .booking-calendar--workhours .rbc-time-gutter .rbc-label {
   font-size: 12px;
@@ -32,4 +29,8 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.booking-calendar--workhours .rbc-event--declined {
+  width: 50% !important;
 }
