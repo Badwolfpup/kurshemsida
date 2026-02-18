@@ -93,6 +93,7 @@ export default function Login() {
                 className='login__input'
                 required
                 autoFocus
+                autoComplete="on"
               />
             </div>
             <label className='login__remember'>
