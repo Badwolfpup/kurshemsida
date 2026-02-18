@@ -228,6 +228,15 @@ export default function AdminUsers() {
         </Badge>
       </div>
 
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+        <TabsList className="mb-4">
+          {role === "Admin" && <TabsTrigger value="admin">Admin</TabsTrigger>}
+          <TabsTrigger value="larare">Lärare</TabsTrigger>
+          <TabsTrigger value="coach">Coach</TabsTrigger>
+          <TabsTrigger value="deltagare">Deltagare</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
         <Table>
           <TableHeader>

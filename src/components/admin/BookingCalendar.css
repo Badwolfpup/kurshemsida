@@ -1,0 +1,35 @@
+.booking-calendar--workhours .rbc-time-content,
+.booking-calendar--workhours .rbc-time-gutter {
+  border-top: 0;
+}
+
+.booking-calendar--workhours .rbc-allday-cell {
+  display: none;
+}
+
+.booking-calendar--workhours .rbc-time-header-content > .rbc-row:first-child {
+  display: none;
+}
+
+.booking-calendar--workhours .rbc-time-gutter .rbc-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.booking-calendar--workhours .rbc-event {
+  border: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+}
+
+.booking-calendar--workhours .rbc-event-label {
+  display: none;
+}
+
+.booking-calendar--workhours .rbc-event-content {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

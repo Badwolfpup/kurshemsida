@@ -13,10 +13,14 @@ export interface Availability {
 export interface Booking {
   id: number;
   adminId: number;
+  adminAvailabilityId: number;
   coachId: number;
-  studentId: number;
+  studentId: number | null;
+  startTime: string;
+  endTime: string;
   bookedAt: string;
   note: string;
+  meetingType: string;
   seen?: boolean;
 }
 
@@ -57,11 +61,19 @@ export async function updateAvailability(data: { id: number; startTime: string; 
 }
 
 // Book an availability (for coach)
-export async function bookAvailability(adminAvailabilityId: number, coachId: number, studentId: number, note: string): Promise<Booking> {
+export async function bookAvailability(data: {
+  adminAvailabilityId: number;
+  coachId: number;
+  studentId: number | null;
+  note: string;
+  meetingType: string;
+  startTime: string;
+  endTime: string;
+}): Promise<Booking> {
   const res = await fetch(`${API_URL}/book`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ adminAvailabilityId, coachId, studentId, note })
+    body: JSON.stringify(data)
   });
   return res.json();
 }
@@ -69,5 +81,11 @@ export async function bookAvailability(adminAvailabilityId: number, coachId: num
 // Get all bookings (for admin)
 export async function getBookings(): Promise<Booking[]> {
   const res = await fetch(`${API_URL}/bookings`);
+  return res.json();
+}
+
+// Get bookings visible to coaches
+export async function getVisibleBookings(): Promise<Booking[]> {
+  const res = await fetch(`${API_URL}/bookings/visible`);
   return res.json();
 }
