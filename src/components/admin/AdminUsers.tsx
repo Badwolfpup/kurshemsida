@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Select,
   SelectContent,
@@ -80,7 +82,10 @@ function UserTable({
         <TableBody>
           {rows.length === 0 && (
             <TableRow>
-              <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+              <TableCell
+                colSpan={4}
+                className="text-center text-muted-foreground py-8"
+              >
                 {emptyLabel}
               </TableCell>
             </TableRow>
@@ -90,13 +95,19 @@ function UserTable({
               <TableCell className="font-medium">
                 {u.firstName} {u.lastName}
               </TableCell>
-              <TableCell className="hidden sm:table-cell">{u.email || '—'}</TableCell>
+              <TableCell className="hidden sm:table-cell">
+                {u.email || '—'}
+              </TableCell>
               <TableCell>{u.telephone || '—'}</TableCell>
               <TableCell className="text-right space-x-1">
                 <Button variant="ghost" size="icon" onClick={() => onEdit(u)}>
                   <Pencil className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="icon" onClick={() => onToggle(u.id, u.isActive)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onToggle(u.id, u.isActive)}
+                >
                   {u.isActive ? (
                     <UserX className="h-4 w-4" />
                   ) : (
@@ -238,11 +249,14 @@ export default function AdminUsers() {
           activeTab === 'deltagare'
             ? 'Deltagaren'
             : activeTab === 'coach'
-            ? 'Coachen'
-            : activeTab === 'larare'
-            ? 'Läraren'
-            : 'Adminen';
-        toast({ title: 'Tillagd', description: `${typeLabel} har lagts till.` });
+              ? 'Coachen'
+              : activeTab === 'larare'
+                ? 'Läraren'
+                : 'Adminen';
+        toast({
+          title: 'Tillagd',
+          description: `${typeLabel} har lagts till.`,
+        });
       }
       setDialogOpen(false);
     } catch {
@@ -293,10 +307,10 @@ export default function AdminUsers() {
           {activeTab === 'deltagare'
             ? 'deltagare'
             : activeTab === 'coach'
-            ? 'coach'
-            : activeTab === 'larare'
-            ? 'lärare'
-            : 'admin'}
+              ? 'coach'
+              : activeTab === 'larare'
+                ? 'lärare'
+                : 'admin'}
         </Button>
         <Button
           variant={showInactive ? 'default' : 'outline'}
@@ -315,7 +329,10 @@ export default function AdminUsers() {
         </Badge>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as TabValue)}
+      >
         <TabsList className="mb-4">
           {role === 'Admin' && <TabsTrigger value="admin">Admin</TabsTrigger>}
           <TabsTrigger value="larare">Lärare</TabsTrigger>
@@ -327,7 +344,7 @@ export default function AdminUsers() {
         {role === 'Admin' && (
           <TabsContent value="admin">
             <UserTable
-              rows={users.filter((u) => u.authLevel === ADMIN_AUTH_LEVEL && u.isActive === !showInactive)}
+              rows={users.filter((u) => u.authLevel === ADMIN_AUTH_LEVEL)}
               emptyLabel="Inga admins."
               onEdit={openEdit}
               onToggle={toggleActive}
@@ -338,7 +355,7 @@ export default function AdminUsers() {
         {/* Lärare tab */}
         <TabsContent value="larare">
           <UserTable
-            rows={users.filter((u) => u.authLevel === TEACHER_AUTH_LEVEL && u.isActive === !showInactive)}
+            rows={users.filter((u) => u.authLevel === TEACHER_AUTH_LEVEL)}
             emptyLabel="Inga lärare."
             onEdit={openEdit}
             onToggle={toggleActive}
@@ -348,7 +365,7 @@ export default function AdminUsers() {
         {/* Coach tab */}
         <TabsContent value="coach">
           <UserTable
-            rows={users.filter((u) => u.authLevel === COACH_AUTH_LEVEL && u.isActive === !showInactive)}
+            rows={users.filter((u) => u.authLevel === COACH_AUTH_LEVEL)}
             emptyLabel="Inga coacher."
             onEdit={openEdit}
             onToggle={toggleActive}
@@ -364,7 +381,9 @@ export default function AdminUsers() {
                   <TableHead>Namn</TableHead>
                   <TableHead className="hidden sm:table-cell">E-post</TableHead>
                   <TableHead>Telefon</TableHead>
-                  <TableHead className="hidden sm:table-cell">Startdatum</TableHead>
+                  <TableHead className="hidden sm:table-cell">
+                    Startdatum
+                  </TableHead>
                   <TableHead className="hidden sm:table-cell">Spår</TableHead>
                   <TableHead>Jobbcoach</TableHead>
                   <TableHead>Kontakt</TableHead>
@@ -374,7 +393,10 @@ export default function AdminUsers() {
               <TableBody>
                 {filtered.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                    <TableCell
+                      colSpan={8}
+                      className="text-center text-muted-foreground py-8"
+                    >
                       Inga {showInactive ? 'inaktiva' : 'aktiva'} deltagare.
                     </TableCell>
                   </TableRow>
@@ -401,7 +423,11 @@ export default function AdminUsers() {
                     <TableCell>{getCoachName(p.coachId)}</TableCell>
                     <TableCell>{getContactName(p.contactId)}</TableCell>
                     <TableCell className="text-right space-x-1">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(p)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openEdit(p)}
+                      >
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
@@ -437,10 +463,10 @@ export default function AdminUsers() {
               {activeTab === 'deltagare'
                 ? 'deltagare'
                 : activeTab === 'coach'
-                ? 'coach'
-                : activeTab === 'larare'
-                ? 'lärare'
-                : 'admin'}
+                  ? 'coach'
+                  : activeTab === 'larare'
+                    ? 'lärare'
+                    : 'admin'}
             </DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
