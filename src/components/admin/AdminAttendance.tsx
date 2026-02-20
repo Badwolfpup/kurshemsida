@@ -72,6 +72,20 @@ export default function AdminAttendance() {
     return ua.date.filter((d) => { const ad = new Date(d); return ad >= twoWeeksAgo && ad <= today; }).length === 0;
   };
 
+  const countAttendanceLastNWeeks = (userId: number, weeks: number): number => {
+    const ua = attendanceData.find((a) => a.userId === userId);
+    if (!ua) return 0;
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - weeks * 7);
+    return ua.date.filter((d) => new Date(d) >= cutoff).length;
+  };
+
+  const sortedStudents = useMemo(() => [...students].sort((a, b) => {
+    const diff = countAttendanceLastNWeeks(b.id, 3) - countAttendanceLastNWeeks(a.id, 3);
+    if (diff !== 0) return diff;
+    return a.firstName.localeCompare(b.firstName);
+  }), [students, attendanceData]);
+
   const alertStudents = students.filter((s) => hasAbsenceAlert(s.id));
 
   if (usersLoading || attendanceLoading) return <div className="flex justify-center items-center h-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
@@ -114,7 +128,7 @@ export default function AdminAttendance() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {students.map((student) => (
+              {sortedStudents.map((student) => (
                 <TableRow key={student.id} className={hasAbsenceAlert(student.id) ? "bg-destructive/5" : ""}>
                   <TableCell>
                     <div className="flex items-center gap-2">

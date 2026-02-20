@@ -13,7 +13,6 @@ import {
   X,
   Ticket,
   Contact,
-  UserCircle,
   Calendar as CalendarIcon,
   CircleFadingPlus,
 } from 'lucide-react';
@@ -44,8 +43,12 @@ function getMainNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
         url: '/admin-schedule',
         icon: CalendarIcon,
       },
+<<<<<<< HEAD
       { title: 'Ärenden', url: '/tickets', icon: Ticket },
       { title: 'Profil', url: '/profil', icon: UserCircle },
+=======
+      // { title: 'Profil', url: '/profil', icon: UserCircle },
+>>>>>>> refs/remotes/upstream/main
       { title: 'Terminal', url: '/terminal', icon: TerminalIcon }
     );
   } else if (isCoach) {
@@ -58,14 +61,14 @@ function getMainNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
         url: '/coach-booking',
         icon: CalendarIcon,
       },
-      { title: 'Profil', url: '/profil', icon: UserCircle }
+      // { title: 'Profil', url: '/profil', icon: UserCircle }
     );
   } else {
     items.push(
       { title: 'Projekt', url: '/projekt', icon: FolderKanban },
       { title: 'Övningar', url: '/ovningar', icon: Dumbbell },
       { title: 'Portfolio', url: '/portfolio', icon: Briefcase },
-      { title: 'Profil', url: '/profil', icon: UserCircle },
+      // { title: 'Profil', url: '/profil', icon: UserCircle },
       { title: 'Terminal', url: '/terminal', icon: TerminalIcon },
       { title: 'Skapa ärende', url: '/student-arenden', icon: CircleFadingPlus }
     );
@@ -77,7 +80,7 @@ function getMainNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
 function getBottomNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
   const items: NavItem[] = [
     {
-      title: 'Inställningar',
+      title: 'Profil',
       url: isCoach ? '/coach-installningar' : '/preferenser',
       icon: Settings,
     },

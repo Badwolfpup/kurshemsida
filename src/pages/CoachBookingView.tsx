@@ -62,6 +62,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar as CalendarIcon, Check, X } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const WORKDAY_START_HOUR = 8;
 const WORKDAY_END_HOUR = 15;
@@ -259,6 +260,7 @@ function CoachBookingView() {
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedAdminId, setSelectedAdminId] = useState<number | null>(null);
 
   // New booking dialog
   const [showBookingDialog, setShowBookingDialog] = useState(false);
@@ -297,10 +299,14 @@ function CoachBookingView() {
 
   const today = useMemo(() => startOfDay(new Date()), []);
 
+<<<<<<< HEAD
   const admins = useMemo(
     () => allUsers.filter((u) => u.authLevel <= 2 && u.isActive),
     [allUsers]
   );
+=======
+  const admins = useMemo(() => allUsers.filter((u) => u.authLevel <= 2 && u.isActive && u.firstName !== "Alexandra"), [allUsers]);
+>>>>>>> refs/remotes/upstream/main
 
   const adminColorMap = useMemo(() => {
     const map = new Map<number, string>();
@@ -364,20 +370,39 @@ function CoachBookingView() {
   };
 
   useEffect(() => {
+<<<<<<< HEAD
     loadData();
   }, [currentDate]);
+=======
+    if (admins.length > 0 && selectedAdminId === null) {
+      setSelectedAdminId(admins[0].id);
+    }
+  }, [admins, selectedAdminId]);
+
+  useEffect(() => { loadData(); }, [currentDate]);
+>>>>>>> refs/remotes/upstream/main
   useEffect(() => {
     const pollId = window.setInterval(loadData, 15000);
     return () => window.clearInterval(pollId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const filteredAvailabilities = useMemo(
+    () => selectedAdminId !== null ? availabilities.filter((a) => a.adminId === selectedAdminId) : availabilities,
+    [availabilities, selectedAdminId]
+  );
+
   const events = useMemo((): CalendarEvent[] => {
     const result: CalendarEvent[] = [];
 
+<<<<<<< HEAD
     for (const avail of availabilities) {
       const adminName =
         adminNameMap.get(avail.adminId) || `Admin ${avail.adminId}`;
+=======
+    for (const avail of filteredAvailabilities) {
+      const adminName = adminNameMap.get(avail.adminId) || `Admin ${avail.adminId}`;
+>>>>>>> refs/remotes/upstream/main
       const color = adminColorMap.get(avail.adminId) || '#6b7280';
       const freeSegs = getFreeSegments(avail, bookings);
 
@@ -405,9 +430,13 @@ function CoachBookingView() {
 
     for (const b of bookings) {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       // Declined bookings from others are not shown
 >>>>>>> 1e58298 (Improvements to the bookin feature)
+=======
+      if (b.coachId !== coachId && selectedAdminId !== null && b.adminId !== selectedAdminId) continue;
+>>>>>>> refs/remotes/upstream/main
       if (b.status === 'declined' && b.coachId !== coachId) continue;
       const bStart = new Date(b.startTime);
       const bEnd = new Date(b.endTime);
@@ -446,7 +475,7 @@ function CoachBookingView() {
     }
 
     return result;
-  }, [availabilities, bookings, adminNameMap, adminColorMap, coachId]);
+  }, [filteredAvailabilities, bookings, adminNameMap, adminColorMap, coachId, selectedAdminId]);
 
 <<<<<<< HEAD
   const openBookingDialog = (
@@ -888,6 +917,7 @@ function CoachBookingView() {
       <Card className="bg-card space-y-6 p-6">
         <section>
           <p className="text-muted-foreground text-sm mb-4">
+<<<<<<< HEAD
             Klicka på en tillgänglig tid för att boka. Gröna = dina bokningar,
             röda = andras.
           </p>
@@ -911,9 +941,29 @@ function CoachBookingView() {
                       {admin.firstName} {admin.lastName}
                     </span>
                   </div>
+=======
+            Klicka på en tillgänglig tid för att boka.
+          </p>
+
+          {admins.length > 0 && (
+            <Tabs
+              value={selectedAdminId?.toString() ?? ''}
+              onValueChange={(val) => setSelectedAdminId(Number(val))}
+              className="mb-4 flex flex-col items-center"
+            >
+              <TabsList>
+                {admins.map((admin) => (
+                  <TabsTrigger key={admin.id} value={admin.id.toString()}>
+                    <span
+                      className="w-2.5 h-2.5 rounded-full mr-2 inline-block flex-shrink-0"
+                      style={{ backgroundColor: adminColorMap.get(admin.id) || '#6b7280' }}
+                    />
+                    {admin.firstName} {admin.lastName}
+                  </TabsTrigger>
+>>>>>>> refs/remotes/upstream/main
                 ))}
-              </div>
-            </div>
+              </TabsList>
+            </Tabs>
           )}
 
           {(() => {
