@@ -209,24 +209,40 @@ export default function AdminUsers() {
           });
           return;
         }
+        const authLevelMap: Record<TabValue, number> = {
+          deltagare: STUDENT_AUTH_LEVEL,
+          coach: COACH_AUTH_LEVEL,
+          larare: TEACHER_AUTH_LEVEL,
+          admin: ADMIN_AUTH_LEVEL,
+        };
         await addUserMutation.mutateAsync({
           firstName: form.firstName,
           lastName: form.lastName,
           email: form.email,
           telephone: form.telephone || undefined,
-          startDate: form.startDate ? new Date(form.startDate) : null,
-          course: form.course ? parseInt(form.course) : undefined,
-          coachId:
-            form.coachId && form.coachId !== '__none__'
-              ? parseInt(form.coachId)
-              : undefined,
-          contactId:
-            form.contactId && form.contactId !== '__none__'
-              ? parseInt(form.contactId)
-              : undefined,
-          authLevel: STUDENT_AUTH_LEVEL,
+          ...(activeTab === 'deltagare' && {
+            startDate: form.startDate ? new Date(form.startDate) : null,
+            course: form.course ? parseInt(form.course) : undefined,
+            coachId:
+              form.coachId && form.coachId !== '__none__'
+                ? parseInt(form.coachId)
+                : undefined,
+            contactId:
+              form.contactId && form.contactId !== '__none__'
+                ? parseInt(form.contactId)
+                : undefined,
+          }),
+          authLevel: authLevelMap[activeTab],
         });
-        toast({ title: 'Tillagd', description: 'Deltagaren har lagts till.' });
+        const typeLabel =
+          activeTab === 'deltagare'
+            ? 'Deltagaren'
+            : activeTab === 'coach'
+            ? 'Coachen'
+            : activeTab === 'larare'
+            ? 'Läraren'
+            : 'Adminen';
+        toast({ title: 'Tillagd', description: `${typeLabel} har lagts till.` });
       }
       setDialogOpen(false);
     } catch {
@@ -273,7 +289,14 @@ export default function AdminUsers() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         <Button onClick={openAdd} className="gap-2">
-          <Plus className="h-4 w-4" /> Lägg till deltagare
+          <Plus className="h-4 w-4" /> Lägg till{' '}
+          {activeTab === 'deltagare'
+            ? 'deltagare'
+            : activeTab === 'coach'
+            ? 'coach'
+            : activeTab === 'larare'
+            ? 'lärare'
+            : 'admin'}
         </Button>
         <Button
           variant={showInactive ? 'default' : 'outline'}
@@ -410,7 +433,14 @@ export default function AdminUsers() {
         >
           <DialogHeader>
             <DialogTitle>
-              {editId ? 'Redigera deltagare' : 'Lägg till deltagare'}
+              {editId ? 'Redigera' : 'Lägg till'}{' '}
+              {activeTab === 'deltagare'
+                ? 'deltagare'
+                : activeTab === 'coach'
+                ? 'coach'
+                : activeTab === 'larare'
+                ? 'lärare'
+                : 'admin'}
             </DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -455,71 +485,75 @@ export default function AdminUsers() {
                 }
               />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="startDate">Startdatum</Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={form.startDate}
-                onChange={(e) =>
-                  setForm({ ...form, startDate: e.target.value })
-                }
-              />
-            </div>
-            <div className="space-y-1">
-              <Label>Spår</Label>
-              <Select
-                value={form.course}
-                onValueChange={(v) => setForm({ ...form, course: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Välj spår" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">Spår 1</SelectItem>
-                  <SelectItem value="2">Spår 2</SelectItem>
-                  <SelectItem value="3">Spår 3</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label>Jobbcoach</Label>
-              <Select
-                value={form.coachId}
-                onValueChange={(v) => setForm({ ...form, coachId: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Välj jobbcoach" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">Ingen</SelectItem>
-                  {coaches.map((c) => (
-                    <SelectItem key={c.id} value={c.id.toString()}>
-                      {c.firstName} {c.lastName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label>Kontaktlärare</Label>
-              <Select
-                value={form.contactId}
-                onValueChange={(v) => setForm({ ...form, contactId: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Välj kontaktlärare" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">Ingen</SelectItem>
-                  {admins.map((a) => (
-                    <SelectItem key={a.id} value={a.id.toString()}>
-                      {a.firstName} {a.lastName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {activeTab === 'deltagare' && (
+              <>
+                <div className="space-y-1">
+                  <Label htmlFor="startDate">Startdatum</Label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={form.startDate}
+                    onChange={(e) =>
+                      setForm({ ...form, startDate: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>Spår</Label>
+                  <Select
+                    value={form.course}
+                    onValueChange={(v) => setForm({ ...form, course: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Välj spår" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">Spår 1</SelectItem>
+                      <SelectItem value="2">Spår 2</SelectItem>
+                      <SelectItem value="3">Spår 3</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label>Jobbcoach</Label>
+                  <Select
+                    value={form.coachId}
+                    onValueChange={(v) => setForm({ ...form, coachId: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Välj jobbcoach" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">Ingen</SelectItem>
+                      {coaches.map((c) => (
+                        <SelectItem key={c.id} value={c.id.toString()}>
+                          {c.firstName} {c.lastName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label>Kontaktlärare</Label>
+                  <Select
+                    value={form.contactId}
+                    onValueChange={(v) => setForm({ ...form, contactId: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Välj kontaktlärare" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">Ingen</SelectItem>
+                      {admins.map((a) => (
+                        <SelectItem key={a.id} value={a.id.toString()}>
+                          {a.firstName} {a.lastName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
