@@ -95,7 +95,7 @@ export default function AdminTickets() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="max-w-3xl mx-auto py-10 space-y-4">
       <div className="flex items-center gap-3">
         <Badge variant="secondary">
           {tickets.filter((t) => t.status === 'Open').length} öppna ärenden
@@ -113,7 +113,7 @@ export default function AdminTickets() {
       {tickets.map((t) => (
         <div
           key={t.id}
-          className="bg-card rounded-2xl shadow-card border border-border p-6 space-y-3"
+          className="bg-card rounded-2xl shadow-card border border-border p-8 space-y-3"
         >
           <div
             className="flex items-start justify-between gap-4 cursor-pointer"

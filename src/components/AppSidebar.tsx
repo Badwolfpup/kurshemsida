@@ -44,6 +44,7 @@ function getMainNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
         url: '/admin-schedule',
         icon: CalendarIcon,
       },
+      { title: 'Ärenden', url: '/tickets', icon: Ticket },
       { title: 'Profil', url: '/profil', icon: UserCircle },
       { title: 'Terminal', url: '/terminal', icon: TerminalIcon }
     );
