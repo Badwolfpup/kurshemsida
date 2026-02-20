@@ -244,6 +244,7 @@ export default function AdminUsers() {
                 : undefined,
           }),
           authLevel: authLevelMap[activeTab],
+<<<<<<< HEAD
         });
         const typeLabel =
           activeTab === 'deltagare'
@@ -257,6 +258,18 @@ export default function AdminUsers() {
           title: 'Tillagd',
           description: `${typeLabel} har lagts till.`,
         });
+=======
+        });
+        const typeLabel =
+          activeTab === 'deltagare'
+            ? 'Deltagaren'
+            : activeTab === 'coach'
+            ? 'Coachen'
+            : activeTab === 'larare'
+            ? 'Läraren'
+            : 'Adminen';
+        toast({ title: 'Tillagd', description: `${typeLabel} har lagts till.` });
+>>>>>>> 2521838 (Can now add different usertypes (#33))
       }
       setDialogOpen(false);
     } catch {
@@ -307,10 +320,17 @@ export default function AdminUsers() {
           {activeTab === 'deltagare'
             ? 'deltagare'
             : activeTab === 'coach'
+<<<<<<< HEAD
               ? 'coach'
               : activeTab === 'larare'
                 ? 'lärare'
                 : 'admin'}
+=======
+            ? 'coach'
+            : activeTab === 'larare'
+            ? 'lärare'
+            : 'admin'}
+>>>>>>> 2521838 (Can now add different usertypes (#33))
         </Button>
         <Button
           variant={showInactive ? 'default' : 'outline'}
@@ -463,10 +483,17 @@ export default function AdminUsers() {
               {activeTab === 'deltagare'
                 ? 'deltagare'
                 : activeTab === 'coach'
+<<<<<<< HEAD
                   ? 'coach'
                   : activeTab === 'larare'
                     ? 'lärare'
                     : 'admin'}
+=======
+                ? 'coach'
+                : activeTab === 'larare'
+                ? 'lärare'
+                : 'admin'}
+>>>>>>> 2521838 (Can now add different usertypes (#33))
             </DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
