@@ -1,39 +1,39 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { BookOpen, Calendar, Building, Users } from "lucide-react";
-import heroImg from "@/assets/hero-classroom.jpg";
-import activitiesImg from "@/assets/activities.jpg";
-import facilitiesImg from "@/assets/facilities.jpg";
-import instructorsImg from "@/assets/instructors.jpg";
-import CardDialog from "@/components/CardDialog";
-import "./Index.css";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { BookOpen, Calendar, Building, Users } from 'lucide-react';
+import heroImg from '@/assets/hero-classroom.jpg';
+import activitiesImg from '@/assets/activities.jpg';
+import facilitiesImg from '@/assets/facilities.jpg';
+import instructorsImg from '@/assets/instructors.jpg';
+import CardDialog from '@/components/CardDialog';
+import './Index.css';
 
 const cards = [
   {
-    title: "Om kursen",
+    title: 'Om kursen',
     description:
-      "Lär dig programmering från grunden med modern pedagogik, praktiska projekt och stöd hela vägen till anställning.",
+      'Lär dig programmering från grunden med modern pedagogik, praktiska projekt och stöd hela vägen till anställning.',
     icon: BookOpen,
     image: heroImg,
   },
   {
-    title: "Våra aktiviteter",
+    title: 'Våra aktiviteter',
     description:
-      "Workshops, hackathons, gästföreläsningar och branschevent som ger dig verkliga kontakter och erfarenheter.",
+      'Workshops, hackathons, gästföreläsningar och branschevent som ger dig verkliga kontakter och erfarenheter.',
     icon: Calendar,
     image: activitiesImg,
   },
   {
-    title: "Våra lokaler",
+    title: 'Våra lokaler',
     description:
-      "Moderna, ljusa lokaler med allt du behöver – höghastighetsinternet, dual monitors och samarbetsytor.",
+      'Moderna, ljusa lokaler med allt du behöver – höghastighetsinternet, dual monitors och samarbetsytor.',
     icon: Building,
     image: facilitiesImg,
   },
   {
-    title: "Handledarna",
+    title: 'Handledarna',
     description:
-      "Erfarna utvecklare och pedagoger som brinner för att hjälpa dig nå dina mål inom programmering.",
+      'Erfarna utvecklare och pedagoger som brinner för att hjälpa dig nå dina mål inom programmering.',
     icon: Users,
     image: instructorsImg,
   },
@@ -49,7 +49,7 @@ const item = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: "easeOut" as const },
+    transition: { duration: 0.5, ease: 'easeOut' as const },
   },
 };
 
@@ -69,8 +69,8 @@ const Index = () => {
             Välkommen till CUL Programmering
           </h1>
           <p className="index__hero-text">
-            Din resa mot en karriär inom tech börjar här. Lär dig koda, bygg
-            projekt och skapa din framtid – med stöd varje steg på vägen.
+            Din väg in i tech börjar här. Lär dig koda, bygg projekt och forma
+            din framtid – med stöd hela vägen.
           </p>
         </div>
         <div className="index__hero-bg" />
@@ -88,7 +88,7 @@ const Index = () => {
             variants={item}
             className="index__card"
             onClick={() => setOpenCard(card.title)}
-            style={{ cursor: "pointer" }}
+            style={{ cursor: 'pointer' }}
           >
             <div className="index__card-image-wrap">
               <img
@@ -111,7 +111,7 @@ const Index = () => {
       </motion.div>
 
       <CardDialog
-        cardTitle={openCard ?? ""}
+        cardTitle={openCard ?? ''}
         open={!!openCard}
         onOpenChange={(open) => {
           if (!open) setOpenCard(null);

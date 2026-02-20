@@ -1,21 +1,21 @@
-import { Menu, LogIn } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { KomIgangDialog } from "@/components/KomIgangDialog";
-import { NewsDialog } from "@/components/NewsDialog";
-import { useAuth } from "@/contexts/AuthContext";
-import { useProfile } from "@/hooks/useProfile";
-import { useNavigate } from "react-router-dom";
-import "./TopNav.css";
+import { Menu, LogIn } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { KomIgangDialog } from '@/components/KomIgangDialog';
+import { NewsDialog } from '@/components/NewsDialog';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
+import { useNavigate } from 'react-router-dom';
+import './TopNav.css';
 
 function getInitials(name?: string | null, email?: string | null): string {
   if (name) {
     const parts = name.trim().split(/\s+/);
     if (parts.length >= 2)
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    return name[0]?.toUpperCase() || "?";
+    return name[0]?.toUpperCase() || '?';
   }
-  if (email) return email[0]?.toUpperCase() || "?";
-  return "?";
+  if (email) return email[0]?.toUpperCase() || '?';
+  return '?';
 }
 
 interface TopNavProps {
@@ -31,43 +31,43 @@ export function TopNav({ onMenuToggle }: TopNavProps) {
   const initials = getInitials(profile?.display_name, user?.email);
 
   return (
-    <header className='topnav'>
-      <div className='topnav__left'>
-        <button className='topnav__hamburger' onClick={onMenuToggle}>
+    <header className="topnav">
+      <div className="topnav__left">
+        <button className="topnav__hamburger" onClick={onMenuToggle}>
           <Menu />
         </button>
-        <h2 className='topnav__title'>CUL Programmering</h2>
+        {/* <h2 className='topnav__title'>CUL Programmering</h2> */}
       </div>
 
-      <div className='topnav__actions'>
+      <div className="topnav__actions">
         {isLoggedIn && <KomIgangDialog />}
         {isLoggedIn && <NewsDialog />}
         {isLoggedIn ? (
           avatarUrl ? (
             <img
               src={avatarUrl}
-              alt='Profil'
-              className='topnav__avatar'
-              style={{ objectFit: "cover" }}
-              onClick={() => navigate("/profil")}
+              alt="Profil"
+              className="topnav__avatar"
+              style={{ objectFit: 'cover' }}
+              onClick={() => navigate('/profil')}
             />
           ) : (
             <div
-              className='topnav__avatar'
-              onClick={() => navigate("/profil")}
-              style={{ cursor: "pointer" }}
+              className="topnav__avatar"
+              onClick={() => navigate('/profil')}
+              style={{ cursor: 'pointer' }}
             >
               {initials}
             </div>
           )
         ) : isGuest ? (
           <Button
-            variant='outline'
-            size='sm'
-            className='gap-2'
-            onClick={() => navigate("/login")}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => navigate('/login')}
           >
-            <LogIn className='h-4 w-4' />
+            <LogIn className="h-4 w-4" />
             Logga in
           </Button>
         ) : null}
