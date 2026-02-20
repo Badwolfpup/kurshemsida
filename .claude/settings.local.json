@@ -10,7 +10,14 @@
       "Bash(npm run build:*)",
       "Bash(dotnet ef migrations add:*)",
       "Bash(dotnet ef database update:*)",
-      "Bash(npx vite build)"
+      "Bash(npx vite build)",
+      "Read(//c/Users/adam_/source/repos/Kursserver/Kursserver/Models/**)",
+      "Bash(git checkout:*)",
+      "Read(//c/Users/adam_/source/repos/Kursserver/Kursserver/**)",
+      "Read(//c/Users/adam_/.claude/**)",
+      "Bash(git -C \"c:/Users/adam_/source/repos/React/kurshemsida\" branch --show-current)",
+      "Bash(git -C \"c:/Users/adam_/source/repos/React/kurshemsida\" log --oneline origin/main..HEAD)",
+      "Bash(git -C \"c:/Users/adam_/source/repos/React/kurshemsida\" diff origin/main...HEAD --stat)"
     ],
     "additionalDirectories": [
       "C:\\Users\\adam_\\source\\repos\\Kursserver\\Kursserver\\Dto",

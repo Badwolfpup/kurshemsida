@@ -24,11 +24,19 @@ export interface Booking {
   status: string;
   reason?: string;
   seen?: boolean;
+  rescheduledBy?: string;
 }
 
 // Get free (available) time slots for coaches to book
 export async function getAvailabilities(): Promise<Availability[]> {
   const res = await fetch(`${API_URL}/free`, { credentials: 'include' });
+  return res.json();
+}
+
+// Get a single availability by id — accessible by coaches too
+export async function getAvailabilityById(id: number): Promise<Availability> {
+  const res = await fetch(`${API_URL}/${id}`, { credentials: 'include' });
+  if (!res.ok) throw new Error(`Failed to fetch availability (${res.status})`);
   return res.json();
 }
 
@@ -129,13 +137,13 @@ export async function cancelBooking(id: number, reason?: string): Promise<Bookin
   return res.json();
 }
 
-// Reschedule a booking — for coach (own) or admin/teacher; resets status to pending
-export async function rescheduleBooking(id: number, startTime: string, endTime: string, reason?: string): Promise<Booking> {
+// Reschedule a booking — for coach (own) or admin/teacher; sets status to rescheduled
+export async function rescheduleBooking(id: number, startTime: string, endTime: string, reason?: string, rescheduledBy?: string): Promise<Booking> {
   const res = await fetch(`${API_URL}/bookings/${id}/reschedule`, {
     method: 'PUT',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, startTime, endTime, reason: reason ?? '' })
+    body: JSON.stringify({ id, startTime, endTime, reason: reason ?? '', rescheduledBy: rescheduledBy ?? '' })
   });
   if (!res.ok) {
     const text = await res.text();

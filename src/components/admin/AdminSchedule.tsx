@@ -76,7 +76,7 @@ interface ScheduleEvent {
   end: Date;
   allDay: boolean;
   resource: {
-    type: 'availability' | 'pending' | 'accepted' | 'declined';
+    type: 'availability' | 'pending' | 'accepted' | 'declined' | 'rescheduled';
     availabilityId?: number;
     availability?: Availability;
     booking?: Booking;
@@ -220,7 +220,7 @@ function AdminSchedule() {
       if (b.status === 'declined' && new Date(b.bookedAt) < SEVEN_DAYS_AGO) continue;
 
       const coachName = adminNameMap.get(b.coachId) || `Coach ${b.coachId}`;
-      const typeLabel = b.status === 'pending' ? 'Förfrågan' : b.status === 'accepted' ? 'Godkänd' : 'Nekad';
+      const typeLabel = b.status === 'pending' ? 'Förfrågan' : b.status === 'accepted' ? 'Godkänd' : b.status === 'rescheduled' ? 'Ombokning' : 'Nekad';
 
       result.push({
         id: `booking-${b.id}`,
@@ -229,7 +229,7 @@ function AdminSchedule() {
         end: bEnd,
         allDay: false,
         resource: {
-          type: b.status as 'pending' | 'accepted' | 'declined',
+          type: b.status as 'pending' | 'accepted' | 'declined' | 'rescheduled',
           booking: b,
           isOwn: true,
         },
@@ -309,9 +309,10 @@ function AdminSchedule() {
         selectedBooking.id,
         format(newStart, "yyyy-MM-dd'T'HH:mm:ss"),
         format(newEnd, "yyyy-MM-dd'T'HH:mm:ss"),
-        bookingReason || undefined
+        bookingReason || undefined,
+        'admin'
       );
-      toast({ title: 'Ombokning skickad', description: 'Ny tid sparad, bokning återställd till förfrågan.' });
+      toast({ title: 'Ombokning skickad', description: 'Ny tid sparad. Coachen behöver godkänna den nya tiden.' });
       setShowBookingDialog(false);
       setBookingDialogMode('view');
       setBookingReason('');
@@ -363,6 +364,8 @@ function AdminSchedule() {
       }
       case 'pending':
         return { style: { ...base, backgroundColor: '#f59e0b', color: '#fff', opacity: 0.75 } };
+      case 'rescheduled':
+        return { style: { ...base, backgroundColor: '#8b5cf6', color: '#fff', opacity: 0.9 } };
       case 'accepted':
         return { style: { ...base, backgroundColor: '#22c55e', color: '#fff' } };
       case 'declined':
@@ -456,6 +459,10 @@ function AdminSchedule() {
               <span>Förfrågan</span>
             </div>
             <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#8b5cf6', opacity: 0.9 }} />
+              <span>Ombokning</span>
+            </div>
+            <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded" style={{ backgroundColor: '#22c55e' }} />
               <span>Godkänd</span>
             </div>
@@ -505,6 +512,7 @@ function AdminSchedule() {
             <DialogTitle>
               {bookingDialogMode === 'reschedule' ? 'Ändra tid' :
                 selectedBooking?.status === 'pending' ? 'Bokningsförfrågan' :
+                selectedBooking?.status === 'rescheduled' ? 'Ombokning – svar krävs' :
                 selectedBooking?.status === 'accepted' ? 'Godkänd bokning' : 'Nekad bokning'}
             </DialogTitle>
             <DialogDescription asChild>
@@ -591,6 +599,18 @@ function AdminSchedule() {
             </div>
           )}
 
+          {bookingDialogMode === 'view' && selectedBooking?.status === 'rescheduled' && selectedBooking.rescheduledBy === 'coach' && !isBookingInPast(selectedBooking) && (
+            <div className="space-y-2 pt-2">
+              <Label>Anledning (valfritt)</Label>
+              <Textarea
+                placeholder="Ange anledning till ditt svar..."
+                value={bookingReason}
+                onChange={(e) => setBookingReason(e.target.value)}
+                rows={2}
+              />
+            </div>
+          )}
+
           {bookingDialogMode === 'view' && selectedBooking?.status === 'pending' && !isBookingInPast(selectedBooking) && (
             <div className="space-y-2 pt-2">
               <Label>Anledning (valfritt)</Label>
@@ -613,6 +633,33 @@ function AdminSchedule() {
               <div className="flex gap-3 w-full justify-end">
                 <Button variant="outline" className="text-destructive border-destructive hover:bg-destructive/10" onClick={() => handleStatusUpdate('declined')}>
                   <X className="h-4 w-4 mr-1" /> Neka
+                </Button>
+                <Button variant="outline" onClick={() => {
+                  const s = new Date(selectedBooking.startTime);
+                  const e = new Date(selectedBooking.endTime);
+                  setRescheduleStart({ hour: s.getHours(), minute: s.getMinutes() });
+                  setRescheduleEnd({ hour: e.getHours(), minute: e.getMinutes() });
+                  setBookingDialogMode('reschedule');
+                }}>
+                  Föreslå annan tid
+                </Button>
+                <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => handleStatusUpdate('accepted')}>
+                  <Check className="h-4 w-4 mr-1" /> Godkänn
+                </Button>
+              </div>
+            ) : selectedBooking?.status === 'rescheduled' && selectedBooking.rescheduledBy === 'coach' && !isBookingInPast(selectedBooking) ? (
+              <div className="flex gap-3 w-full justify-end">
+                <Button variant="outline" className="text-destructive border-destructive hover:bg-destructive/10" onClick={() => handleStatusUpdate('declined')}>
+                  <X className="h-4 w-4 mr-1" /> Neka
+                </Button>
+                <Button variant="outline" onClick={() => {
+                  const s = new Date(selectedBooking.startTime);
+                  const e = new Date(selectedBooking.endTime);
+                  setRescheduleStart({ hour: s.getHours(), minute: s.getMinutes() });
+                  setRescheduleEnd({ hour: e.getHours(), minute: e.getMinutes() });
+                  setBookingDialogMode('reschedule');
+                }}>
+                  Föreslå annan tid
                 </Button>
                 <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => handleStatusUpdate('accepted')}>
                   <Check className="h-4 w-4 mr-1" /> Godkänn
