@@ -6,7 +6,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '@/components/admin/BookingCalendar.css';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 import TimeGrid from 'react-big-calendar/lib/TimeGrid';
-import { bookAvailability, cancelBooking, rescheduleBooking, getAvailabilities, getVisibleBookings, type Availability, type Booking } from '@/api/BookingService';
+import { bookAvailability, cancelBooking, rescheduleBooking, updateBookingStatus, getAvailabilities, getAvailabilityById, getVisibleBookings, type Availability, type Booking } from '@/api/BookingService';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar as CalendarIcon, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Check, X } from 'lucide-react';
 
 const WORKDAY_START_HOUR = 8;
 const WORKDAY_END_HOUR = 15;
@@ -148,6 +148,7 @@ function CoachBookingView() {
   const [actionReason, setActionReason] = useState('');
   const [rescheduleStart, setRescheduleStart] = useState<{ hour: number; minute: number }>({ hour: 8, minute: 0 });
   const [rescheduleEnd, setRescheduleEnd] = useState<{ hour: number; minute: number }>({ hour: 9, minute: 0 });
+  const [fetchedParentAvail, setFetchedParentAvail] = useState<Availability | null>(null);
 
   const today = useMemo(() => startOfDay(new Date()), []);
 
@@ -224,7 +225,7 @@ function CoachBookingView() {
       const isOwn = b.coachId === coachId;
       const adminName = adminNameMap.get(b.adminId) || `Admin ${b.adminId}`;
       const color = adminColorMap.get(b.adminId) || '#6b7280';
-      const titleMap: Record<string, string> = { pending: 'Inväntar svar', accepted: 'Godkänd', declined: 'Nekad' };
+      const titleMap: Record<string, string> = { pending: 'Inväntar svar', accepted: 'Godkänd', declined: 'Nekad', rescheduled: 'Ombokning – svar krävs' };
 
       result.push({
         id: `booking-${b.id}`,
@@ -353,8 +354,8 @@ function CoachBookingView() {
       setShowBookingDetails(false);
       setActionReason('');
       loadData();
-    } catch {
-      toast({ title: 'Fel', description: 'Kunde inte avboka.', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Fel', description: String(err), variant: 'destructive' });
     }
   };
 
@@ -368,15 +369,29 @@ function CoachBookingView() {
         selectedBooking.id,
         format(newStart, "yyyy-MM-dd'T'HH:mm:ss"),
         format(newEnd, "yyyy-MM-dd'T'HH:mm:ss"),
-        actionReason || undefined
+        actionReason || undefined,
+        'coach'
       );
-      toast({ title: 'Ombokning skickad', description: 'Ny tid sparad, bokning återställd till förfrågan.' });
+      toast({ title: 'Ombokning skickad', description: 'Ny tid sparad. Adminen behöver godkänna den nya tiden.' });
       setShowBookingDetails(false);
       setBookingDetailsMode('view');
       setActionReason('');
       loadData();
+    } catch (err) {
+      toast({ title: 'Fel', description: String(err), variant: 'destructive' });
+    }
+  };
+
+  const handleAcceptReschedule = async () => {
+    if (!selectedBooking) return;
+    try {
+      await updateBookingStatus(selectedBooking.id, 'accepted', actionReason || undefined);
+      toast({ title: 'Tid godkänd', description: 'Den nya tiden är bekräftad.' });
+      setShowBookingDetails(false);
+      setActionReason('');
+      loadData();
     } catch {
-      toast({ title: 'Fel', description: 'Kunde inte omboka.', variant: 'destructive' });
+      toast({ title: 'Fel', description: 'Kunde inte godkänna tiden.', variant: 'destructive' });
     }
   };
 
@@ -402,12 +417,12 @@ function CoachBookingView() {
 
   const rescheduleOptions = useMemo(() => {
     if (!selectedBooking) return [];
-    const avail = availabilities.find((a) => a.id === selectedBooking.adminAvailabilityId);
+    const avail = availabilities.find((a) => a.id === selectedBooking.adminAvailabilityId) ?? fetchedParentAvail;
     if (!avail) return [];
     const aStart = new Date(avail.startTime);
     const aEnd = new Date(avail.endTime);
     return generate30MinOptions(aStart.getHours(), aStart.getMinutes(), aEnd.getHours(), aEnd.getMinutes());
-  }, [selectedBooking, availabilities]);
+  }, [selectedBooking, availabilities, fetchedParentAvail]);
 
   const rescheduleEndOptions = useMemo(() => {
     const startTotal = rescheduleStart.hour * 60 + rescheduleStart.minute;
@@ -421,8 +436,8 @@ function CoachBookingView() {
     }
     if (event.resource.type === 'my-booking') {
       const status = event.resource.booking?.status;
-      const colorMap: Record<string, string> = { pending: '#f59e0b', accepted: '#22c55e', declined: '#ef4444' };
-      const opacity = status === 'pending' ? 0.75 : status === 'declined' ? 0.6 : 1;
+      const colorMap: Record<string, string> = { pending: '#f59e0b', accepted: '#22c55e', declined: '#ef4444', rescheduled: '#8b5cf6' };
+      const opacity = status === 'pending' ? 0.75 : status === 'declined' ? 0.6 : status === 'rescheduled' ? 0.9 : 1;
       return { style: { ...base, backgroundColor: colorMap[status || ''] || '#6b7280', color: '#fff', opacity } };
     }
     if (event.resource.type === 'other-booking') {
@@ -644,7 +659,7 @@ function CoachBookingView() {
       </Dialog>
 
       {/* Booking details dialog */}
-      <Dialog open={showBookingDetails} onOpenChange={(open) => { setShowBookingDetails(open); if (!open) setBookingDetailsMode('view'); }}>
+      <Dialog open={showBookingDetails} onOpenChange={(open) => { setShowBookingDetails(open); if (!open) { setBookingDetailsMode('view'); setFetchedParentAvail(null); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -734,11 +749,83 @@ function CoachBookingView() {
             </div>
           )}
 
+          {bookingDetailsMode === 'view' && selectedBooking?.status === 'rescheduled' && selectedBooking.rescheduledBy === 'admin' && !isBookingInPast(selectedBooking) && (
+            <div className="space-y-2 pt-2">
+              <Label>Anledning (valfritt)</Label>
+              <Textarea
+                placeholder="Ange anledning till ditt svar..."
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+                rows={2}
+              />
+            </div>
+          )}
+
+          {bookingDetailsMode === 'view' && selectedBooking?.status === 'pending' && !isBookingInPast(selectedBooking) && (
+            <div className="space-y-2 pt-2">
+              <Label>Anledning (valfritt)</Label>
+              <Textarea
+                placeholder="Ange anledning till nekande eller tidsändring..."
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+                rows={2}
+              />
+            </div>
+          )}
+
           <DialogFooter>
             {bookingDetailsMode === 'reschedule' ? (
               <div className="flex gap-3 w-full justify-end">
                 <Button variant="outline" onClick={() => setBookingDetailsMode('view')}>Tillbaka</Button>
                 <Button onClick={handleReschedule}>Spara tid</Button>
+              </div>
+            ) : selectedBooking?.status === 'rescheduled' && selectedBooking.rescheduledBy === 'admin' && !isBookingInPast(selectedBooking) ? (
+              <div className="flex gap-3 w-full justify-end">
+                <Button variant="outline" className="text-destructive border-destructive hover:bg-destructive/10" onClick={() => handleCancelAccepted()}>
+                  <X className="h-4 w-4 mr-1" /> Neka
+                </Button>
+                <Button variant="outline" onClick={async () => {
+                  const s = new Date(selectedBooking.startTime);
+                  const e = new Date(selectedBooking.endTime);
+                  setRescheduleStart({ hour: s.getHours(), minute: s.getMinutes() });
+                  setRescheduleEnd({ hour: e.getHours(), minute: e.getMinutes() });
+                  if (!availabilities.find((a) => a.id === selectedBooking.adminAvailabilityId)) {
+                    try {
+                      const avail = await getAvailabilityById(selectedBooking.adminAvailabilityId);
+                      setFetchedParentAvail(avail);
+                    } catch { /* fallback to current booking times */ }
+                  }
+                  setBookingDetailsMode('reschedule');
+                }}>
+                  Föreslå annan tid
+                </Button>
+                <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={handleAcceptReschedule}>
+                  <Check className="h-4 w-4 mr-1" /> Godkänn
+                </Button>
+              </div>
+            ) : selectedBooking?.status === 'pending' && !isBookingInPast(selectedBooking) ? (
+              <div className="flex gap-3 w-full justify-end">
+                <Button variant="outline" className="text-destructive border-destructive hover:bg-destructive/10" onClick={() => handleCancelAccepted()}>
+                  <X className="h-4 w-4 mr-1" /> Neka
+                </Button>
+                <Button variant="outline" onClick={async () => {
+                  const s = new Date(selectedBooking.startTime);
+                  const e = new Date(selectedBooking.endTime);
+                  setRescheduleStart({ hour: s.getHours(), minute: s.getMinutes() });
+                  setRescheduleEnd({ hour: e.getHours(), minute: e.getMinutes() });
+                  if (!availabilities.find((a) => a.id === selectedBooking.adminAvailabilityId)) {
+                    try {
+                      const avail = await getAvailabilityById(selectedBooking.adminAvailabilityId);
+                      setFetchedParentAvail(avail);
+                    } catch { /* fallback */ }
+                  }
+                  setBookingDetailsMode('reschedule');
+                }}>
+                  Föreslå annan tid
+                </Button>
+                <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => handleAcceptReschedule()}>
+                  <Check className="h-4 w-4 mr-1" /> Godkänn
+                </Button>
               </div>
             ) : selectedBooking?.status === 'accepted' && !isBookingInPast(selectedBooking) ? (
               <div className="flex gap-3 w-full justify-end">
