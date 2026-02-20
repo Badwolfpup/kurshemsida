@@ -22,6 +22,7 @@ export interface Booking {
   note: string;
   meetingType: string;
   status: string;
+  reason?: string;
   seen?: boolean;
 }
 
@@ -98,17 +99,47 @@ export async function getBookings(): Promise<Booking[]> {
   return res.json();
 }
 
-// Update booking status (accept/decline) — for admin
-export async function updateBookingStatus(id: number, status: string): Promise<Booking> {
+// Update booking status (accept/decline) — for admin/teacher
+export async function updateBookingStatus(id: number, status: string, reason?: string): Promise<Booking> {
   const res = await fetch(`${API_URL}/bookings/${id}/status`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status })
+    body: JSON.stringify({ status, reason: reason ?? '' })
   });
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || `Status update failed (${res.status})`);
+  }
+  return res.json();
+}
+
+// Cancel a booking — for coach (own) or admin/teacher
+export async function cancelBooking(id: number, reason?: string): Promise<Booking> {
+  const res = await fetch(`${API_URL}/bookings/${id}/cancel`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'declined', reason: reason ?? '' })
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Cancel failed (${res.status})`);
+  }
+  return res.json();
+}
+
+// Reschedule a booking — for coach (own) or admin/teacher; resets status to pending
+export async function rescheduleBooking(id: number, startTime: string, endTime: string, reason?: string): Promise<Booking> {
+  const res = await fetch(`${API_URL}/bookings/${id}/reschedule`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, startTime, endTime, reason: reason ?? '' })
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Reschedule failed (${res.status})`);
   }
   return res.json();
 }

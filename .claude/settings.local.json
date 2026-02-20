@@ -11,6 +11,10 @@
       "Bash(dotnet ef migrations add:*)",
       "Bash(dotnet ef database update:*)",
       "Bash(npx vite build)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\adam_\\source\\repos\\Kursserver\\Kursserver\\Dto",
+      "C:\\Users\\adam_\\source\\repos\\Kursserver\\Kursserver\\Endpoints"
     ]
   }
 }
