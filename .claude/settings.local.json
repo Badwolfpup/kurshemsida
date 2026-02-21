@@ -17,7 +17,12 @@
       "Read(//c/Users/adam_/.claude/**)",
       "Bash(git -C \"c:/Users/adam_/source/repos/React/kurshemsida\" branch --show-current)",
       "Bash(git -C \"c:/Users/adam_/source/repos/React/kurshemsida\" log --oneline origin/main..HEAD)",
-      "Bash(git -C \"c:/Users/adam_/source/repos/React/kurshemsida\" diff origin/main...HEAD --stat)"
+      "Bash(git -C \"c:/Users/adam_/source/repos/React/kurshemsida\" diff origin/main...HEAD --stat)",
+      "Bash(gh repo view:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)"
     ],
     "additionalDirectories": [
       "C:\\Users\\adam_\\source\\repos\\Kursserver\\Kursserver\\Dto",
