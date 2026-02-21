@@ -13,7 +13,7 @@ export interface Availability {
 export interface Booking {
   id: number;
   adminId: number;
-  adminAvailabilityId: number;
+  adminAvailabilityId: number | null;
   coachId: number;
   studentId: number | null;
   startTime: string;
@@ -78,9 +78,25 @@ export async function updateAvailability(data: { id: number; startTime: string; 
   return res.json();
 }
 
-// Book an availability (for coach)
+// Delete availability (for admin)
+export async function deleteAvailability(id: number): Promise<void> {
+  const res = await fetch(`${API_URL}/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Delete failed (${res.status})`);
+  }
+}
+
+export interface BookingConflictError extends Error {
+  conflictData: { type: 'conflict' | 'warning'; bookings: Booking[] };
+}
+
+// Book an availability slot (for coach)
 export async function bookAvailability(data: {
-  adminAvailabilityId: number;
+  adminAvailabilityId: number | null;
   coachId: number;
   studentId: number | null;
   note: string;
@@ -97,6 +113,34 @@ export async function bookAvailability(data: {
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || `Booking failed (${res.status})`);
+  }
+  return res.json();
+}
+
+// Create standalone appointment (for admin/teacher) — returns 409 on conflict
+export async function createAdminAppointment(data: {
+  coachId: number;
+  startTime: string;
+  endTime: string;
+  note: string;
+  meetingType: string;
+  force?: boolean;
+}): Promise<Booking> {
+  const res = await fetch(`${API_URL}/appointments`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (res.status === 409) {
+    const parsed = await res.json();
+    const err = new Error('conflict') as BookingConflictError;
+    err.conflictData = parsed;
+    throw err;
+  }
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Appointment creation failed (${res.status})`);
   }
   return res.json();
 }
