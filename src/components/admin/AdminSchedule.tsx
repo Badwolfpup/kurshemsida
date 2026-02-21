@@ -6,17 +6,18 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './BookingCalendar.css';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 import TimeGrid from 'react-big-calendar/lib/TimeGrid';
-import { getAllAvailabilities, getBookings, addAvailability, updateAvailability, updateBookingStatus, cancelBooking, rescheduleBooking, type Availability, type Booking } from '@/api/BookingService';
+import { getAllAvailabilities, getBookings, addAvailability, updateAvailability, deleteAvailability, createAdminAppointment, updateBookingStatus, cancelBooking, rescheduleBooking, type Availability, type Booking, type BookingConflictError } from '@/api/BookingService';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
-import { Check, X } from 'lucide-react';
+import { Check, X, Trash2, Plus } from 'lucide-react';
 
 const WORKDAY_START_HOUR = 8;
 const WORKDAY_END_HOUR = 15;
@@ -148,6 +149,33 @@ function AdminSchedule() {
   const [editAvailEndHour, setEditAvailEndHour] = useState(9);
   const [editAvailEndMinute, setEditAvailEndMinute] = useState(0);
 
+  // Standalone appointment dialog
+  const [showAppointmentDialog, setShowAppointmentDialog] = useState(false);
+  const [appointCoachId, setAppointCoachId] = useState<number | null>(null);
+  const [appointDay, setAppointDay] = useState<string>('');
+  const [appointStartHour, setAppointStartHour] = useState(9);
+  const [appointStartMinute, setAppointStartMinute] = useState(0);
+  const [appointEndHour, setAppointEndHour] = useState(9);
+  const [appointEndMinute, setAppointEndMinute] = useState(30);
+  const [appointNote, setAppointNote] = useState('');
+
+  // Shared calendar: which other admins' bookings to show
+  const [visibleAdminIds, setVisibleAdminIds] = useState<Set<number>>(new Set());
+
+  // Store all bookings (unfiltered) for shared calendar
+  const [allBookings, setAllBookings] = useState<Booking[]>([]);
+
+  // Hard-conflict error dialog (accepted bookings — cannot proceed)
+  const [conflictErrorBookings, setConflictErrorBookings] = useState<Booking[]>([]);
+  const [showConflictError, setShowConflictError] = useState(false);
+
+  // Pending-conflict warning dialog (when coach already has pending bookings at requested time)
+  const [conflictWarningBookings, setConflictWarningBookings] = useState<Booking[]>([]);
+  const [showConflictWarning, setShowConflictWarning] = useState(false);
+  const [pendingAppointmentData, setPendingAppointmentData] = useState<{
+    coachId: number; startTime: string; endTime: string; note: string;
+  } | null>(null);
+
   const allAdmins = useMemo(
     () => allUsers.filter((u) => u.authLevel <= 2 && u.isActive),
     [allUsers]
@@ -167,10 +195,16 @@ function AdminSchedule() {
     return map;
   }, [allUsers]);
 
+  const coaches = useMemo(
+    () => allUsers.filter((u) => u.authLevel === 3 && u.isActive),
+    [allUsers]
+  );
+
   const load = async () => {
     try {
       const [availData, bookingData] = await Promise.all([getAllAvailabilities(), getBookings()]);
       setAvailabilities(availData);
+      setAllBookings(bookingData);
       setBookings(bookingData.filter((b) => b.adminId === adminId));
     } catch {
       toast({ title: 'Fel', description: 'Kunde inte ladda data.', variant: 'destructive' });
@@ -236,8 +270,38 @@ function AdminSchedule() {
       });
     }
 
+    // Add other visible admins' bookings
+    for (const otherId of visibleAdminIds) {
+      if (otherId === adminId) continue;
+      const otherBookings = allBookings.filter((b) => b.adminId === otherId);
+      const color = adminColorMap.get(otherId) || '#6b7280';
+      const otherAdminName = adminNameMap.get(otherId) || `Admin ${otherId}`;
+
+      for (const b of otherBookings) {
+        if (b.status === 'declined' && new Date(b.bookedAt) < SEVEN_DAYS_AGO) continue;
+        const bStart = new Date(b.startTime);
+        const bEnd = new Date(b.endTime);
+        const coachName = adminNameMap.get(b.coachId) || `Coach ${b.coachId}`;
+        const typeLabel = b.status === 'pending' ? 'Förfrågan' : b.status === 'accepted' ? 'Godkänd' : b.status === 'rescheduled' ? 'Ombokning' : 'Nekad';
+
+        result.push({
+          id: `other-booking-${b.id}`,
+          title: `[${otherAdminName}] ${coachName} – ${typeLabel}`,
+          start: bStart,
+          end: bEnd,
+          allDay: false,
+          resource: {
+            type: b.status as 'pending' | 'accepted' | 'declined' | 'rescheduled',
+            booking: b,
+            color,
+            isOwn: false,
+          },
+        });
+      }
+    }
+
     return result;
-  }, [availabilities, bookings, adminColorMap, adminNameMap, adminId, SEVEN_DAYS_AGO]);
+  }, [availabilities, bookings, allBookings, visibleAdminIds, adminColorMap, adminNameMap, adminId, SEVEN_DAYS_AGO]);
 
   const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
     if (isBefore(startOfDay(start), today)) return;
@@ -263,7 +327,7 @@ function AdminSchedule() {
       return;
     }
 
-    if (event.resource.booking) {
+    if (event.resource.booking && event.resource.isOwn) {
       setSelectedBooking(event.resource.booking);
       setBookingDialogMode('view');
       setBookingReason('');
@@ -355,12 +419,104 @@ function AdminSchedule() {
     }
   };
 
+  const handleDeleteAvailability = async () => {
+    if (!selectedAvailability) return;
+    if (!window.confirm('Är du säker på att du vill ta bort denna tillgänglighet?')) return;
+    try {
+      await deleteAvailability(selectedAvailability.id);
+      toast({ title: 'Borttagen' });
+      setShowEditAvailDialog(false);
+      setSelectedAvailability(null);
+      load();
+    } catch (err) {
+      toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte ta bort tillgängligheten.', variant: 'destructive' });
+    }
+  };
+
+  const submitAppointment = async (coachId: number, startTime: string, endTime: string, note: string, force = false) => {
+    await createAdminAppointment({
+      coachId,
+      note,
+      meetingType: 'intro',
+      startTime,
+      endTime,
+      force,
+    });
+    toast({ title: 'Möte skickat', description: 'Coachen behöver godkänna mötet.' });
+    setShowAppointmentDialog(false);
+    setAppointCoachId(null);
+    setAppointDay('');
+    setAppointNote('');
+    load();
+  };
+
+  const handleCreateAppointment = async () => {
+    if (!appointCoachId || !appointDay) {
+      toast({ title: 'Fel', description: 'Välj coach och dag.', variant: 'destructive' });
+      return;
+    }
+    const dayDate = new Date(appointDay);
+    const startTime = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate(), appointStartHour, appointStartMinute);
+    const endTime = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate(), appointEndHour, appointEndMinute);
+    if (startTime >= endTime) {
+      toast({ title: 'Fel', description: 'Starttid måste vara före sluttid.', variant: 'destructive' });
+      return;
+    }
+    const startIso = format(startTime, "yyyy-MM-dd'T'HH:mm:ss");
+    const endIso = format(endTime, "yyyy-MM-dd'T'HH:mm:ss");
+    try {
+      await submitAppointment(appointCoachId, startIso, endIso, appointNote);
+    } catch (err) {
+      const conflictErr = err as BookingConflictError;
+      if (conflictErr.conflictData?.type === 'conflict') {
+        setConflictErrorBookings(conflictErr.conflictData.bookings);
+        setShowConflictError(true);
+      } else if (conflictErr.conflictData?.type === 'warning') {
+        setPendingAppointmentData({ coachId: appointCoachId, startTime: startIso, endTime: endIso, note: appointNote });
+        setConflictWarningBookings(conflictErr.conflictData.bookings);
+        setShowConflictWarning(true);
+      } else {
+        toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte boka mötet.', variant: 'destructive' });
+      }
+    }
+  };
+
+  const handleConfirmConflictWarning = async () => {
+    if (!pendingAppointmentData) return;
+    setShowConflictWarning(false);
+    try {
+      await submitAppointment(pendingAppointmentData.coachId, pendingAppointmentData.startTime, pendingAppointmentData.endTime, pendingAppointmentData.note, true);
+    } catch (err) {
+      toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte boka mötet.', variant: 'destructive' });
+    } finally {
+      setPendingAppointmentData(null);
+      setConflictWarningBookings([]);
+    }
+  };
+
+  const toggleVisibleAdmin = (id: number) => {
+    setVisibleAdminIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   const eventStyleGetter = (event: ScheduleEvent) => {
-    const base = { borderRadius: '6px', border: 'none', padding: '2px 6px', cursor: 'pointer' };
+    const isOwn = event.resource.isOwn !== false;
+    const base = { borderRadius: '6px', border: 'none', padding: '2px 6px', cursor: isOwn ? 'pointer' : 'default' };
+
+    // Other admins' bookings: use their admin color with reduced opacity
+    if (!isOwn && event.resource.type !== 'availability') {
+      const color = event.resource.color || '#6b7280';
+      return { style: { ...base, backgroundColor: color, color: '#fff', opacity: 0.5, border: '2px dashed rgba(255,255,255,0.5)' } };
+    }
+
     switch (event.resource.type) {
       case 'availability': {
         const color = event.resource.color || '#2563eb';
-        return { style: { ...base, backgroundColor: color, color: '#fff', cursor: event.resource.isOwn ? 'pointer' : 'default' } };
+        return { style: { ...base, backgroundColor: color, color: '#fff' } };
       }
       case 'pending':
         return { style: { ...base, backgroundColor: '#f59e0b', color: '#fff', opacity: 0.75 } };
@@ -442,6 +598,9 @@ function AdminSchedule() {
               {format(weekStart, 'd/M')} – {format(weekEnd, 'd/M')}
             </span>
             <Button variant="outline" onClick={() => setCurrentDate(addWeeks(currentDate, 1))}>Nästa vecka →</Button>
+            <Button onClick={() => setShowAppointmentDialog(true)} className="ml-4">
+              <Plus className="h-4 w-4 mr-1" /> Boka möte
+            </Button>
           </div>
 
           <div className="flex flex-wrap gap-4 mb-4 text-sm">
@@ -471,6 +630,25 @@ function AdminSchedule() {
               <span>Nekad</span>
             </div>
           </div>
+
+          {allAdmins.length > 1 && (
+            <div className="flex flex-wrap gap-4 mb-4 text-sm items-center">
+              <span className="text-muted-foreground font-medium">Visa bokningar:</span>
+              {allAdmins.filter((a) => a.id !== adminId).map((admin) => {
+                const color = adminColorMap.get(admin.id) || '#6b7280';
+                return (
+                  <label key={admin.id} className="flex items-center gap-2 cursor-pointer">
+                    <Checkbox
+                      checked={visibleAdminIds.has(admin.id)}
+                      onCheckedChange={() => toggleVisibleAdmin(admin.id)}
+                    />
+                    <div className="w-3 h-3 rounded" style={{ backgroundColor: color, opacity: 0.5, border: '1px dashed rgba(0,0,0,0.3)' }} />
+                    <span>{admin.firstName} {admin.lastName}</span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
 
           <div style={{ height: 600 }}>
             {/* @ts-expect-error custom fourDay view not in type defs */}
@@ -756,8 +934,171 @@ function AdminSchedule() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditAvailDialog(false)}>Avbryt</Button>
-            <Button onClick={handleSaveAvailability}>Spara</Button>
+            <div className="flex gap-3 w-full justify-between">
+              <Button
+                variant="outline"
+                className="text-destructive border-destructive hover:bg-destructive/10"
+                onClick={handleDeleteAvailability}
+                disabled={!!editAvailConstraints}
+                title={editAvailConstraints ? 'Kan inte ta bort: det finns godkända bokningar' : undefined}
+              >
+                <Trash2 className="h-4 w-4 mr-1" /> Ta bort
+              </Button>
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setShowEditAvailDialog(false)}>Avbryt</Button>
+                <Button onClick={handleSaveAvailability}>Spara</Button>
+              </div>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Standalone appointment dialog */}
+      <Dialog open={showAppointmentDialog} onOpenChange={setShowAppointmentDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Boka möte med coach</DialogTitle>
+            <DialogDescription>
+              Välj coach, dag och tid för mötet.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Coach</Label>
+              <Select
+                value={appointCoachId?.toString() || ''}
+                onValueChange={(val) => setAppointCoachId(Number(val))}
+              >
+                <SelectTrigger><SelectValue placeholder="Välj coach..." /></SelectTrigger>
+                <SelectContent>
+                  {coaches.map((c) => (
+                    <SelectItem key={c.id} value={c.id.toString()}>{c.firstName} {c.lastName}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Dag</Label>
+              <Select value={appointDay} onValueChange={setAppointDay}>
+                <SelectTrigger><SelectValue placeholder="Välj dag..." /></SelectTrigger>
+                <SelectContent>
+                  {fourDayRange(currentDate)
+                    .filter((d) => !isBefore(startOfDay(d), today))
+                    .map((d) => (
+                      <SelectItem key={d.toISOString()} value={d.toISOString()}>
+                        {DAY_NAMES[getDay(d)]} {format(d, 'd/M')}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Starttid</Label>
+              <Select
+                value={`${appointStartHour}:${appointStartMinute}`}
+                onValueChange={(val) => {
+                  const [h, m] = val.split(':').map(Number);
+                  setAppointStartHour(h); setAppointStartMinute(m);
+                  const newTotal = h * 60 + m;
+                  if (appointEndHour * 60 + appointEndMinute <= newTotal) {
+                    const next = ALL_TIME_OPTIONS.find((o) => o.hour * 60 + o.minute > newTotal);
+                    if (next) { setAppointEndHour(next.hour); setAppointEndMinute(next.minute); }
+                  }
+                }}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ALL_TIME_OPTIONS.slice(0, -1)
+                    .filter((o) => o.hour * 60 + o.minute >= 9 * 60)
+                    .map((o) => (
+                      <SelectItem key={o.label} value={`${o.hour}:${o.minute}`}>{o.label}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Sluttid</Label>
+              <Select
+                value={`${appointEndHour}:${appointEndMinute}`}
+                onValueChange={(val) => { const [h, m] = val.split(':').map(Number); setAppointEndHour(h); setAppointEndMinute(m); }}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ALL_TIME_OPTIONS
+                    .filter((o) => {
+                      const total = o.hour * 60 + o.minute;
+                      return total > appointStartHour * 60 + appointStartMinute && total <= 15 * 60 + 30;
+                    })
+                    .map((o) => (
+                      <SelectItem key={o.label} value={`${o.hour}:${o.minute}`}>{o.label}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Meddelande (valfritt)</Label>
+              <Textarea
+                placeholder="Lägg till ett meddelande..."
+                value={appointNote}
+                onChange={(e) => setAppointNote(e.target.value)}
+                rows={2}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAppointmentDialog(false)}>Avbryt</Button>
+            <Button onClick={handleCreateAppointment}>Boka</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Hard-conflict error dialog (accepted bookings — cannot proceed) */}
+      <Dialog open={showConflictError} onOpenChange={(open) => { setShowConflictError(open); if (!open) setConflictErrorBookings([]); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tidskollision</DialogTitle>
+            <DialogDescription asChild>
+              <div className="space-y-2 mt-2">
+                <p>Det finns redan godkända möten den här tiden:</p>
+                <ul className="list-disc list-inside text-sm space-y-1">
+                  {conflictErrorBookings.map((b) => (
+                    <li key={b.id}>
+                      {format(new Date(b.startTime), 'yyyy-MM-dd HH:mm')}–{format(new Date(b.endTime), 'HH:mm')}
+                      {' '}– {adminNameMap.get(b.coachId) || `Coach ${b.coachId}`}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowConflictError(false); setConflictErrorBookings([]); }}>Stäng</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Pending-conflict warning dialog */}
+      <Dialog open={showConflictWarning} onOpenChange={(open) => { setShowConflictWarning(open); if (!open) { setPendingAppointmentData(null); setConflictWarningBookings([]); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Väntande möten kolliderar</DialogTitle>
+            <DialogDescription asChild>
+              <div className="space-y-2 mt-2">
+                <p>Det finns redan väntande möten den här tiden:</p>
+                <ul className="list-disc list-inside text-sm space-y-1">
+                  {conflictWarningBookings.map((b) => (
+                    <li key={b.id}>
+                      {format(new Date(b.startTime), 'yyyy-MM-dd HH:mm')}–{format(new Date(b.endTime), 'HH:mm')}
+                      {' '}– {adminNameMap.get(b.coachId) || `Coach ${b.coachId}`}
+                    </li>
+                  ))}
+                </ul>
+                <p>Vill du fortsätta ändå?</p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowConflictWarning(false); setPendingAppointmentData(null); setConflictWarningBookings([]); }}>Avbryt</Button>
+            <Button onClick={handleConfirmConflictWarning}>Fortsätt</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
