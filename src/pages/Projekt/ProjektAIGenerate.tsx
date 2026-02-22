@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, Eye, Code2, RotateCcw } from "lucide-react";
+import { Sparkles, Eye, Code2, RotateCcw, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,7 +8,17 @@ import {
 import type AssertProjectType from "@/Types/AssertProjectType";
 import type { AssertProjectResponse } from "@/Types/AssertProjectType";
 import dummyPic from "@/assets/images/dummypic";
+import imageMap from "@/assets/images/imagemap";
 import { assertService } from "@/api/AssertService";
+import ExerciseFeedbackDialog from "@/components/ExerciseFeedbackDialog";
+import noimage from "@/assets/images/noimage.png";
+
+const PROJECT_FEEDBACK_REASONS = [
+  "Projektet var för svårt",
+  "Projektet var för lätt",
+  "Instruktionerna var oklara",
+  "Annat",
+];
 
 const DIFFICULTY_LABELS: Record<number, string> = {
   1: "Mycket lätt", 2: "Lätt", 3: "Medel", 4: "Svår", 5: "Mycket svår",
@@ -28,18 +38,24 @@ const ProjektAIGenerate = () => {
   const [showCSS, setShowCSS] = useState(false);
   const [showJS, setShowJS] = useState(false);
   const [AIProject, setAIProject] = useState<AssertProjectResponse | null>(null);
-  const [AIModel, setAIModel] = useState("anthropic");
+  const [AIModel, setAIModel] = useState("grok");
   const [course, setCourse] = useState("");
   const [difficultyLevel, setDifficultyLevel] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [projectError, setProjectError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(90);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackMode, setFeedbackMode] = useState<"completed" | "abandoned">("completed");
+  const [pendingGenerate, setPendingGenerate] = useState(false);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [generatedWith, setGeneratedWith] = useState<{ techStack: string; difficulty: number } | null>(null);
 
   useEffect(() => {
     if (AIProject && previewIframeRef.current) {
       const doc = previewIframeRef.current.contentDocument;
       if (doc) {
-        const htmlWithImages = (AIProject.solutionHtml || "").replace(/{dummyPic}/g, dummyPic);
+        const htmlWithImages = (AIProject.solutionHtml || "")
+        .replace(/\{image:(\w+)\}/g, (_: string, name: string) => getImage(name));
         doc.open();
         doc.write(`<html><head><style>${AIProject.solutionCss || ""}</style></head><body style="background-color: #faf3e8;">${htmlWithImages}<script>${AIProject.solutionJs || ""}<\/script></body></html>`);
         doc.close();
@@ -61,6 +77,52 @@ const ProjektAIGenerate = () => {
     return () => { if (intervalId) clearInterval(intervalId); };
   }, [isLoading]);
 
+  const getImage = (name: string): string => imageMap[name] ?? imageMap["default"];
+
+  const handleCompleted = () => {
+    setFeedbackMode("completed");
+    setFeedbackOpen(true);
+  };
+
+  const handleGenerate = () => {
+    if (AIProject) {
+      setFeedbackMode("abandoned");
+      setFeedbackOpen(true);
+      setPendingGenerate(true);
+      return;
+    }
+    generate();
+  };
+
+  const handleFeedbackSubmit = async (feedback: { isPositive: boolean; reason?: string; comment?: string }) => {
+    if (AIProject) {
+      try {
+        await assertService.submitProjectFeedback({
+          techStack: generatedWith?.techStack ?? course,
+          difficulty: generatedWith?.difficulty ?? difficultyLevel,
+          title: AIProject.title ?? "",
+          description: AIProject.description ?? "",
+          solutionHtml: AIProject.solutionHtml ?? undefined,
+          solutionCss: AIProject.solutionCss ?? undefined,
+          solutionJs: AIProject.solutionJs ?? undefined,
+          isCompleted: feedbackMode === "completed",
+          isPositive: feedback.isPositive,
+          feedbackReason: feedback.reason,
+          feedbackComment: feedback.comment,
+        });
+      } catch (error) {
+        console.error("Failed to submit feedback:", error);
+      }
+    }
+    setFeedbackSubmitted(true);
+    setFeedbackOpen(false);
+
+    if (pendingGenerate) {
+      setPendingGenerate(false);
+      generate();
+    }
+  };
+
   const generate = async () => {
     if (!course) return;
     setIsLoading(true);
@@ -69,6 +131,8 @@ const ProjektAIGenerate = () => {
       const request = { techStack: course, difficulty: difficultyLevel } as AssertProjectType;
       const result = await assertService.fetchProjectAssert(request, AIModel);
       setAIProject(result);
+      setGeneratedWith({ techStack: course, difficulty: difficultyLevel });
+      setFeedbackSubmitted(false);
       setShowingSolution(false);
     } catch (error) {
       console.error("Error fetching project:", error);
@@ -100,8 +164,8 @@ const ProjektAIGenerate = () => {
             <Select value={AIModel} onValueChange={setAIModel}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="anthropic">Anthropic</SelectItem>
-                <SelectItem value="deepseek">Deepseek</SelectItem>
+                {/* <SelectItem value="anthropic">Anthropic</SelectItem> */}
+                {/* <SelectItem value="deepseek">Deepseek</SelectItem> */}
                 <SelectItem value="grok">Grok</SelectItem>
               </SelectContent>
             </Select>
@@ -129,7 +193,7 @@ const ProjektAIGenerate = () => {
             </Select>
           </div>
           <Button
-            onClick={generate}
+            onClick={handleGenerate}
             disabled={isLoading || !course}
             className="gap-2"
           >
@@ -185,6 +249,14 @@ const ProjektAIGenerate = () => {
                 className="gap-2"
               >
                 <Code2 className="h-4 w-4" /> Kodlösning
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleCompleted}
+                disabled={feedbackSubmitted}
+                className="ml-auto gap-2"
+              >
+                <Check className="h-4 w-4" /> Klar
               </Button>
             </div>
 
@@ -283,18 +355,24 @@ const ProjektAIGenerate = () => {
           </div>
 
           {/* Right: live preview */}
-          <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
-            <div className="px-5 py-3 border-b border-border">
+          <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden flex flex-col" style={{ minHeight: "600px" }}>
+            <div className="px-5 py-3 border-b border-border flex-shrink-0">
               <h3 className="font-display font-semibold text-sm text-foreground">Live Preview</h3>
             </div>
             <iframe
               ref={previewIframeRef}
-              className="w-full min-h-[500px] bg-white"
+              className="w-full flex-1 bg-white"
               title="Live Preview"
             />
           </div>
         </div>
       )}
+      <ExerciseFeedbackDialog
+        open={feedbackOpen}
+        mode={feedbackMode}
+        reasons={PROJECT_FEEDBACK_REASONS}
+        onSubmit={handleFeedbackSubmit}
+      />
     </div>
   );
 };
