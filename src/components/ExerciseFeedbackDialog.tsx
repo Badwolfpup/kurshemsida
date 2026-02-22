@@ -21,6 +21,7 @@ interface ExerciseFeedbackDialogProps {
   open: boolean;
   mode: "completed" | "abandoned";
   onSubmit: (feedback: FeedbackData) => void;
+  reasons?: string[];
 }
 
 const FEEDBACK_REASONS = [
@@ -31,7 +32,8 @@ const FEEDBACK_REASONS = [
   "Annat",
 ];
 
-const ExerciseFeedbackDialog = ({ open, mode, onSubmit }: ExerciseFeedbackDialogProps) => {
+const ExerciseFeedbackDialog = ({ open, mode, onSubmit, reasons }: ExerciseFeedbackDialogProps) => {
+  const activeReasons = reasons ?? FEEDBACK_REASONS;
   const [view, setView] = useState<"thumbs" | "reasons">(mode === "abandoned" ? "reasons" : "thumbs");
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
   const [comment, setComment] = useState("");
@@ -114,7 +116,7 @@ const ExerciseFeedbackDialog = ({ open, mode, onSubmit }: ExerciseFeedbackDialog
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="space-y-2 py-2">
-              {FEEDBACK_REASONS.map((reason) => (
+              {activeReasons.map((reason) => (
                 <button
                   key={reason}
                   onClick={() => setSelectedReason(reason)}
