@@ -15,6 +15,7 @@ import {
   Contact,
   UserCircle,
   Calendar as CalendarIcon,
+  CircleFadingPlus,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -64,7 +65,8 @@ function getMainNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
       { title: 'Övningar', url: '/ovningar', icon: Dumbbell },
       { title: 'Portfolio', url: '/portfolio', icon: Briefcase },
       { title: 'Profil', url: '/profil', icon: UserCircle },
-      { title: 'Terminal', url: '/terminal', icon: TerminalIcon }
+      { title: 'Terminal', url: '/terminal', icon: TerminalIcon },
+      { title: 'Skapa ärende', url: '/student-arenden', icon: CircleFadingPlus }
     );
   }
 
