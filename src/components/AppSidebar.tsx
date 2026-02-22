@@ -113,6 +113,15 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
     onMobileClose();
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onMobileClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileOpen, onMobileClose]);
+
   return (
     <>
       {mobileOpen && (
