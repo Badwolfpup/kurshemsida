@@ -327,7 +327,7 @@ export default function AdminUsers() {
         {role === 'Admin' && (
           <TabsContent value="admin">
             <UserTable
-              rows={users.filter((u) => u.authLevel === ADMIN_AUTH_LEVEL)}
+              rows={users.filter((u) => u.authLevel === ADMIN_AUTH_LEVEL && u.isActive === !showInactive)}
               emptyLabel="Inga admins."
               onEdit={openEdit}
               onToggle={toggleActive}
@@ -338,7 +338,7 @@ export default function AdminUsers() {
         {/* Lärare tab */}
         <TabsContent value="larare">
           <UserTable
-            rows={users.filter((u) => u.authLevel === TEACHER_AUTH_LEVEL)}
+            rows={users.filter((u) => u.authLevel === TEACHER_AUTH_LEVEL && u.isActive === !showInactive)}
             emptyLabel="Inga lärare."
             onEdit={openEdit}
             onToggle={toggleActive}
@@ -348,7 +348,7 @@ export default function AdminUsers() {
         {/* Coach tab */}
         <TabsContent value="coach">
           <UserTable
-            rows={users.filter((u) => u.authLevel === COACH_AUTH_LEVEL)}
+            rows={users.filter((u) => u.authLevel === COACH_AUTH_LEVEL && u.isActive === !showInactive)}
             emptyLabel="Inga coacher."
             onEdit={openEdit}
             onToggle={toggleActive}
