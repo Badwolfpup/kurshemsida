@@ -9,10 +9,11 @@ import {
 import type AssertExerciseType from "@/Types/AssertExerciseType";
 import type { AssertExerciseResponse } from "@/Types/AssertExerciseType";
 import { assertService } from "@/api/AssertService";
+import ExerciseFeedbackDialog from "@/components/ExerciseFeedbackDialog";
 
 const TOPICS = [
-  "Variables and DataTypes", "Operators", "Conditionals", "Loops",
-  "Functions", "Arrays", "Objects", "Strings", "Events",
+  "Variables and DataTypes", "Strings", "Operators", "Conditionals", "Loops",
+  "Functions", "Arrays", "Objects",  "Events",
 ];
 
 const DIFFICULTY_LABELS: Record<number, string> = {
@@ -27,7 +28,7 @@ const DIFFICULTY_COLORS: Record<number, string> = {
 };
 
 const OvningarAIGenerate = () => {
-  const [AIModel, setAIModel] = useState("anthropic");
+  const [AIModel, setAIModel] = useState("grok");
   const [topic, setTopic] = useState("");
   const [language, setLanguage] = useState("JavaScript");
   const [difficultyLevel, setDifficultyLevel] = useState(1);
@@ -38,6 +39,10 @@ const OvningarAIGenerate = () => {
   const [showSolution, setShowSolution] = useState(false);
   const [userCode, setUserCode] = useState("");
   const [testResults, setTestResults] = useState<{ comment: string; code: string; passed: boolean; error?: string }[] | null>(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackMode, setFeedbackMode] = useState<"completed" | "abandoned">("completed");
+  const [pendingGenerate, setPendingGenerate] = useState(false);
+  const [generatedWith, setGeneratedWith] = useState<{ topic: string; language: string; difficulty: number } | null>(null);
 
   useEffect(() => {
     let intervalId: number;
@@ -53,6 +58,16 @@ const OvningarAIGenerate = () => {
     return () => { if (intervalId) clearInterval(intervalId); };
   }, [isLoading]);
 
+  useEffect(() => {
+    if (testResults && testResults.length > 0 && testResults.every((r) => r.passed)) {
+      const timer = setTimeout(() => {
+        setFeedbackMode("completed");
+        setFeedbackOpen(true);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [testResults]);
+
   const generate = async () => {
     if (!topic) return;
     setIsLoading(true);
@@ -61,6 +76,7 @@ const OvningarAIGenerate = () => {
       const request: AssertExerciseType = { topic, language, difficulty: difficultyLevel };
       const result = await assertService.fetchExerciseAssert(request, AIModel);
       setExercise(result);
+      setGeneratedWith({ topic, language, difficulty: difficultyLevel });
       setShowSolution(false);
       setUserCode("");
       setTestResults(null);
@@ -69,6 +85,48 @@ const OvningarAIGenerate = () => {
       setExerciseError(error instanceof Error ? error.message : "Ett fel uppstod vid generering.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGenerate = () => {
+    if (exercise) {
+      const allPassed = testResults && testResults.length > 0 && testResults.every((r) => r.passed);
+      if (!allPassed) {
+        setFeedbackMode("abandoned");
+        setFeedbackOpen(true);
+        setPendingGenerate(true);
+        return;
+      }
+    }
+    generate();
+  };
+
+  const handleFeedbackSubmit = async (feedback: { isPositive: boolean; reason?: string; comment?: string }) => {
+    if (exercise) {
+      try {
+        const allPassed = testResults && testResults.length > 0 && testResults.every((r) => r.passed);
+        await assertService.submitExerciseFeedback({
+          topic: generatedWith?.topic ?? topic,
+          language: generatedWith?.language ?? language,
+          difficulty: generatedWith?.difficulty ?? difficultyLevel,
+          title: exercise.title ?? "",
+          description: exercise.description ?? "",
+          solution: exercise.solution ?? undefined,
+          asserts: exercise.asserts ? JSON.stringify(exercise.asserts) : undefined,
+          isCompleted: allPassed ?? false,
+          isPositive: feedback.isPositive,
+          feedbackReason: feedback.reason,
+          feedbackComment: feedback.comment,
+        });
+      } catch (error) {
+        console.error("Failed to submit feedback:", error);
+      }
+    }
+    setFeedbackOpen(false);
+
+    if (pendingGenerate) {
+      setPendingGenerate(false);
+      generate();
     }
   };
 
@@ -150,8 +208,8 @@ const OvningarAIGenerate = () => {
             <Select value={AIModel} onValueChange={setAIModel}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="anthropic">Anthropic</SelectItem>
-                <SelectItem value="deepseek">Deepseek</SelectItem>
+                {/* <SelectItem value="anthropic">Anthropic</SelectItem> */}
+                {/* <SelectItem value="deepseek">Deepseek</SelectItem> */}
                 <SelectItem value="grok">Grok</SelectItem>
               </SelectContent>
             </Select>
@@ -186,7 +244,7 @@ const OvningarAIGenerate = () => {
             </Select>
           </div>
           <Button
-            onClick={generate}
+            onClick={handleGenerate}
             disabled={isLoading || !topic}
             className="gap-2"
           >
@@ -229,9 +287,9 @@ const OvningarAIGenerate = () => {
           <div>
             <h2 className="font-display text-xl font-bold text-foreground">{exercise.title}</h2>
             <div className="flex gap-2 mt-2">
-              <Badge className={DIFFICULTY_COLORS[difficultyLevel]}>{DIFFICULTY_LABELS[difficultyLevel]}</Badge>
-              <Badge variant="secondary">{language}</Badge>
-              <Badge variant="outline">{topic}</Badge>
+              <Badge className={DIFFICULTY_COLORS[generatedWith?.difficulty ?? difficultyLevel]}>{DIFFICULTY_LABELS[generatedWith?.difficulty ?? difficultyLevel]}</Badge>
+              <Badge variant="secondary">{generatedWith?.language ?? language}</Badge>
+              <Badge variant="outline">{generatedWith?.topic ?? topic}</Badge>
             </div>
           </div>
 
@@ -346,6 +404,12 @@ const OvningarAIGenerate = () => {
           )}
         </div>
       )}
+
+      <ExerciseFeedbackDialog
+        open={feedbackOpen}
+        mode={feedbackMode}
+        onSubmit={handleFeedbackSubmit}
+      />
     </div>
   );
 };

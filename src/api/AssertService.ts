@@ -64,7 +64,28 @@ export const assertService = {
             console.error('Error fetching project:', error);
             throw error;
         }
-    }
+    },
+    submitExerciseFeedback: async (data: {
+        topic: string;
+        language: string;
+        difficulty: number;
+        title: string;
+        description: string;
+        solution?: string;
+        asserts?: string;
+        isCompleted: boolean;
+        isPositive?: boolean;
+        feedbackReason?: string;
+        feedbackComment?: string;
+    }) => {
+        const response = await fetch('/api/exercise-feedback', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) throw new Error('Failed to submit feedback');
+    },
 }
 
 
