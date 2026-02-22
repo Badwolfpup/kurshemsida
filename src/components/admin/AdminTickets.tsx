@@ -1,18 +1,22 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { useTickets, useUpdateTicket, useAddTicketReply } from "@/hooks/useTickets";
-import { MessageSquare, CheckCircle, Clock, Trash2 } from "lucide-react";
-import type { TicketType } from "@/Types/TicketType";
+import { useTickets, useUpdateTicket, useMarkTicketViewed } from "@/hooks/useTickets";
+import { useAuth } from "@/contexts/AuthContext";
+import { MessageSquare, CheckCircle, Clock, CalendarClock, ChevronDown, ChevronUp } from "lucide-react";
+import TicketReplyThread from "@/components/tickets/TicketReplyThread";
+import TimeSuggestionDialog from "@/components/tickets/TimeSuggestionDialog";
+import TimeSuggestionDisplay from "@/components/tickets/TimeSuggestionDisplay";
 
 export default function AdminTickets() {
+  const { user } = useAuth();
   const { data: tickets = [], isLoading } = useTickets();
   const updateTicket = useUpdateTicket();
-  const addReply = useAddTicketReply();
+  const markViewed = useMarkTicketViewed();
   const { toast } = useToast();
-  const [replyText, setReplyText] = useState<Record<number, string>>({});
+  const [expandedTicket, setExpandedTicket] = useState<number | null>(null);
+  const [suggestionDialog, setSuggestionDialog] = useState<{ open: boolean; ticketId: number }>({ open: false, ticketId: 0 });
 
   const updateStatus = (id: number, status: string) => {
     updateTicket.mutate({ id, status }, {
@@ -20,19 +24,8 @@ export default function AdminTickets() {
     });
   };
 
-  const sendReply = (ticketId: number) => {
-    const text = replyText[ticketId];
-    if (!text?.trim()) return;
-    addReply.mutate({ ticketId, message: text }, {
-      onSuccess: () => {
-        setReplyText((prev) => ({ ...prev, [ticketId]: "" }));
-        toast({ title: "Svar skickat" });
-      },
-    });
-  };
-
   const typeLabel = (type: string) => {
-    const labels: Record<string, string> = { question: "Förfrågan", idea: "Idé", bug: "Bugg", other: "Övrigt" };
+    const labels: Record<string, string> = { session: "Handledning", question: "Förfrågan", idea: "Idé", bug: "Bugg", other: "Övrigt" };
     return labels[type] || type;
   };
 
@@ -45,6 +38,19 @@ export default function AdminTickets() {
   const statusLabel = (status: string) => {
     const labels: Record<string, string> = { Open: "Öppen", InProgress: "Pågående", Closed: "Stängd" };
     return labels[status] || status;
+  };
+
+  const canSuggestTime = (type: string) => type === "session" || type === "question";
+
+  const formatTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
+
+  const toggle = (id: number) => {
+    setExpandedTicket((prev) => {
+      const next = prev === id ? null : id;
+      if (next !== null) markViewed.mutate(id);
+      return next;
+    });
   };
 
   if (isLoading) {
@@ -71,16 +77,42 @@ export default function AdminTickets() {
 
       {tickets.map((t) => (
         <div key={t.id} className="bg-card rounded-2xl shadow-card border border-border p-6 space-y-3">
-          <div className="flex items-start justify-between gap-4">
+          <div
+            className="flex items-start justify-between gap-4 cursor-pointer"
+            onClick={() => toggle(t.id)}
+          >
             <div>
               <h3 className="font-display font-semibold text-foreground">{t.subject}</h3>
               <p className="text-sm text-muted-foreground">
                 Från: {t.senderName} · {new Date(t.createdAt).toLocaleDateString("sv-SE")} · {typeLabel(t.type)}
               </p>
             </div>
-            <Badge variant={statusColor(t.status)}>{statusLabel(t.status)}</Badge>
+            <div className="flex items-center gap-2">
+              {t.hasUnread && (
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold">!</span>
+              )}
+              <Badge variant={statusColor(t.status)}>{statusLabel(t.status)}</Badge>
+              {expandedTicket === t.id ? (
+                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              )}
+            </div>
           </div>
-          <p className="text-foreground whitespace-pre-wrap">{t.message}</p>
+
+          {t.acceptedStartTime ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-foreground">
+                Tidsförslag: {formatTime(t.acceptedStartTime)}–{t.acceptedEndTime ? formatTime(t.acceptedEndTime) : ""}
+              </span>
+              <Badge variant="secondary" className="text-xs">Godkänd</Badge>
+            </div>
+          ) : (
+            expandedTicket !== t.id && (
+              <p className="text-foreground whitespace-pre-wrap line-clamp-2">{t.message}</p>
+            )
+          )}
+
           <div className="flex gap-2 pt-2">
             {t.status !== "Closed" && (
               <>
@@ -92,23 +124,39 @@ export default function AdminTickets() {
                 <Button size="sm" variant="outline" onClick={() => updateStatus(t.id, "Closed")}>
                   <CheckCircle className="h-3 w-3 mr-1" /> Stäng
                 </Button>
+                {canSuggestTime(t.type) && !t.hasPendingSuggestion && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setSuggestionDialog({ open: true, ticketId: t.id })}
+                  >
+                    <CalendarClock className="h-3 w-3 mr-1" /> Föreslå tid
+                  </Button>
+                )}
               </>
             )}
           </div>
-          {t.status !== "Closed" && (
-            <div className="flex gap-2 pt-2">
-              <Textarea
-                placeholder="Skriv ett svar..."
-                value={replyText[t.id] || ""}
-                onChange={(e) => setReplyText((prev) => ({ ...prev, [t.id]: e.target.value }))}
-                rows={2}
-                className="flex-1"
-              />
-              <Button onClick={() => sendReply(t.id)} className="self-end">Svara</Button>
-            </div>
+
+          {expandedTicket === t.id && (
+            <>
+              <p className="text-foreground whitespace-pre-wrap">{t.message}</p>
+              {canSuggestTime(t.type) && (
+                <TimeSuggestionDisplay ticketId={t.id} isRecipient={false} />
+              )}
+              <TicketReplyThread ticketId={t.id} ticketStatus={t.status} />
+            </>
           )}
         </div>
       ))}
+
+      {suggestionDialog.open && user?.id && (
+        <TimeSuggestionDialog
+          open={suggestionDialog.open}
+          onOpenChange={(open) => setSuggestionDialog({ ...suggestionDialog, open })}
+          ticketId={suggestionDialog.ticketId}
+          adminId={user.id}
+        />
+      )}
     </div>
   );
 }
