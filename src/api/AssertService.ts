@@ -86,6 +86,27 @@ export const assertService = {
         });
         if (!response.ok) throw new Error('Failed to submit feedback');
     },
+    submitProjectFeedback: async (data: {
+        techStack: string;
+        difficulty: number;
+        title: string;
+        description: string;
+        solutionHtml?: string;
+        solutionCss?: string;
+        solutionJs?: string;
+        isCompleted: boolean;
+        isPositive?: boolean;
+        feedbackReason?: string;
+        feedbackComment?: string;
+    }) => {
+        const response = await fetch('/api/project-feedback', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) throw new Error('Failed to submit project feedback');
+    },
 }
 
 
