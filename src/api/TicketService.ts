@@ -1,4 +1,4 @@
-import type { TicketType, TicketReplyType, AddTicketDto, UpdateTicketDto, AddTicketReplyDto } from "@/Types/TicketType";
+import type { TicketType, TicketReplyType, TicketTimeSuggestionType, AddTicketDto, UpdateTicketDto, AddTicketReplyDto, AddTicketTimeSuggestionDto, RespondToTimeSuggestionDto } from "@/Types/TicketType";
 
 const responseAction = (response: Response): void => {
   if (response.status === 401) {
@@ -62,5 +62,41 @@ export const ticketService = {
     });
     responseAction(response);
     return true;
+  },
+
+  async fetchTimeSuggestions(ticketId: number): Promise<TicketTimeSuggestionType[]> {
+    const response = await fetch(`/api/ticket-time-suggestions/${ticketId}`, { credentials: "include" });
+    responseAction(response);
+    return await response.json();
+  },
+
+  async addTimeSuggestion(dto: AddTicketTimeSuggestionDto): Promise<boolean> {
+    const response = await fetch("/api/ticket-time-suggestion", {
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+      body: JSON.stringify(dto),
+    });
+    responseAction(response);
+    return true;
+  },
+
+  async respondToTimeSuggestion(id: number, dto: RespondToTimeSuggestionDto): Promise<boolean> {
+    const response = await fetch(`/api/ticket-time-suggestion/${id}/respond`, {
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      method: "PUT",
+      body: JSON.stringify(dto),
+    });
+    responseAction(response);
+    return true;
+  },
+
+  async markTicketViewed(ticketId: number): Promise<void> {
+    const response = await fetch(`/api/ticket-view/${ticketId}`, {
+      credentials: "include",
+      method: "POST",
+    });
+    responseAction(response);
   },
 };

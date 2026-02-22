@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Ticket, Plus } from "lucide-react";
+import { Ticket, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,8 +8,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useTickets, useAddTicket } from "@/hooks/useTickets";
+import { useTickets, useAddTicket, useMarkTicketViewed } from "@/hooks/useTickets";
 import { useUsers } from "@/hooks/useUsers";
+import TicketReplyThread from "@/components/tickets/TicketReplyThread";
 
 const CoachTickets = () => {
   const { user } = useAuth();
@@ -17,8 +18,10 @@ const CoachTickets = () => {
   const { data: allTickets = [], isLoading } = useTickets();
   const { data: users = [] } = useUsers();
   const addTicket = useAddTicket();
+  const markViewed = useMarkTicketViewed();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [expandedTicket, setExpandedTicket] = useState<number | null>(null);
   const [form, setForm] = useState({ subject: "", message: "", type: "question", recipientId: "" });
 
   // Filter to only show tickets from this user
@@ -78,19 +81,46 @@ const CoachTickets = () => {
       ) : (
         <div className="space-y-4">
           {myTickets.map((t) => (
-            <div key={t.id} className="bg-card rounded-2xl shadow-card border border-border p-6">
-              <div className="flex items-start justify-between gap-4">
+            <div key={t.id} className="bg-card rounded-2xl shadow-card border border-border p-6 space-y-3">
+              <div
+                className="flex items-start justify-between gap-4 cursor-pointer"
+                onClick={() => {
+                  setExpandedTicket((prev) => {
+                    const next = prev === t.id ? null : t.id;
+                    if (next !== null) markViewed.mutate(t.id);
+                    return next;
+                  });
+                }}
+              >
                 <div>
                   <h3 className="font-display font-semibold text-foreground">{t.subject}</h3>
                   <p className="text-sm text-muted-foreground">
                     {new Date(t.createdAt).toLocaleDateString("sv-SE")} · {typeLabel(t.type)}
                   </p>
                 </div>
-                <Badge variant={t.status === "Open" ? "destructive" : t.status === "InProgress" ? "default" : "secondary"}>
-                  {statusLabel(t.status)}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  {t.hasUnread && (
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold">!</span>
+                  )}
+                  <Badge variant={t.status === "Open" ? "destructive" : t.status === "InProgress" ? "default" : "secondary"}>
+                    {statusLabel(t.status)}
+                  </Badge>
+                  {expandedTicket === t.id ? (
+                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </div>
               </div>
-              <p className="text-foreground mt-3 whitespace-pre-wrap">{t.message}</p>
+              {expandedTicket !== t.id && (
+                <p className="text-foreground whitespace-pre-wrap line-clamp-2">{t.message}</p>
+              )}
+              {expandedTicket === t.id && (
+                <>
+                  <p className="text-foreground whitespace-pre-wrap">{t.message}</p>
+                  <TicketReplyThread ticketId={t.id} ticketStatus={t.status} />
+                </>
+              )}
             </div>
           ))}
         </div>

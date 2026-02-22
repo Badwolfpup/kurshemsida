@@ -1,12 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ticketService } from "@/api/TicketService";
-import type { AddTicketDto, UpdateTicketDto, AddTicketReplyDto } from "@/Types/TicketType";
+import type { AddTicketDto, UpdateTicketDto, AddTicketReplyDto, AddTicketTimeSuggestionDto, RespondToTimeSuggestionDto } from "@/Types/TicketType";
 
 export function useTickets() {
   return useQuery({
     queryKey: ["tickets"],
     queryFn: ticketService.fetchTickets,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -44,7 +45,8 @@ export function useTicketReplies(ticketId: number) {
   return useQuery({
     queryKey: ["ticketReplies", ticketId],
     queryFn: () => ticketService.fetchReplies(ticketId),
-    staleTime: 2 * 60 * 1000,
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: true,
     enabled: ticketId > 0,
   });
 }
@@ -55,6 +57,49 @@ export function useAddTicketReply() {
     mutationFn: (dto: AddTicketReplyDto) => ticketService.addReply(dto),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["ticketReplies", variables.ticketId] });
+      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+    },
+  });
+}
+
+export function useTicketTimeSuggestions(ticketId: number) {
+  return useQuery({
+    queryKey: ["ticketTimeSuggestions", ticketId],
+    queryFn: () => ticketService.fetchTimeSuggestions(ticketId),
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: true,
+    enabled: ticketId > 0,
+  });
+}
+
+export function useAddTicketTimeSuggestion() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (dto: AddTicketTimeSuggestionDto) => ticketService.addTimeSuggestion(dto),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["ticketTimeSuggestions", variables.ticketId] });
+      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+    },
+  });
+}
+
+export function useRespondToTimeSuggestion() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (params: { id: number; ticketId: number; dto: RespondToTimeSuggestionDto }) =>
+      ticketService.respondToTimeSuggestion(params.id, params.dto),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["ticketTimeSuggestions", variables.ticketId] });
+      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+    },
+  });
+}
+
+export function useMarkTicketViewed() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ticketId: number) => ticketService.markTicketViewed(ticketId),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
     },
   });

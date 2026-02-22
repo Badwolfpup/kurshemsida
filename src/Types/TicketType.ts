@@ -10,6 +10,10 @@ export interface TicketType {
   recipientName: string;
   createdAt: string;
   updatedAt: string;
+  acceptedStartTime?: string | null;
+  acceptedEndTime?: string | null;
+  hasPendingSuggestion?: boolean;
+  hasUnread?: boolean;
 }
 
 export interface TicketReplyType {
@@ -37,4 +41,27 @@ export interface UpdateTicketDto {
 export interface AddTicketReplyDto {
   ticketId: number;
   message: string;
+}
+
+export interface TicketTimeSuggestionType {
+  id: number;
+  ticketId: number;
+  suggestedById: number;
+  suggestedByName: string;
+  startTime: string;
+  endTime: string;
+  status: string;
+  declineReason: string | null;
+  createdAt: string;
+}
+
+export interface AddTicketTimeSuggestionDto {
+  ticketId: number;
+  startTime: string;
+  endTime: string;
+}
+
+export interface RespondToTimeSuggestionDto {
+  accept: boolean;
+  declineReason?: string;
 }

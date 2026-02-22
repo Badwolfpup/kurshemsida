@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Ticket, Plus } from 'lucide-react';
+import { Ticket, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -20,8 +20,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { useTickets, useAddTicket } from '@/hooks/useTickets';
+import { useTickets, useAddTicket, useMarkTicketViewed } from '@/hooks/useTickets';
 import { useUsers } from '@/hooks/useUsers';
+import TicketReplyThread from '@/components/tickets/TicketReplyThread';
+import TimeSuggestionDisplay from '@/components/tickets/TimeSuggestionDisplay';
 
 const StudentTickets = () => {
   const { user } = useAuth();
@@ -29,8 +31,10 @@ const StudentTickets = () => {
   const { data: allTickets = [], isLoading } = useTickets();
   const { data: users = [] } = useUsers();
   const addTicket = useAddTicket();
+  const markViewed = useMarkTicketViewed();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [expandedTicket, setExpandedTicket] = useState<number | null>(null);
   const [form, setForm] = useState({
     subject: '',
     message: '',
@@ -38,11 +42,16 @@ const StudentTickets = () => {
     recipientId: '',
   });
 
-  // Filter to only show tickets from this user
   const myTickets = allTickets.filter((t) => t.senderId === user?.id);
-
-  // Get admin/teacher users for recipient selection
   const admins = users.filter((u) => u.authLevel <= 2 && u.isActive);
+
+  const toggleTicket = (id: number) => {
+    setExpandedTicket((prev) => {
+      const next = prev === id ? null : id;
+      if (next !== null) markViewed.mutate(id);
+      return next;
+    });
+  };
 
   const createTicket = () => {
     if (!form.subject || !form.message) return;
@@ -90,6 +99,9 @@ const StudentTickets = () => {
     return labels[t] || t;
   };
 
+  const formatTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-32">
@@ -121,9 +133,12 @@ const StudentTickets = () => {
           {myTickets.map((t) => (
             <div
               key={t.id}
-              className="bg-card rounded-2xl shadow-card border border-border p-6"
+              className="bg-card rounded-2xl shadow-card border border-border p-6 space-y-3"
             >
-              <div className="flex items-start justify-between gap-4">
+              <div
+                className="flex items-start justify-between gap-4 cursor-pointer"
+                onClick={() => toggleTicket(t.id)}
+              >
                 <div>
                   <h3 className="font-display font-semibold text-foreground">
                     {t.subject}
@@ -133,21 +148,53 @@ const StudentTickets = () => {
                     {typeLabel(t.type)}
                   </p>
                 </div>
-                <Badge
-                  variant={
-                    t.status === 'Open'
-                      ? 'destructive'
-                      : t.status === 'InProgress'
-                        ? 'default'
-                        : 'secondary'
-                  }
-                >
-                  {statusLabel(t.status)}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  {t.hasUnread && (
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold">!</span>
+                  )}
+                  <Badge
+                    variant={
+                      t.status === 'Open'
+                        ? 'destructive'
+                        : t.status === 'InProgress'
+                          ? 'default'
+                          : 'secondary'
+                    }
+                  >
+                    {statusLabel(t.status)}
+                  </Badge>
+                  {expandedTicket === t.id ? (
+                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </div>
               </div>
-              <p className="text-foreground mt-3 whitespace-pre-wrap">
-                {t.message}
-              </p>
+
+              {t.acceptedStartTime ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-foreground">
+                    Tidsförslag: {formatTime(t.acceptedStartTime)}–{t.acceptedEndTime ? formatTime(t.acceptedEndTime) : ''}
+                  </span>
+                  <Badge variant="secondary" className="text-xs">Godkänd</Badge>
+                </div>
+              ) : (
+                !expandedTicket || expandedTicket !== t.id ? (
+                  <p className="text-foreground whitespace-pre-wrap line-clamp-2">
+                    {t.message}
+                  </p>
+                ) : null
+              )}
+
+              {expandedTicket === t.id && (
+                <>
+                  <p className="text-foreground whitespace-pre-wrap">{t.message}</p>
+                  {(t.type === 'session' || t.type === 'question') && (
+                    <TimeSuggestionDisplay ticketId={t.id} isRecipient={true} />
+                  )}
+                  <TicketReplyThread ticketId={t.id} ticketStatus={t.status} />
+                </>
+              )}
             </div>
           ))}
         </div>
@@ -166,7 +213,7 @@ const StudentTickets = () => {
             />
             <Select
               value={form.type}
-              onValueChange={(v) => setForm({ ...form, type: v })}
+              onValueChange={(v) => setForm({ ...form, type: v, recipientId: v === 'other' || v === 'bug' ? '' : form.recipientId })}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -174,24 +221,27 @@ const StudentTickets = () => {
               <SelectContent>
                 <SelectItem value="session">Handledning</SelectItem>
                 <SelectItem value="question">Förfrågan</SelectItem>
+                <SelectItem value="bug">Bugg</SelectItem>
                 <SelectItem value="other">Övrigt</SelectItem>
               </SelectContent>
             </Select>
-            <Select
-              value={form.recipientId}
-              onValueChange={(v) => setForm({ ...form, recipientId: v })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Välj mottagare" />
-              </SelectTrigger>
-              <SelectContent>
-                {admins.map((a) => (
-                  <SelectItem key={a.id} value={a.id.toString()}>
-                    {a.firstName} {a.lastName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {form.type !== 'other' && form.type !== 'bug' && (
+              <Select
+                value={form.recipientId}
+                onValueChange={(v) => setForm({ ...form, recipientId: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Välj mottagare" />
+                </SelectTrigger>
+                <SelectContent>
+                  {admins.map((a) => (
+                    <SelectItem key={a.id} value={a.id.toString()}>
+                      {a.firstName} {a.lastName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <Textarea
               placeholder="Meddelande"
               value={form.message}
