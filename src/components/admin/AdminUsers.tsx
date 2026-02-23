@@ -3,11 +3,8 @@ import { Plus, Pencil, UserCheck, UserX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-<<<<<<< HEAD
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
-=======
->>>>>>> 4cbaa96 (SVG icons for coach student view (#25))
 import {
   Select,
   SelectContent,
@@ -55,7 +52,6 @@ const emptyForm = {
   coachId: '__none__',
   contactId: '__none__',
 };
-<<<<<<< HEAD
 
 type TabValue = 'admin' | 'larare' | 'coach' | 'deltagare';
 
@@ -115,8 +111,6 @@ function UserTable({
     </div>
   );
 }
-=======
->>>>>>> 4cbaa96 (SVG icons for coach student view (#25))
 
 export default function AdminUsers() {
   const { user } = useAuth();
@@ -215,21 +209,17 @@ export default function AdminUsers() {
           });
           return;
         }
-<<<<<<< HEAD
         const authLevelMap: Record<TabValue, number> = {
           deltagare: STUDENT_AUTH_LEVEL,
           coach: COACH_AUTH_LEVEL,
           larare: TEACHER_AUTH_LEVEL,
           admin: ADMIN_AUTH_LEVEL,
         };
-=======
->>>>>>> 4cbaa96 (SVG icons for coach student view (#25))
         await addUserMutation.mutateAsync({
           firstName: form.firstName,
           lastName: form.lastName,
           email: form.email,
           telephone: form.telephone || undefined,
-<<<<<<< HEAD
           ...(activeTab === 'deltagare' && {
             startDate: form.startDate ? new Date(form.startDate) : null,
             course: form.course ? parseInt(form.course) : undefined,
@@ -253,21 +243,6 @@ export default function AdminUsers() {
             ? 'Läraren'
             : 'Adminen';
         toast({ title: 'Tillagd', description: `${typeLabel} har lagts till.` });
-=======
-          startDate: form.startDate ? new Date(form.startDate) : null,
-          course: form.course ? parseInt(form.course) : undefined,
-          coachId:
-            form.coachId && form.coachId !== '__none__'
-              ? parseInt(form.coachId)
-              : undefined,
-          contactId:
-            form.contactId && form.contactId !== '__none__'
-              ? parseInt(form.contactId)
-              : undefined,
-          authLevel: STUDENT_AUTH_LEVEL,
-        });
-        toast({ title: 'Tillagd', description: 'Deltagaren har lagts till.' });
->>>>>>> 4cbaa96 (SVG icons for coach student view (#25))
       }
       setDialogOpen(false);
     } catch {
@@ -314,7 +289,6 @@ export default function AdminUsers() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         <Button onClick={openAdd} className="gap-2">
-<<<<<<< HEAD
           <Plus className="h-4 w-4" /> Lägg till{' '}
           {activeTab === 'deltagare'
             ? 'deltagare'
@@ -323,9 +297,6 @@ export default function AdminUsers() {
             : activeTab === 'larare'
             ? 'lärare'
             : 'admin'}
-=======
-          <Plus className="h-4 w-4" /> Lägg till deltagare
->>>>>>> 4cbaa96 (SVG icons for coach student view (#25))
         </Button>
         <Button
           variant={showInactive ? 'default' : 'outline'}
@@ -453,81 +424,6 @@ export default function AdminUsers() {
         </TabsContent>
       </Tabs>
 
-<<<<<<< HEAD
-=======
-      <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Namn</TableHead>
-              <TableHead className="hidden sm:table-cell">E-post</TableHead>
-              <TableHead>Telefon</TableHead>
-              <TableHead className="hidden sm:table-cell">Startdatum</TableHead>
-              <TableHead className="hidden sm:table-cell">Spår</TableHead>
-              <TableHead>Jobbcoach</TableHead>
-              <TableHead>Kontakt</TableHead>
-              <TableHead className="text-right">Åtgärder</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.length === 0 && (
-              <TableRow>
-                <TableCell
-                  colSpan={8}
-                  className="text-center text-muted-foreground py-8"
-                >
-                  Inga {showInactive ? 'inaktiva' : 'aktiva'} deltagare.
-                </TableCell>
-              </TableRow>
-            )}
-            {filtered.map((p) => (
-              <TableRow key={p.id}>
-                <TableCell className="font-medium">
-                  {p.firstName} {p.lastName}
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  {p.email || '—'}
-                </TableCell>
-                <TableCell>{p.telephone || '—'}</TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  {p.startDate
-                    ? new Date(p.startDate).toLocaleDateString('sv-SE')
-                    : '—'}
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  <Badge variant="outline">
-                    {p.course ? `Spår ${p.course}` : '—'}
-                  </Badge>
-                </TableCell>
-                <TableCell>{getCoachName(p.coachId)}</TableCell>
-                <TableCell>{getContactName(p.contactId)}</TableCell>
-                <TableCell className="text-right space-x-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => openEdit(p)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => toggleActive(p.id, p.isActive)}
-                  >
-                    {p.isActive ? (
-                      <UserX className="h-4 w-4" />
-                    ) : (
-                      <UserCheck className="h-4 w-4" />
-                    )}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
->>>>>>> 4cbaa96 (SVG icons for coach student view (#25))
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent
           style={{
@@ -537,7 +433,6 @@ export default function AdminUsers() {
         >
           <DialogHeader>
             <DialogTitle>
-<<<<<<< HEAD
               {editId ? 'Redigera' : 'Lägg till'}{' '}
               {activeTab === 'deltagare'
                 ? 'deltagare'
@@ -546,9 +441,6 @@ export default function AdminUsers() {
                 : activeTab === 'larare'
                 ? 'lärare'
                 : 'admin'}
-=======
-              {editId ? 'Redigera deltagare' : 'Lägg till deltagare'}
->>>>>>> 4cbaa96 (SVG icons for coach student view (#25))
             </DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -573,7 +465,6 @@ export default function AdminUsers() {
                   }
                 />
               </div>
-<<<<<<< HEAD
             </div>
             <div className="space-y-1">
               <Label htmlFor="email">E-post</Label>
@@ -663,93 +554,6 @@ export default function AdminUsers() {
                 </div>
               </>
             )}
-=======
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="email">E-post</Label>
-              <Input
-                id="email"
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="telephone">Telefon</Label>
-              <Input
-                id="telephone"
-                value={form.telephone}
-                onChange={(e) =>
-                  setForm({ ...form, telephone: e.target.value })
-                }
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="startDate">Startdatum</Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={form.startDate}
-                onChange={(e) =>
-                  setForm({ ...form, startDate: e.target.value })
-                }
-              />
-            </div>
-            <div className="space-y-1">
-              <Label>Spår</Label>
-              <Select
-                value={form.course}
-                onValueChange={(v) => setForm({ ...form, course: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Välj spår" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">Spår 1</SelectItem>
-                  <SelectItem value="2">Spår 2</SelectItem>
-                  <SelectItem value="3">Spår 3</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label>Jobbcoach</Label>
-              <Select
-                value={form.coachId}
-                onValueChange={(v) => setForm({ ...form, coachId: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Välj jobbcoach" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">Ingen</SelectItem>
-                  {coaches.map((c) => (
-                    <SelectItem key={c.id} value={c.id.toString()}>
-                      {c.firstName} {c.lastName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label>Kontaktlärare</Label>
-              <Select
-                value={form.contactId}
-                onValueChange={(v) => setForm({ ...form, contactId: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Välj kontaktlärare" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">Ingen</SelectItem>
-                  {admins.map((a) => (
-                    <SelectItem key={a.id} value={a.id.toString()}>
-                      {a.firstName} {a.lastName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
->>>>>>> 4cbaa96 (SVG icons for coach student view (#25))
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
