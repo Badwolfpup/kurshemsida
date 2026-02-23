@@ -11,9 +11,17 @@ import type { AssertExerciseResponse } from "@/Types/AssertExerciseType";
 import { assertService } from "@/api/AssertService";
 import ExerciseFeedbackDialog from "@/components/ExerciseFeedbackDialog";
 
-const TOPICS = [
+const ALL_TOPICS = [
   "Variables and DataTypes", "Strings", "Operators", "Conditionals", "Loops",
-  "Functions", "Arrays", "Objects",  "Events",
+  "Functions", "Arrays", "Objects", "Events",
+];
+
+const JS_ONLY_TOPICS = ["Events"];
+
+const LANGUAGES = [
+  "JavaScript",
+  // "Python",
+  // "C#",
 ];
 
 const DIFFICULTY_LABELS: Record<number, string> = {
@@ -31,6 +39,17 @@ const OvningarAIGenerate = () => {
   const [AIModel, setAIModel] = useState("grok");
   const [topic, setTopic] = useState("");
   const [language, setLanguage] = useState("JavaScript");
+
+  const availableTopics = language === "JavaScript"
+    ? ALL_TOPICS
+    : ALL_TOPICS.filter((t) => !JS_ONLY_TOPICS.includes(t));
+
+  const handleLanguageChange = (val: string) => {
+    setLanguage(val);
+    if (val !== "JavaScript" && JS_ONLY_TOPICS.includes(topic)) {
+      setTopic("");
+    }
+  };
   const [difficultyLevel, setDifficultyLevel] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [exerciseError, setExerciseError] = useState<string | null>(null);
@@ -219,16 +238,16 @@ const OvningarAIGenerate = () => {
             <Select value={topic} onValueChange={setTopic}>
               <SelectTrigger><SelectValue placeholder="Välj ämne..." /></SelectTrigger>
               <SelectContent>
-                {TOPICS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                {availableTopics.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
           <div className="flex-1 min-w-[140px]">
             <label className="text-sm font-medium text-foreground mb-1.5 block">Språk</label>
-            <Select value={language} onValueChange={setLanguage}>
+            <Select value={language} onValueChange={handleLanguageChange}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="JavaScript">JavaScript</SelectItem>
+                {LANGUAGES.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

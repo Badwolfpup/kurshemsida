@@ -14,6 +14,8 @@ const TYPE_LABELS: Record<string, string> = {
   html: "HTML",
   css: "CSS",
   javascript: "JavaScript",
+  // python: "Python",
+  // csharp: "C#",
 };
 
 const EMPTY_FORM = {
@@ -156,7 +158,7 @@ export default function AdminExercises() {
               </div>
             </div>
             <div><Label>Beskrivning</Label><Textarea rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-            <div><Label>Startkod (JavaScript)</Label><Textarea rows={6} className="font-mono text-xs" value={form.javascript} onChange={(e) => setForm({ ...form, javascript: e.target.value })} /></div>
+            <div><Label>Startkod</Label><Textarea rows={6} className="font-mono text-xs" value={form.javascript} onChange={(e) => setForm({ ...form, javascript: e.target.value })} /></div>
             <div><Label>Förväntat resultat</Label><Textarea rows={2} value={form.expectedResult} onChange={(e) => setForm({ ...form, expectedResult: e.target.value })} /></div>
             <div><Label>Bra att veta (förklaring)</Label><Textarea rows={3} value={form.goodToKnow} onChange={(e) => setForm({ ...form, goodToKnow: e.target.value })} placeholder="Förklara hur lösningen fungerar..." /></div>
             <div><Label>Ledtrådar (en per rad)</Label><Textarea rows={4} value={form.clues} onChange={(e) => setForm({ ...form, clues: e.target.value })} placeholder="Ledtråd 1&#10;Ledtråd 2&#10;Ledtråd 3" /></div>
