@@ -86,14 +86,14 @@
 }
 
 .sidebar__logo-text {
-<<<<<<< HEAD
   font-family: 'Encode Sans SC', sans-serif;
   letter-spacing: 1px;
   font-weight: 400;
-=======
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 600;
->>>>>>> 4cbaa96 (SVG icons for coach student view (#25))
+  font-family: 'Encode Sans SC', sans-serif;
+  letter-spacing: 1px;
+  font-weight: 400;
   font-size: 0.875rem;
   color: hsl(var(--sidebar-accent-foreground));
 }
