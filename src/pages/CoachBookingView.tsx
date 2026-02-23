@@ -625,7 +625,7 @@ function CoachBookingView() {
                         <SelectTrigger><SelectValue placeholder="Välj en student" /></SelectTrigger>
                         <SelectContent>
                           {students.map((s) => (
-                            <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</SelectItem>
+                            <SelectItem key={s.id} value={s.id.toString()}>{s.firstName.charAt(0)}.{s.lastName.charAt(0)}.</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
