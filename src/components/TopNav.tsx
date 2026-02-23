@@ -33,7 +33,11 @@ export function TopNav({ onMenuToggle }: TopNavProps) {
   return (
     <header className="topnav">
       <div className="topnav__left">
-        <button className="topnav__hamburger" onClick={onMenuToggle} aria-label="Öppna meny">
+        <button
+          className="topnav__hamburger"
+          onClick={onMenuToggle}
+          aria-label="Öppna meny"
+        >
           <Menu />
         </button>
         {/* <h2 className='topnav__title'>CUL Programmering</h2> */}
