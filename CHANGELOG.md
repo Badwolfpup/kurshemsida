@@ -3,6 +3,7 @@
 ## 2026-02-24
 
 - **Bookings:** Replaced admin color legend with a tab selector — coaches now filter the booking calendar by admin instead of seeing all slots at once
+- **Coach views:** Hide specific admin from coach-facing admin lists (booking, contact, tickets)
 
 ## 2026-02-23
 

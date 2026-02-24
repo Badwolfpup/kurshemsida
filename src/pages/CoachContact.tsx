@@ -4,7 +4,7 @@ import { useUsers } from "@/hooks/useUsers";
 const CoachContact = () => {
   const { data: allUsers = [], isLoading } = useUsers();
 
-  const admins = allUsers.filter((u) => u.authLevel <= 2 && u.isActive);
+  const admins = allUsers.filter((u) => u.authLevel <= 2 && u.isActive && u.firstName !== "Alexandra");
 
   if (isLoading) {
     return (

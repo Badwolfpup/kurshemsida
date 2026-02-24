@@ -49,7 +49,7 @@ const CoachTickets = () => {
   const myTickets = allTickets.filter((t) => t.senderId === user?.id);
 
   // Get admin/teacher users for recipient selection
-  const admins = users.filter((u) => u.authLevel <= 2 && u.isActive);
+  const admins = users.filter((u) => u.authLevel <= 2 && u.isActive && u.firstName !== "Alexandra");
 
   const createTicket = () => {
     if (!form.subject || !form.message) return;
