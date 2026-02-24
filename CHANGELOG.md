@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-02-24
+
+- **Bookings:** Replaced admin color legend with a tab selector — coaches now filter the booking calendar by admin instead of seeing all slots at once
+
 ## 2026-02-23
 
 - **Tickets:** Accepted time suggestions now create a Booking, making the slot visible in the admin calendar and blocked for coach scheduling
