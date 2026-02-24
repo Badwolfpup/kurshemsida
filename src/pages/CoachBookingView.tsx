@@ -17,6 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar as CalendarIcon, Check, X } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const WORKDAY_START_HOUR = 8;
 const WORKDAY_END_HOUR = 15;
@@ -129,6 +130,7 @@ function CoachBookingView() {
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedAdminId, setSelectedAdminId] = useState<number | null>(null);
 
   // New booking dialog
   const [showBookingDialog, setShowBookingDialog] = useState(false);
@@ -187,6 +189,12 @@ function CoachBookingView() {
     }
   };
 
+  useEffect(() => {
+    if (admins.length > 0 && selectedAdminId === null) {
+      setSelectedAdminId(admins[0].id);
+    }
+  }, [admins, selectedAdminId]);
+
   useEffect(() => { loadData(); }, [currentDate]);
   useEffect(() => {
     const pollId = window.setInterval(loadData, 15000);
@@ -194,10 +202,15 @@ function CoachBookingView() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const filteredAvailabilities = useMemo(
+    () => selectedAdminId !== null ? availabilities.filter((a) => a.adminId === selectedAdminId) : availabilities,
+    [availabilities, selectedAdminId]
+  );
+
   const events = useMemo((): CalendarEvent[] => {
     const result: CalendarEvent[] = [];
 
-    for (const avail of availabilities) {
+    for (const avail of filteredAvailabilities) {
       const adminName = adminNameMap.get(avail.adminId) || `Admin ${avail.adminId}`;
       const color = adminColorMap.get(avail.adminId) || '#6b7280';
       const freeSegs = getFreeSegments(avail, bookings);
@@ -217,6 +230,7 @@ function CoachBookingView() {
     }
 
     for (const b of bookings) {
+      if (b.coachId !== coachId && selectedAdminId !== null && b.adminId !== selectedAdminId) continue;
       if (b.status === 'declined' && b.coachId !== coachId) continue;
       const bStart = new Date(b.startTime);
       const bEnd = new Date(b.endTime);
@@ -238,7 +252,7 @@ function CoachBookingView() {
     }
 
     return result;
-  }, [availabilities, bookings, adminNameMap, adminColorMap, coachId]);
+  }, [filteredAvailabilities, bookings, adminNameMap, adminColorMap, coachId, selectedAdminId]);
 
   const openBookingDialog = (avail: Availability, freeStart: Date, freeEnd: Date, clickedTime: Date) => {
     if (isBefore(startOfDay(freeStart), today)) return;
@@ -475,21 +489,27 @@ function CoachBookingView() {
       <Card className="bg-card space-y-6 p-6">
         <section>
           <p className="text-muted-foreground text-sm mb-4">
-            Klicka på en tillgänglig tid för att boka. Gröna = dina bokningar, röda = andras.
+            Klicka på en tillgänglig tid för att boka.
           </p>
 
           {admins.length > 0 && (
-            <div className="mb-4 p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm font-semibold text-foreground mb-2">Tillgängliga admins:</p>
-              <div className="flex flex-wrap gap-3">
+            <Tabs
+              value={selectedAdminId?.toString() ?? ''}
+              onValueChange={(val) => setSelectedAdminId(Number(val))}
+              className="mb-4 flex flex-col items-center"
+            >
+              <TabsList>
                 {admins.map((admin) => (
-                  <div key={admin.id} className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded" style={{ backgroundColor: adminColorMap.get(admin.id) || '#6b7280' }} />
-                    <span className="text-sm text-foreground">{admin.firstName} {admin.lastName}</span>
-                  </div>
+                  <TabsTrigger key={admin.id} value={admin.id.toString()}>
+                    <span
+                      className="w-2.5 h-2.5 rounded-full mr-2 inline-block flex-shrink-0"
+                      style={{ backgroundColor: adminColorMap.get(admin.id) || '#6b7280' }}
+                    />
+                    {admin.firstName} {admin.lastName}
+                  </TabsTrigger>
                 ))}
-              </div>
-            </div>
+              </TabsList>
+            </Tabs>
           )}
 
           {(() => {
