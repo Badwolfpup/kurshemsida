@@ -154,7 +154,7 @@ function CoachBookingView() {
 
   const today = useMemo(() => startOfDay(new Date()), []);
 
-  const admins = useMemo(() => allUsers.filter((u) => u.authLevel <= 2 && u.isActive), [allUsers]);
+  const admins = useMemo(() => allUsers.filter((u) => u.authLevel <= 2 && u.isActive && u.firstName !== "Alexandra"), [allUsers]);
 
   const adminColorMap = useMemo(() => {
     const map = new Map<number, string>();
