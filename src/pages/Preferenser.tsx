@@ -32,6 +32,7 @@ const Preferenser = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [telephone, setTelephone] = useState("");
   const [bugReport, setBugReport] = useState("");
 
@@ -39,6 +40,7 @@ const Preferenser = () => {
     if (user) {
       setFirstName(user.firstName ?? "");
       setLastName(user.lastName ?? "");
+      setEmail(user.email ?? "");
     }
   }, [user]);
 
@@ -58,7 +60,7 @@ const Preferenser = () => {
   const handleSave = () => {
     if (!user) return;
     updateUser.mutate(
-      { id: user.id, firstName, lastName, telephone },
+      { id: user.id, firstName, lastName, email, telephone },
       {
         onSuccess: () => {
           toast({ title: "Sparad", description: "Dina uppgifter har uppdaterats." });
@@ -79,6 +81,7 @@ const Preferenser = () => {
   const handleCancel = () => {
     setFirstName(user?.firstName ?? "");
     setLastName(user?.lastName ?? "");
+    setEmail(user?.email ?? "");
     setTelephone(fullUser?.telephone ?? "");
     setIsEditing(false);
   };
@@ -149,18 +152,22 @@ const Preferenser = () => {
                   <label className="text-sm font-medium text-foreground mb-1 block">
                     Förnamn
                   </label>
-                  <Input
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                  />
+                  <Input value={firstName} readOnly className="bg-muted text-muted-foreground cursor-not-allowed" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1 block">
                     Efternamn
                   </label>
+                  <Input value={lastName} readOnly className="bg-muted text-muted-foreground cursor-not-allowed" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">
+                    E-post
+                  </label>
                   <Input
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="din@epost.se"
                   />
                 </div>
                 <div>

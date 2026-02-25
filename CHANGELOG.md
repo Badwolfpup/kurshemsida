@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-02-25
+
+- **Profile:** Förnamn and Efternamn are now readonly in the profile edit form for all users; coaches also have readonly email; students can still edit their email
+- **Git:** Added pre-commit hook (blocks commits with conflict markers) and pre-push hook (blocks direct pushes to main)
+
 ## 2026-02-24
 
 - **Bookings:** Replaced admin color legend with a tab selector — coaches now filter the booking calendar by admin instead of seeing all slots at once
