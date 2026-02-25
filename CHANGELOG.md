@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-02-25
+
+- **Exercises:** "Visa lösning" button is now hidden for the first 5 minutes after an exercise is generated
+
 ## 2026-02-24
 
 - **Bookings:** Replaced admin color legend with a tab selector — coaches now filter the booking calendar by admin instead of seeing all slots at once
