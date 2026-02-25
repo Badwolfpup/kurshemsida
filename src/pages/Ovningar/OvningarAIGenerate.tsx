@@ -62,6 +62,8 @@ const OvningarAIGenerate = () => {
   const [feedbackMode, setFeedbackMode] = useState<"completed" | "abandoned">("completed");
   const [pendingGenerate, setPendingGenerate] = useState(false);
   const [generatedWith, setGeneratedWith] = useState<{ topic: string; language: string; difficulty: number } | null>(null);
+  const [exerciseGeneratedAt, setExerciseGeneratedAt] = useState<Date | null>(null);
+  const [solutionUnlocked, setSolutionUnlocked] = useState(false);
 
   useEffect(() => {
     let intervalId: number;
@@ -87,6 +89,12 @@ const OvningarAIGenerate = () => {
     }
   }, [testResults]);
 
+  useEffect(() => {
+    if (!exerciseGeneratedAt) return;
+    const timer = setTimeout(() => setSolutionUnlocked(true), 5 * 60 * 1000);
+    return () => clearTimeout(timer);
+  }, [exerciseGeneratedAt]);
+
   const generate = async () => {
     if (!topic) return;
     setIsLoading(true);
@@ -99,6 +107,8 @@ const OvningarAIGenerate = () => {
       setShowSolution(false);
       setUserCode("");
       setTestResults(null);
+      setExerciseGeneratedAt(new Date());
+      setSolutionUnlocked(false);
     } catch (error) {
       console.error("Error fetching exercise:", error);
       setExerciseError(error instanceof Error ? error.message : "Ett fel uppstod vid generering.");
@@ -402,8 +412,8 @@ const OvningarAIGenerate = () => {
             </div>
           )}
 
-          {/* Solution (hidden by default) */}
-          {exercise.solution && (
+          {/* Solution (hidden by default, unlocked after 5 minutes) */}
+          {exercise.solution && solutionUnlocked && (
             <div>
               <Button
                 variant="outline"
