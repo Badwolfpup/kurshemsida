@@ -16,9 +16,9 @@ import AdminAttendance from '@/components/admin/AdminAttendance';
 import AdminExercises from '@/components/admin/AdminExercises';
 import AdminProjects from '@/components/admin/AdminProjects';
 import AdminPosts from '@/components/admin/AdminPosts';
-// import AdminSettings from '@/components/admin/AdminSettings';
+import AdminSettings from '@/components/admin/AdminSettings';
 import CoachAttendance from '@/components/admin/CoachAttendance';
-// import AdminTickets from '@/components/admin/AdminTickets';
+import AdminTickets from '@/components/admin/AdminTickets';
 
 const StubPanel = ({ label }: { label: string }) => (
   <div className="bg-card rounded-2xl shadow-card border border-border p-8 text-center">
@@ -33,7 +33,8 @@ const menuItems = [
   { id: 'posts', label: 'Nyheter & Event', icon: Megaphone },
   { id: 'attendance', label: 'Närvarohantering', icon: CalendarCheck },
   { id: 'coach-attendance', label: 'Deltagarprofiler', icon: CalendarCheck },
-  // { id: 'tickets', label: 'Inkomna ärenden', icon: Ticket },
+  { id: 'tickets', label: 'Inkomna ärenden', icon: Ticket },
+  { id: 'settings', label: 'Inställningar', icon: Settings },
 ] as const;
 
 type AdminView = (typeof menuItems)[number]['id'] | 'menu';
@@ -55,8 +56,10 @@ const Admin = () => {
         return <AdminPosts />;
       case 'coach-attendance':
         return <CoachAttendance seluser={null} />;
-      // case 'tickets':
-      //   return <AdminTickets />;
+      case 'tickets':
+        return <AdminTickets />;
+      case 'settings':
+        return <AdminSettings />;
       default:
         return null;
     }
