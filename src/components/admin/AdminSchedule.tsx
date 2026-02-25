@@ -1,16 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Calendar, dateFnsLocalizer, type NavigateAction } from 'react-big-calendar';
-<<<<<<< HEAD
 import { format, parse, startOfWeek, getDay, addWeeks, subWeeks, addDays, startOfDay, isBefore } from 'date-fns';
-=======
-import { format, parse, startOfWeek, getDay, addWeeks, subWeeks, addDays } from 'date-fns';
->>>>>>> 1e58298 (Improvements to the bookin feature)
 import { sv } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './BookingCalendar.css';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 import TimeGrid from 'react-big-calendar/lib/TimeGrid';
-<<<<<<< HEAD
 import { getAllAvailabilities, getBookings, addAvailability, updateAvailability, deleteAvailability, createAdminAppointment, updateBookingStatus, cancelBooking, rescheduleBooking, type Availability, type Booking, type BookingConflictError } from '@/api/BookingService';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,26 +18,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
 import { Check, X, Trash2, Plus } from 'lucide-react';
-=======
-import { getAllAvailabilities, getBookings, addAvailability, updateBookingStatus, type Availability, type Booking } from '@/api/BookingService';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useAuth } from '@/contexts/AuthContext';
-import { useUsers } from '@/hooks/useUsers';
-import { useToast } from '@/hooks/use-toast';
-import { Check, X } from 'lucide-react';
->>>>>>> 1e58298 (Improvements to the bookin feature)
 
 const WORKDAY_START_HOUR = 8;
 const WORKDAY_END_HOUR = 15;
 
 const DAY_NAMES = ['', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'];
-<<<<<<< HEAD
 
 const ADMIN_COLORS = ['#2563eb', '#c6a04a', '#b45309', '#be123c', '#4338ca', '#0369a1', '#8b5cf6', '#7c2d12'];
-=======
->>>>>>> 1e58298 (Improvements to the bookin feature)
 
 const localizer = dateFnsLocalizer({
   format: (date: Date, formatStr: string) => format(date, formatStr, { locale: sv }),
@@ -52,14 +34,8 @@ const localizer = dateFnsLocalizer({
   locales: { sv },
 });
 
-<<<<<<< HEAD
 function fourDayRange(date: Date) {
   const start = startOfWeek(date, { locale: sv });
-=======
-// Custom 4-day view (Mon–Thu)
-function fourDayRange(date: Date) {
-  const start = startOfWeek(date, { locale: sv }); // Monday
->>>>>>> 1e58298 (Improvements to the bookin feature)
   return [start, addDays(start, 1), addDays(start, 2), addDays(start, 3)];
 }
 
@@ -81,10 +57,6 @@ class FourDayView extends React.Component<any> {
   }
 }
 
-<<<<<<< HEAD
-=======
-// Static methods required by react-big-calendar
->>>>>>> 1e58298 (Improvements to the bookin feature)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (FourDayView as any).range = fourDayRange;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -105,7 +77,6 @@ interface ScheduleEvent {
   end: Date;
   allDay: boolean;
   resource: {
-<<<<<<< HEAD
     type: 'availability' | 'pending' | 'accepted' | 'declined' | 'rescheduled';
     availabilityId?: number;
     availability?: Availability;
@@ -117,25 +88,12 @@ interface ScheduleEvent {
 }
 
 /** Subtract only accepted bookings from availability to get free segments */
-=======
-    type: 'availability' | 'pending' | 'accepted' | 'declined';
-    availabilityId?: number;
-    booking?: Booking;
-  };
-}
-
-/** Given an availability and its active (non-declined) bookings, return the free time segments */
->>>>>>> 1e58298 (Improvements to the bookin feature)
 function getFreeSegments(avail: Availability, bookings: Booking[]): { start: Date; end: Date }[] {
   const aStart = new Date(avail.startTime);
   const aEnd = new Date(avail.endTime);
 
   const sorted = bookings
-<<<<<<< HEAD
-    .filter((b) => b.adminAvailabilityId === avail.id && b.status === 'accepted')
-=======
     .filter((b) => b.adminAvailabilityId === avail.id && b.status !== 'declined')
->>>>>>> 1e58298 (Improvements to the bookin feature)
     .map((b) => ({ start: new Date(b.startTime), end: new Date(b.endTime) }))
     .sort((a, b) => a.start.getTime() - b.start.getTime());
 
@@ -143,30 +101,15 @@ function getFreeSegments(avail: Availability, bookings: Booking[]): { start: Dat
   let cursor = aStart;
 
   for (const booking of sorted) {
-<<<<<<< HEAD
     if (booking.start > cursor) segments.push({ start: cursor, end: booking.start });
     if (booking.end > cursor) cursor = booking.end;
   }
 
   if (cursor < aEnd) segments.push({ start: cursor, end: aEnd });
-=======
-    if (booking.start > cursor) {
-      segments.push({ start: cursor, end: booking.start });
-    }
-    if (booking.end > cursor) {
-      cursor = booking.end;
-    }
-  }
-
-  if (cursor < aEnd) {
-    segments.push({ start: cursor, end: aEnd });
-  }
->>>>>>> 1e58298 (Improvements to the bookin feature)
 
   return segments;
 }
 
-<<<<<<< HEAD
 function generate30MinOptions() {
   const opts: { hour: number; minute: number; label: string }[] = [];
   for (let h = WORKDAY_START_HOUR; h <= WORKDAY_END_HOUR; h++) {
@@ -180,8 +123,7 @@ function generate30MinOptions() {
 
 const ALL_TIME_OPTIONS = generate30MinOptions();
 
-=======
->>>>>>> 1e58298 (Improvements to the bookin feature)
+
 function AdminSchedule() {
   const { user } = useAuth();
   const { data: allUsers = [] } = useUsers();
@@ -194,10 +136,7 @@ function AdminSchedule() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showBookingDialog, setShowBookingDialog] = useState(false);
 
-<<<<<<< HEAD
   // Booking details dialog
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [showBookingDialog, setShowBookingDialog] = useState(false);
   const [bookingDialogMode, setBookingDialogMode] = useState<'view' | 'reschedule'>('view');
   const [bookingReason, setBookingReason] = useState('');
   const [rescheduleStart, setRescheduleStart] = useState<{ hour: number; minute: number }>({ hour: 8, minute: 0 });
@@ -252,15 +191,11 @@ function AdminSchedule() {
   }, [allAdmins]);
 
   const adminNameMap = useMemo(() => {
-=======
-  const coachNameMap = useMemo(() => {
->>>>>>> 1e58298 (Improvements to the bookin feature)
     const map = new Map<number, string>();
     allUsers.forEach((u) => { map.set(u.id, `${u.firstName} ${u.lastName}`); });
     return map;
   }, [allUsers]);
 
-<<<<<<< HEAD
   const coaches = useMemo(
     () => allUsers.filter((u) => u.authLevel === 3 && u.isActive),
     [allUsers]
@@ -271,12 +206,6 @@ function AdminSchedule() {
       const [availData, bookingData] = await Promise.all([getAllAvailabilities(), getBookings()]);
       setAvailabilities(availData);
       setAllBookings(bookingData);
-=======
-  const load = async () => {
-    try {
-      const [availData, bookingData] = await Promise.all([getAllAvailabilities(), getBookings()]);
-      setAvailabilities(availData.filter((a) => a.adminId === adminId));
->>>>>>> 1e58298 (Improvements to the bookin feature)
       setBookings(bookingData.filter((b) => b.adminId === adminId));
     } catch {
       toast({ title: 'Fel', description: 'Kunde inte ladda data.', variant: 'destructive' });
@@ -294,40 +223,26 @@ function AdminSchedule() {
     return d;
   }, []);
 
-<<<<<<< HEAD
   const today = useMemo(() => startOfDay(new Date()), []);
 
-=======
->>>>>>> 1e58298 (Improvements to the bookin feature)
+
   const events = useMemo((): ScheduleEvent[] => {
     const result: ScheduleEvent[] = [];
 
     for (const avail of availabilities) {
-<<<<<<< HEAD
       const isOwn = avail.adminId === adminId;
       const color = adminColorMap.get(avail.adminId) || '#6b7280';
       const adminName = adminNameMap.get(avail.adminId) || `Admin ${avail.adminId}`;
-      // Only subtract accepted bookings — pending stay as overlays
-=======
->>>>>>> 1e58298 (Improvements to the bookin feature)
       const freeSegs = getFreeSegments(avail, bookings);
       for (let i = 0; i < freeSegs.length; i++) {
         const seg = freeSegs[i];
         result.push({
           id: `avail-${avail.id}-${i}`,
-<<<<<<< HEAD
           title: isOwn ? 'Tillgänglig' : `${adminName} – Tillgänglig`,
           start: seg.start,
           end: seg.end,
           allDay: false,
           resource: { type: 'availability', availabilityId: avail.id, availability: avail, adminId: avail.adminId, color, isOwn },
-=======
-          title: 'Tillgänglig',
-          start: seg.start,
-          end: seg.end,
-          allDay: false,
-          resource: { type: 'availability', availabilityId: avail.id },
->>>>>>> 1e58298 (Improvements to the bookin feature)
         });
       }
     }
@@ -339,13 +254,8 @@ function AdminSchedule() {
       // Hide declined bookings older than 7 days
       if (b.status === 'declined' && new Date(b.bookedAt) < SEVEN_DAYS_AGO) continue;
 
-<<<<<<< HEAD
       const coachName = adminNameMap.get(b.coachId) || `Coach ${b.coachId}`;
       const typeLabel = b.status === 'pending' ? 'Förfrågan' : b.status === 'accepted' ? 'Godkänd' : b.status === 'rescheduled' ? 'Ombokning' : 'Nekad';
-=======
-      const coachName = coachNameMap.get(b.coachId) || `Coach ${b.coachId}`;
-      const typeLabel = b.status === 'pending' ? 'Förfrågan' : b.status === 'accepted' ? 'Godkänd' : 'Nekad';
->>>>>>> 1e58298 (Improvements to the bookin feature)
 
       result.push({
         id: `booking-${b.id}`,
@@ -354,19 +264,13 @@ function AdminSchedule() {
         end: bEnd,
         allDay: false,
         resource: {
-<<<<<<< HEAD
           type: b.status as 'pending' | 'accepted' | 'declined' | 'rescheduled',
           booking: b,
           isOwn: true,
-=======
-          type: b.status as 'pending' | 'accepted' | 'declined',
-          booking: b,
->>>>>>> 1e58298 (Improvements to the bookin feature)
         },
       });
     }
 
-<<<<<<< HEAD
     // Add other visible admins' bookings
     for (const otherId of visibleAdminIds) {
       if (otherId === adminId) continue;
@@ -403,23 +307,11 @@ function AdminSchedule() {
   const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
     if (isBefore(startOfDay(start), today)) return;
     if (window.confirm(`Lägg till tillgänglighet: ${format(start, 'yyyy-MM-dd HH:mm')} – ${format(end, 'HH:mm')}?`)) {
-=======
-    return result;
-  }, [availabilities, bookings, coachNameMap, SEVEN_DAYS_AGO]);
-
-  const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
-    if (
-      window.confirm(
-        `Lägg till tillgänglighet: ${format(start, 'yyyy-MM-dd HH:mm')} – ${format(end, 'HH:mm')}?`
-      )
-    ) {
->>>>>>> 1e58298 (Improvements to the bookin feature)
       addAvailability({ adminId, startTime: start, endTime: end }).then(load);
     }
   };
 
   const handleSelectEvent = (event: ScheduleEvent) => {
-<<<<<<< HEAD
     if (event.resource.type === 'availability') {
       const avail = event.resource.availability;
       if (!avail || !event.resource.isOwn) return;
@@ -689,68 +581,19 @@ function AdminSchedule() {
     }));
     return { maxStartTotal: earliestStart, minEndTotal: latestEnd };
   }, [selectedAvailability, bookings]);
-=======
-    if (event.resource.booking) {
-      setSelectedBooking(event.resource.booking);
-      setShowBookingDialog(true);
-    }
-  };
-
-  const handleStatusUpdate = async (status: 'accepted' | 'declined') => {
-    if (!selectedBooking) return;
-    try {
-      await updateBookingStatus(selectedBooking.id, status);
-      toast({ title: status === 'accepted' ? 'Godkänd' : 'Nekad', description: `Bokningen har ${status === 'accepted' ? 'godkänts' : 'nekats'}.` });
-      setShowBookingDialog(false);
-      setSelectedBooking(null);
-      load();
-    } catch {
-      toast({ title: 'Fel', description: 'Kunde inte uppdatera status.', variant: 'destructive' });
-    }
-  };
-
-  const eventStyleGetter = (event: ScheduleEvent) => {
-    const base = { borderRadius: '6px', border: 'none', padding: '2px 6px', cursor: 'pointer' };
-    switch (event.resource.type) {
-      case 'availability':
-        return { style: { ...base, backgroundColor: '#2563eb', color: '#fff' } };
-      case 'pending':
-        return { style: { ...base, backgroundColor: '#f59e0b', color: '#fff' } };
-      case 'accepted':
-        return { style: { ...base, backgroundColor: '#22c55e', color: '#fff' } };
-      case 'declined':
-        return {
-          style: { ...base, backgroundColor: '#ef4444', color: '#fff', opacity: 0.7 },
-          className: 'rbc-event--declined',
-        };
-      default:
-        return {};
-    }
-  };
-
-  const weekStart = startOfWeek(currentDate, { locale: sv });
-  const weekEnd = addDays(weekStart, 3); // Mon-Thu
->>>>>>> 1e58298 (Improvements to the bookin feature)
 
   return (
     <div className="p-6 lg:p-10 max-w-6xl mx-auto">
       <Card className="bg-card space-y-6 p-6">
         <section>
           <div>
-<<<<<<< HEAD
             <h2 className="font-display text-2xl font-bold text-foreground">Veckoschema &amp; Bokningar</h2>
-=======
-            <h2 className="font-display text-2xl font-bold text-foreground">
-              Veckoschema &amp; Bokningar
-            </h2>
->>>>>>> 1e58298 (Improvements to the bookin feature)
             <p className="text-muted-foreground text-sm mt-1">
               Klicka på en tom tid i kalendern för att lägga till tillgänglighet.
             </p>
           </div>
 
           <div className="flex items-center justify-center gap-4 mt-4 mb-4">
-<<<<<<< HEAD
             <Button variant="outline" onClick={() => setCurrentDate(subWeeks(currentDate, 1))}>← Föregående vecka</Button>
             <span className="text-sm font-semibold text-foreground min-w-[100px] text-center">
               {format(weekStart, 'd/M')} – {format(weekEnd, 'd/M')}
@@ -758,21 +601,10 @@ function AdminSchedule() {
             <Button variant="outline" onClick={() => setCurrentDate(addWeeks(currentDate, 1))}>Nästa vecka →</Button>
             <Button onClick={() => setShowAppointmentDialog(true)} className="ml-4">
               <Plus className="h-4 w-4 mr-1" /> Boka möte
-=======
-            <Button variant="outline" onClick={() => setCurrentDate(subWeeks(currentDate, 1))}>
-              ← Föregående vecka
-            </Button>
-            <span className="text-sm font-semibold text-foreground min-w-[100px] text-center">
-              {format(weekStart, 'd/M')} – {format(weekEnd, 'd/M')}
-            </span>
-            <Button variant="outline" onClick={() => setCurrentDate(addWeeks(currentDate, 1))}>
-              Nästa vecka →
->>>>>>> 1e58298 (Improvements to the bookin feature)
             </Button>
           </div>
 
           <div className="flex flex-wrap gap-4 mb-4 text-sm">
-<<<<<<< HEAD
             {allAdmins.map((admin) => {
               const color = adminColorMap.get(admin.id) || '#6b7280';
               return (
@@ -789,15 +621,6 @@ function AdminSchedule() {
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded" style={{ backgroundColor: '#8b5cf6', opacity: 0.9 }} />
               <span>Ombokning</span>
-=======
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#2563eb' }} />
-              <span>Tillgänglig</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#f59e0b' }} />
-              <span>Förfrågan</span>
->>>>>>> 1e58298 (Improvements to the bookin feature)
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded" style={{ backgroundColor: '#22c55e' }} />
@@ -809,7 +632,6 @@ function AdminSchedule() {
             </div>
           </div>
 
-<<<<<<< HEAD
           {allAdmins.length > 1 && (
             <div className="flex flex-wrap gap-4 mb-4 text-sm items-center">
               <span className="text-muted-foreground font-medium">Visa bokningar:</span>
@@ -829,8 +651,7 @@ function AdminSchedule() {
             </div>
           )}
 
-=======
->>>>>>> 1e58298 (Improvements to the bookin feature)
+
           <div style={{ height: 600 }}>
             {/* @ts-expect-error custom fourDay view not in type defs */}
             <Calendar<ScheduleEvent>
@@ -853,24 +674,10 @@ function AdminSchedule() {
               onSelectSlot={handleSelectSlot}
               onSelectEvent={handleSelectEvent}
               eventPropGetter={eventStyleGetter}
-<<<<<<< HEAD
               dayPropGetter={dayPropGetter}
               formats={{
                 timeGutterFormat: 'HH:mm',
                 dayFormat: (date: Date) => `${DAY_NAMES[getDay(date)] || ''} ${format(date, 'd/M')}`,
-=======
-              formats={{
-                timeGutterFormat: 'HH:mm',
-                dayFormat: (date: Date) => `${DAY_NAMES[getDay(date)] || ''} ${format(date, 'd/M')}`,
-              }}
-              messages={{
-                today: 'Idag',
-                next: 'Nästa',
-                previous: 'Föregående',
-                month: 'Månad',
-                week: 'Vecka',
-                day: 'Dag',
->>>>>>> 1e58298 (Improvements to the bookin feature)
               }}
               messages={{ today: 'Idag', next: 'Nästa', previous: 'Föregående', month: 'Månad', week: 'Vecka', day: 'Dag' }}
             />
@@ -879,7 +686,6 @@ function AdminSchedule() {
       </Card>
 
       {/* Booking details dialog */}
-<<<<<<< HEAD
       <Dialog open={showBookingDialog} onOpenChange={(open) => { setShowBookingDialog(open); if (!open) setBookingDialogMode('view'); }}>
         <DialogContent>
           <DialogHeader>
@@ -905,50 +711,11 @@ function AdminSchedule() {
                     {selectedBooking.note && <p><strong>Meddelande:</strong> {selectedBooking.note}</p>}
                     {selectedBooking.reason && <p><strong>Anledning:</strong> {selectedBooking.reason}</p>}
                     <p className="text-xs text-muted-foreground">Bokad: {format(new Date(selectedBooking.bookedAt), 'yyyy-MM-dd HH:mm')}</p>
-=======
-      <Dialog open={showBookingDialog} onOpenChange={setShowBookingDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {selectedBooking?.status === 'pending' ? 'Bokningsförfrågan' : selectedBooking?.status === 'accepted' ? 'Godkänd bokning' : 'Nekad bokning'}
-            </DialogTitle>
-            <DialogDescription asChild>
-              <div className="space-y-2 mt-2">
-                {selectedBooking && (
-                  <>
-                    <p>
-                      <strong>Coach:</strong> {coachNameMap.get(selectedBooking.coachId) || `ID ${selectedBooking.coachId}`}
-                    </p>
-                    <p>
-                      <strong>Tid:</strong>{' '}
-                      {format(new Date(selectedBooking.startTime), 'yyyy-MM-dd HH:mm')} –{' '}
-                      {format(new Date(selectedBooking.endTime), 'HH:mm')}
-                    </p>
-                    <p>
-                      <strong>Mötestyp:</strong>{' '}
-                      {selectedBooking.meetingType === 'intro' ? 'Intromöte' : 'Uppföljningsmöte'}
-                    </p>
-                    {selectedBooking.studentId && (
-                      <p>
-                        <strong>Student:</strong>{' '}
-                        {coachNameMap.get(selectedBooking.studentId) || `ID ${selectedBooking.studentId}`}
-                      </p>
-                    )}
-                    {selectedBooking.note && (
-                      <p>
-                        <strong>Meddelande:</strong> {selectedBooking.note}
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      Bokad: {format(new Date(selectedBooking.bookedAt), 'yyyy-MM-dd HH:mm')}
-                    </p>
->>>>>>> 1e58298 (Improvements to the bookin feature)
                   </>
                 )}
               </div>
             </DialogDescription>
           </DialogHeader>
-<<<<<<< HEAD
 
           {bookingDialogMode === 'reschedule' && selectedBooking && (
             <div className="space-y-4 py-2">
@@ -1334,30 +1101,6 @@ function AdminSchedule() {
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowConflictWarning(false); setPendingAppointmentData(null); setConflictWarningBookings([]); }}>Avbryt</Button>
             <Button onClick={handleConfirmConflictWarning}>Fortsätt</Button>
-=======
-          <DialogFooter>
-            {selectedBooking?.status === 'pending' ? (
-              <div className="flex gap-3 w-full justify-end">
-                <Button
-                  variant="outline"
-                  className="text-destructive border-destructive hover:bg-destructive/10"
-                  onClick={() => handleStatusUpdate('declined')}
-                >
-                  <X className="h-4 w-4 mr-1" /> Neka
-                </Button>
-                <Button
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  onClick={() => handleStatusUpdate('accepted')}
-                >
-                  <Check className="h-4 w-4 mr-1" /> Godkänn
-                </Button>
-              </div>
-            ) : (
-              <Button variant="outline" onClick={() => setShowBookingDialog(false)}>
-                Stäng
-              </Button>
-            )}
->>>>>>> 1e58298 (Improvements to the bookin feature)
           </DialogFooter>
         </DialogContent>
       </Dialog>

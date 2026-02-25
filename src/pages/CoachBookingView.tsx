@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-<<<<<<< HEAD
 import {
   Calendar,
   dateFnsLocalizer,
@@ -15,16 +14,11 @@ import {
   startOfWeek,
   subWeeks,
 } from 'date-fns';
-=======
-import { Calendar, dateFnsLocalizer, type NavigateAction } from 'react-big-calendar';
-import { addDays, addWeeks, format, getDay, isBefore, startOfWeek, subWeeks } from 'date-fns';
->>>>>>> 1e58298 (Improvements to the bookin feature)
 import { sv } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '@/components/admin/BookingCalendar.css';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 import TimeGrid from 'react-big-calendar/lib/TimeGrid';
-<<<<<<< HEAD
 import {
   bookAvailability,
   cancelBooking,
@@ -36,9 +30,6 @@ import {
   type Availability,
   type Booking,
 } from '@/api/BookingService';
-=======
-import { bookAvailability, getAvailabilities, getVisibleBookings, type Availability, type Booking } from '@/api/BookingService';
->>>>>>> 1e58298 (Improvements to the bookin feature)
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -134,45 +125,6 @@ class FourDayView extends React.Component<any> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (FourDayView as any).title = () => '';
 
-const DAY_NAMES = ['', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'];
-
-// Custom 4-day view (Mon–Thu)
-function fourDayRange(date: Date) {
-  const start = startOfWeek(date, { locale: sv });
-  return [start, addDays(start, 1), addDays(start, 2), addDays(start, 3)];
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-class FourDayView extends React.Component<any> {
-  render() {
-    const { date, localizer: loc, min, max, scrollToTime, enableAutoScroll, ...props } = this.props;
-    const range = fourDayRange(date);
-    return React.createElement(TimeGrid, {
-      ...props,
-      range,
-      eventOffset: 15,
-      localizer: loc,
-      min: min || loc.startOf(new Date(), 'day'),
-      max: max || loc.endOf(new Date(), 'day'),
-      scrollToTime: scrollToTime || loc.startOf(new Date(), 'day'),
-      enableAutoScroll: enableAutoScroll ?? true,
-    });
-  }
-}
-
-// Static methods required by react-big-calendar
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(FourDayView as any).range = fourDayRange;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(FourDayView as any).navigate = (date: Date, action: NavigateAction) => {
-  switch (action) {
-    case 'PREV': return addDays(date, -7);
-    case 'NEXT': return addDays(date, 7);
-    default: return date;
-  }
-};
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(FourDayView as any).title = () => '';
 
 interface CalendarEvent {
   id: string;
@@ -209,13 +161,7 @@ function getFreeSegments(
   const aEnd = new Date(avail.endTime);
 
   const sorted = bookings
-<<<<<<< HEAD
-    .filter(
-      (b) => b.adminAvailabilityId === avail.id && b.status === 'accepted'
-    )
-=======
     .filter((b) => b.adminAvailabilityId === avail.id && b.status !== 'declined')
->>>>>>> 1e58298 (Improvements to the bookin feature)
     .map((b) => ({ start: new Date(b.startTime), end: new Date(b.endTime) }))
     .sort((a, b) => a.start.getTime() - b.start.getTime());
 
@@ -299,14 +245,10 @@ function CoachBookingView() {
 
   const today = useMemo(() => startOfDay(new Date()), []);
 
-<<<<<<< HEAD
   const admins = useMemo(
-    () => allUsers.filter((u) => u.authLevel <= 2 && u.isActive),
+    () => allUsers.filter((u) => u.authLevel <= 2 && u.isActive && u.firstName !== "Alexandra"),
     [allUsers]
   );
-=======
-  const admins = useMemo(() => allUsers.filter((u) => u.authLevel <= 2 && u.isActive && u.firstName !== "Alexandra"), [allUsers]);
->>>>>>> refs/remotes/upstream/main
 
   const adminColorMap = useMemo(() => {
     const map = new Map<number, string>();
@@ -347,17 +289,9 @@ function CoachBookingView() {
         getVisibleBookings(),
       ]);
       setAvailabilities(
-<<<<<<< HEAD
         availData.filter((a: Availability) =>
           isWithinWorkHours(new Date(a.startTime), new Date(a.endTime))
         )
-=======
-        availData.filter((a: Availability) => {
-          const start = new Date(a.startTime);
-          const end = new Date(a.endTime);
-          return isWithinWorkHours(start, end);
-        })
->>>>>>> 1e58298 (Improvements to the bookin feature)
       );
       setBookings(bookingData);
     } catch {
@@ -370,17 +304,14 @@ function CoachBookingView() {
   };
 
   useEffect(() => {
-<<<<<<< HEAD
-    loadData();
-  }, [currentDate]);
-=======
     if (admins.length > 0 && selectedAdminId === null) {
       setSelectedAdminId(admins[0].id);
     }
   }, [admins, selectedAdminId]);
 
-  useEffect(() => { loadData(); }, [currentDate]);
->>>>>>> refs/remotes/upstream/main
+  useEffect(() => {
+    loadData();
+  }, [currentDate]);
   useEffect(() => {
     const pollId = window.setInterval(loadData, 15000);
     return () => window.clearInterval(pollId);
@@ -395,14 +326,9 @@ function CoachBookingView() {
   const events = useMemo((): CalendarEvent[] => {
     const result: CalendarEvent[] = [];
 
-<<<<<<< HEAD
-    for (const avail of availabilities) {
+    for (const avail of filteredAvailabilities) {
       const adminName =
         adminNameMap.get(avail.adminId) || `Admin ${avail.adminId}`;
-=======
-    for (const avail of filteredAvailabilities) {
-      const adminName = adminNameMap.get(avail.adminId) || `Admin ${avail.adminId}`;
->>>>>>> refs/remotes/upstream/main
       const color = adminColorMap.get(avail.adminId) || '#6b7280';
       const freeSegs = getFreeSegments(avail, bookings);
 
@@ -429,14 +355,7 @@ function CoachBookingView() {
     }
 
     for (const b of bookings) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-      // Declined bookings from others are not shown
->>>>>>> 1e58298 (Improvements to the bookin feature)
-=======
       if (b.coachId !== coachId && selectedAdminId !== null && b.adminId !== selectedAdminId) continue;
->>>>>>> refs/remotes/upstream/main
       if (b.status === 'declined' && b.coachId !== coachId) continue;
       const bStart = new Date(b.startTime);
       const bEnd = new Date(b.endTime);
@@ -450,12 +369,6 @@ function CoachBookingView() {
         accepted: 'Godkänd',
         declined: 'Nekad',
         rescheduled: 'Ombokning – svar krävs',
-      };
-
-      const titleMap: Record<string, string> = {
-        pending: 'Inväntar svar',
-        accepted: 'Godkänd',
-        declined: 'Nekad',
       };
 
       result.push({
@@ -477,7 +390,6 @@ function CoachBookingView() {
     return result;
   }, [filteredAvailabilities, bookings, adminNameMap, adminColorMap, coachId, selectedAdminId]);
 
-<<<<<<< HEAD
   const openBookingDialog = (
     avail: Availability,
     freeStart: Date,
@@ -501,20 +413,6 @@ function CoachBookingView() {
       start: freeStart,
       end: freeEnd,
     });
-=======
-  const openBookingDialog = (avail: Availability, freeStart: Date, freeEnd: Date, clickedTime: Date) => {
-    const freeStartTotal = freeStart.getHours() * 60 + freeStart.getMinutes();
-    const freeEndTotal = freeEnd.getHours() * 60 + freeEnd.getMinutes();
-
-    // Snap clicked time down to nearest 30-min boundary
-    const totalMinutes = clickedTime.getHours() * 60 + clickedTime.getMinutes();
-    const snapped = Math.floor(totalMinutes / 30) * 30;
-
-    const startTotal = Math.max(freeStartTotal, Math.min(snapped, freeEndTotal - 30));
-    const endTotal = Math.min(startTotal + 30, freeEndTotal);
-
-    setSelectedFreeSlot({ availability: avail, start: freeStart, end: freeEnd });
->>>>>>> 1e58298 (Improvements to the bookin feature)
     setStartHour(Math.floor(startTotal / 60));
     setStartMinute(startTotal % 60);
     setEndHour(Math.floor(endTotal / 60));
@@ -525,15 +423,10 @@ function CoachBookingView() {
     setMeetingType(null);
   };
 
-<<<<<<< HEAD
-=======
-  // Custom event component for free slots — intercepts click to get Y position → clicked time
->>>>>>> 1e58298 (Improvements to the bookin feature)
   const FreeEventComponent = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return ({ event }: { event: any }) => {
       const calEvent = event as CalendarEvent;
-<<<<<<< HEAD
       if (calEvent.resource.type !== 'free')
         return <span>{calEvent.title}</span>;
       const isPast = isBefore(
@@ -573,32 +466,10 @@ function CoachBookingView() {
             cursor: isPast ? 'default' : 'pointer',
           }}
         >
-=======
-      if (calEvent.resource.type !== 'free') return <span>{calEvent.title}</span>;
-
-      const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        e.stopPropagation();
-        const rect = e.currentTarget.getBoundingClientRect();
-        const relativeY = e.clientY - rect.top;
-        const fraction = Math.max(0, Math.min(1, relativeY / rect.height));
-
-        const freeStart = calEvent.resource.freeStart!;
-        const freeEnd = calEvent.resource.freeEnd!;
-        const durationMinutes = (freeEnd.getTime() - freeStart.getTime()) / 60000;
-        const clickedOffsetMinutes = fraction * durationMinutes;
-        const clickedTime = new Date(freeStart.getTime() + clickedOffsetMinutes * 60000);
-
-        openBookingDialog(calEvent.resource.availability!, freeStart, freeEnd, clickedTime);
-      };
-
-      return (
-        <div onClick={handleClick} style={{ height: '100%', width: '100%', cursor: 'pointer' }}>
->>>>>>> 1e58298 (Improvements to the bookin feature)
           {calEvent.title}
         </div>
       );
     };
-<<<<<<< HEAD
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [today]);
 
@@ -612,18 +483,6 @@ function CoachBookingView() {
           start < seg.end &&
           isWithinWorkHours(seg.start, seg.end)
         ) {
-=======
-  // openBookingDialog is stable (defined inline, depends on state setters only)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleSelectSlot = ({ start }: { start: Date }) => {
-    // Handles clicks on empty grid cells (not on events)
-    for (const avail of availabilities) {
-      const freeSegs = getFreeSegments(avail, bookings);
-      for (const seg of freeSegs) {
-        if (start >= seg.start && start < seg.end && isWithinWorkHours(seg.start, seg.end)) {
->>>>>>> 1e58298 (Improvements to the bookin feature)
           openBookingDialog(avail, seg.start, seg.end, start);
           return;
         }
@@ -632,10 +491,6 @@ function CoachBookingView() {
   };
 
   const handleSelectEvent = (event: CalendarEvent) => {
-<<<<<<< HEAD
-=======
-    // Only handles non-free events (my-booking)
->>>>>>> 1e58298 (Improvements to the bookin feature)
     if (event.resource.type === 'my-booking' && event.resource.booking) {
       setSelectedBooking(event.resource.booking);
       setBookingDetailsMode('view');
@@ -842,7 +697,6 @@ function CoachBookingView() {
     }
     if (event.resource.type === 'my-booking') {
       const status = event.resource.booking?.status;
-<<<<<<< HEAD
       const colorMap: Record<string, string> = {
         pending: '#f59e0b',
         accepted: '#22c55e',
@@ -865,10 +719,6 @@ function CoachBookingView() {
           opacity,
         },
       };
-=======
-      const colorMap: Record<string, string> = { pending: '#f59e0b', accepted: '#22c55e', declined: '#ef4444' };
-      return { style: { ...base, backgroundColor: colorMap[status || ''] || '#6b7280', color: '#fff' } };
->>>>>>> 1e58298 (Improvements to the bookin feature)
     }
     if (event.resource.type === 'other-booking') {
       return {
@@ -917,31 +767,6 @@ function CoachBookingView() {
       <Card className="bg-card space-y-6 p-6">
         <section>
           <p className="text-muted-foreground text-sm mb-4">
-<<<<<<< HEAD
-            Klicka på en tillgänglig tid för att boka. Gröna = dina bokningar,
-            röda = andras.
-          </p>
-
-          {admins.length > 0 && (
-            <div className="mb-4 p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm font-semibold text-foreground mb-2">
-                Tillgängliga admins:
-              </p>
-              <div className="flex flex-wrap gap-3">
-                {admins.map((admin) => (
-                  <div key={admin.id} className="flex items-center gap-2">
-                    <div
-                      className="w-4 h-4 rounded"
-                      style={{
-                        backgroundColor:
-                          adminColorMap.get(admin.id) || '#6b7280',
-                      }}
-                    />
-                    <span className="text-sm text-foreground">
-                      {admin.firstName} {admin.lastName}
-                    </span>
-                  </div>
-=======
             Klicka på en tillgänglig tid för att boka.
           </p>
 
@@ -960,7 +785,6 @@ function CoachBookingView() {
                     />
                     {admin.firstName} {admin.lastName}
                   </TabsTrigger>
->>>>>>> refs/remotes/upstream/main
                 ))}
               </TabsList>
             </Tabs>
@@ -968,13 +792,9 @@ function CoachBookingView() {
 
           {(() => {
             const weekStart = startOfWeek(currentDate, { locale: sv });
-<<<<<<< HEAD
             const weekEnd = addDays(weekStart, 3);
-=======
-            const weekEnd = addDays(weekStart, 3); // Mon-Thu
             const thisWeekStart = startOfWeek(new Date(), { locale: sv });
             const canGoBack = isBefore(thisWeekStart, weekStart);
->>>>>>> 1e58298 (Improvements to the bookin feature)
             return (
               <div className="flex items-center justify-center gap-4 mb-4">
                 <Button
@@ -1018,19 +838,12 @@ function CoachBookingView() {
               onSelectSlot={handleSelectSlot}
               onSelectEvent={handleSelectEvent}
               eventPropGetter={eventStyleGetter}
-<<<<<<< HEAD
               dayPropGetter={dayPropGetter}
               components={{ event: FreeEventComponent }}
               formats={{
                 timeGutterFormat: 'HH:mm',
                 dayFormat: (date: Date) =>
                   `${DAY_NAMES[getDay(date)] || ''} ${format(date, 'd/M')}`,
-=======
-              components={{ event: FreeEventComponent }}
-              formats={{
-                timeGutterFormat: 'HH:mm',
-                dayFormat: (date: Date) => `${DAY_NAMES[getDay(date)] || ''} ${format(date, 'd/M')}`,
->>>>>>> 1e58298 (Improvements to the bookin feature)
               }}
               messages={{
                 today: 'Idag',
