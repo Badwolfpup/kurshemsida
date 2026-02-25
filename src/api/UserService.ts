@@ -51,6 +51,16 @@ export const userService = {
         responseAction(response);
         return true;
     },
+    updateMySettings: async (dto: { emailNotifications?: boolean; telephone?: string }) => {
+        const response = await fetch('/api/update-my-settings', {
+            method: 'PUT',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dto),
+        });
+        responseAction(response);
+        return response.json();
+    },
     updateActivity: async (userId: number): Promise<boolean> => {
         const response = await fetch(`/api/update-activity`, {
             method: 'PUT',

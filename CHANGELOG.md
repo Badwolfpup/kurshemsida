@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-02-25
+
+- **Email notifications:** Booking and ticket events now trigger email notifications to affected parties (SMTP via smarterasp.net)
+- **Preferenser:** Added opt-out toggle for email notifications (students and admins; coaches always receive emails)
+- **User settings:** New `api/update-my-settings` endpoint allows all roles to update own preferences
+
 ## 2026-02-24
 
 - **Bookings:** Replaced admin color legend with a tab selector — coaches now filter the booking calendar by admin instead of seeing all slots at once

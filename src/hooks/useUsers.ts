@@ -31,6 +31,17 @@ export function useUpdateUser() {
     });
 }
 
+export function useUpdateMySettings() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (dto: { emailNotifications?: boolean; telephone?: string }) =>
+            userService.updateMySettings(dto),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['users'] });
+        },
+    });
+}
+
 export function useUpdateActivityStatus() {
     const queryClient = useQueryClient();
     return useMutation({
