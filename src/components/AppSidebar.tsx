@@ -43,12 +43,7 @@ function getMainNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
         url: '/admin-schedule',
         icon: CalendarIcon,
       },
-<<<<<<< HEAD
-      { title: 'Ärenden', url: '/tickets', icon: Ticket },
-      { title: 'Profil', url: '/profil', icon: UserCircle },
-=======
       // { title: 'Profil', url: '/profil', icon: UserCircle },
->>>>>>> refs/remotes/upstream/main
       { title: 'Terminal', url: '/terminal', icon: TerminalIcon }
     );
   } else if (isCoach) {
@@ -60,7 +55,7 @@ function getMainNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
         title: 'Kalender: Boka intro',
         url: '/coach-booking',
         icon: CalendarIcon,
-      },
+      }
       // { title: 'Profil', url: '/profil', icon: UserCircle }
     );
   } else {
