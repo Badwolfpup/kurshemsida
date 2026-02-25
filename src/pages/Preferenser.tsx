@@ -10,14 +10,16 @@ import {
   Phone,
   Pencil,
   X,
+  Bell,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUsers, useUpdateUser } from "@/hooks/useUsers";
+import { useUsers, useUpdateUser, useUpdateMySettings } from "@/hooks/useUsers";
 import { useToast } from "@/hooks/use-toast";
 import { useAddTicket } from "@/hooks/useTickets";
 
@@ -35,6 +37,8 @@ const Preferenser = () => {
   const [email, setEmail] = useState("");
   const [telephone, setTelephone] = useState("");
   const [bugReport, setBugReport] = useState("");
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const updateMySettings = useUpdateMySettings();
 
   useEffect(() => {
     if (user) {
@@ -50,6 +54,7 @@ const Preferenser = () => {
   useEffect(() => {
     if (fullUser) {
       setTelephone(fullUser.telephone ?? "");
+      setEmailNotifications(fullUser.emailNotifications ?? true);
     }
   }, [fullUser]);
 
@@ -224,6 +229,26 @@ const Preferenser = () => {
             >
               <Moon className="h-4 w-4" /> Mörkt
             </Button>
+          </div>
+        </div>
+
+        {/* Notifications */}
+        <div className="bg-card rounded-2xl shadow-card border border-border p-6">
+          <h2 className="font-display font-semibold text-lg text-foreground flex items-center gap-2 mb-4">
+            <Bell className="h-5 w-5" /> Notifikationer
+          </h2>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-foreground">E-postnotifikationer</p>
+              <p className="text-xs text-muted-foreground">Få e-post vid bokningsändringar och ärendeuppdateringar</p>
+            </div>
+            <Switch
+              checked={emailNotifications}
+              onCheckedChange={(checked) => {
+                setEmailNotifications(checked);
+                updateMySettings.mutate({ emailNotifications: checked });
+              }}
+            />
           </div>
         </div>
 

@@ -34,4 +34,5 @@ export interface UpdateUserDto {
   scheduledWedPm?: boolean;
   scheduledThuAm?: boolean;
   scheduledThuPm?: boolean;
+  emailNotifications?: boolean;
 }
