@@ -142,19 +142,19 @@ const CoachSettings = () => {
                   <label className="text-sm font-medium text-foreground mb-1 block">
                     Förnamn
                   </label>
-                  <Input
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                  />
+                  <Input value={firstName} readOnly className="bg-muted text-muted-foreground cursor-not-allowed" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1 block">
                     Efternamn
                   </label>
-                  <Input
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                  />
+                  <Input value={lastName} readOnly className="bg-muted text-muted-foreground cursor-not-allowed" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">
+                    E-post
+                  </label>
+                  <Input value={user?.email ?? ""} readOnly className="bg-muted text-muted-foreground cursor-not-allowed" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1 block">

@@ -49,6 +49,8 @@ const ProjektAIGenerate = () => {
   const [pendingGenerate, setPendingGenerate] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [generatedWith, setGeneratedWith] = useState<{ techStack: string; difficulty: number } | null>(null);
+  const [projectGeneratedAt, setProjectGeneratedAt] = useState<Date | null>(null);
+  const [solutionUnlocked, setSolutionUnlocked] = useState(false);
 
   useEffect(() => {
     if (AIProject && previewIframeRef.current) {
@@ -62,6 +64,12 @@ const ProjektAIGenerate = () => {
       }
     }
   }, [AIProject]);
+
+  useEffect(() => {
+    if (!projectGeneratedAt) return;
+    const timer = setTimeout(() => setSolutionUnlocked(true), 5 * 60 * 1000);
+    return () => clearTimeout(timer);
+  }, [projectGeneratedAt]);
 
   useEffect(() => {
     let intervalId: number;
@@ -134,6 +142,8 @@ const ProjektAIGenerate = () => {
       setGeneratedWith({ techStack: course, difficulty: difficultyLevel });
       setFeedbackSubmitted(false);
       setShowingSolution(false);
+      setProjectGeneratedAt(new Date());
+      setSolutionUnlocked(false);
     } catch (error) {
       console.error("Error fetching project:", error);
       setProjectError(error instanceof Error ? error.message : "Ett fel uppstod vid generering.");
@@ -243,13 +253,15 @@ const ProjektAIGenerate = () => {
               >
                 <Eye className="h-4 w-4" /> Uppgift
               </Button>
-              <Button
-                variant={showingSolution ? "default" : "outline"}
-                onClick={() => setShowingSolution(true)}
-                className="gap-2"
-              >
-                <Code2 className="h-4 w-4" /> Kodlösning
-              </Button>
+              {solutionUnlocked && (
+                <Button
+                  variant={showingSolution ? "default" : "outline"}
+                  onClick={() => setShowingSolution(true)}
+                  className="gap-2"
+                >
+                  <Code2 className="h-4 w-4" /> Kodlösning
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={handleCompleted}
