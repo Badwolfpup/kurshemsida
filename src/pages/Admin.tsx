@@ -33,8 +33,8 @@ const menuItems = [
   { id: 'posts', label: 'Nyheter & Event', icon: Megaphone },
   { id: 'attendance', label: 'Närvarohantering', icon: CalendarCheck },
   { id: 'coach-attendance', label: 'Deltagarprofiler', icon: CalendarCheck },
-  { id: 'tickets', label: 'Inkomna ärenden', icon: Ticket },
-  { id: 'settings', label: 'Inställningar', icon: Settings },
+  // { id: 'tickets', label: 'Inkomna ärenden', icon: Ticket },
+  // { id: 'settings', label: 'Inställningar', icon: Settings },
 ] as const;
 
 type AdminView = (typeof menuItems)[number]['id'] | 'menu';
@@ -56,10 +56,10 @@ const Admin = () => {
         return <AdminPosts />;
       case 'coach-attendance':
         return <CoachAttendance seluser={null} />;
-      case 'tickets':
-        return <AdminTickets />;
-      case 'settings':
-        return <AdminSettings />;
+      // case 'tickets':
+      //   return <AdminTickets />;
+      // case 'settings':
+      //   return <AdminSettings />;
       default:
         return null;
     }
