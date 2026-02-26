@@ -96,6 +96,9 @@ export default function AdminTickets() {
 
   return (
     <div className="max-w-3xl mx-auto py-10 space-y-4">
+      <span className="text-2xl font-display font-semibold text-foreground">
+        Inkomna ärenden
+      </span>
       <div className="flex items-center gap-3">
         <Badge variant="secondary">
           {tickets.filter((t) => t.status === 'Open').length} öppna ärenden

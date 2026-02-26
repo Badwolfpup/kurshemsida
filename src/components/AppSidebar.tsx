@@ -44,7 +44,8 @@ function getMainNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
         icon: CalendarIcon,
       },
       // { title: 'Profil', url: '/profil', icon: UserCircle },
-      { title: 'Terminal', url: '/terminal', icon: TerminalIcon }
+      { title: 'Terminal', url: '/terminal', icon: TerminalIcon },
+      { title: 'Ärenden', url: '/tickets', icon: Ticket }
     );
   } else if (isCoach) {
     items.push(
