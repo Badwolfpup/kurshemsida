@@ -51,6 +51,7 @@ export default function AdminTickets() {
     };
     return labels[type] || type;
   };
+  //hey push biatchh
 
   const statusColor = (
     status: string
@@ -95,11 +96,11 @@ export default function AdminTickets() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-10 space-y-4">
+    <div className="max-w-3xl mx-auto p-4 sm:p-6 lg:p-10 space-y-4">
       <span className="text-2xl font-display font-semibold text-foreground">
         Inkomna ärenden
       </span>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <Badge variant="secondary">
           {tickets.filter((t) => t.status === 'Open').length} öppna ärenden
         </Badge>
@@ -107,7 +108,7 @@ export default function AdminTickets() {
       </div>
 
       {tickets.length === 0 && (
-        <div className="bg-card rounded-2xl shadow-card border border-border p-8 text-center">
+        <div className="bg-card rounded-2xl shadow-card border border-border p-6 sm:p-8 text-center">
           <MessageSquare className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
           <p className="text-muted-foreground">Inga ärenden ännu.</p>
         </div>
@@ -116,14 +117,14 @@ export default function AdminTickets() {
       {tickets.map((t) => (
         <div
           key={t.id}
-          className="bg-card rounded-2xl shadow-card border border-border p-8 space-y-3"
+          className="bg-card rounded-2xl shadow-card border border-border p-4 sm:p-6 space-y-3"
         >
           <div
-            className="flex items-start justify-between gap-4 cursor-pointer"
+            className="flex items-start justify-between gap-3 cursor-pointer"
             onClick={() => toggle(t.id)}
           >
-            <div>
-              <h3 className="font-display font-semibold text-foreground">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-display font-semibold text-foreground break-words">
                 {t.subject}
               </h3>
               <p className="text-sm text-muted-foreground">
@@ -132,7 +133,7 @@ export default function AdminTickets() {
                 {typeLabel(t.type)}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               {t.hasUnread && (
                 <span className="flex items-center justify-center w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold">
                   !
@@ -150,7 +151,7 @@ export default function AdminTickets() {
           </div>
 
           {t.acceptedStartTime ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm text-foreground">
                 Tidsförslag: {formatTime(t.acceptedStartTime)}–
                 {t.acceptedEndTime ? formatTime(t.acceptedEndTime) : ''}
@@ -167,7 +168,7 @@ export default function AdminTickets() {
             )
           )}
 
-          <div className="flex gap-2 pt-2">
+          <div className="flex flex-wrap gap-2 pt-2">
             {t.status !== 'Closed' && (
               <>
                 {t.status === 'Open' && (
