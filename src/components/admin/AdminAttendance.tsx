@@ -45,6 +45,14 @@ export default function AdminAttendance() {
   const { data: noClasses = [], isLoading: noClassesLoading } = useNoClasses();
   const updateNoClasses = useUpdateNoClasses();
 
+  const countAttendedOnDate = (date: Date): number => {
+    const ds = dateKey(date);
+    return students.filter((s) => {
+      const ua = attendanceData.find((a) => a.userId === s.id);
+      return ua?.date.some((d) => dateKey(new Date(d)) === ds) ?? false;
+    }).length;
+  };
+
   const hasAttended = (userId: number, date: Date): boolean => {
     const ua = attendanceData.find((a) => a.userId === userId);
     if (!ua) return false;
@@ -120,9 +128,11 @@ export default function AdminAttendance() {
                 <TableHead className="min-w-[180px]">Deltagare</TableHead>
                 {dates.map((d, i) => (
                   <TableHead key={i} className="text-center">
-                    <Checkbox destructive={isNoClass(d)} checked={isNoClass(d)} onCheckedChange={() => updateNoClasses.mutate(dateKey(d))} />
-                    <div className="text-xs text-muted-foreground">{dayNames[i]}</div>
-                    <div className="text-sm font-semibold">{formatDate(d)}</div>
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="text-xs font-semibold text-primary mt-1">{isNoClass(d) ? "—" : countAttendedOnDate(d)}</div>
+                      <div className="text-xs text-muted-foreground">{dayNames[i]} {formatDate(d)}</div>
+                      <Checkbox className="mb-3" destructive={isNoClass(d)} checked={isNoClass(d)} onCheckedChange={() => updateNoClasses.mutate(dateKey(d))} />
+                    </div>
                   </TableHead>
                 ))}
               </TableRow>
