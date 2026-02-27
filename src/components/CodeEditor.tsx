@@ -57,7 +57,7 @@ function getTabsForCategory(category: string): TabConfig[] {
   }
 }
 
-function splitStarterCode(
+export function splitStarterCode(
   code: string,
   category: string
 ): Record<TabId, string> {
@@ -85,7 +85,7 @@ function splitStarterCode(
   return result;
 }
 
-function combineCode(tabs: Record<TabId, string>, category: string): string {
+export function combineCode(tabs: Record<TabId, string>, category: string): string {
   if (category === 'python' || category === 'csharp') return tabs.js;
   if (category === 'react') return tabs.html || tabs.js;
   let combined = tabs.html || '';

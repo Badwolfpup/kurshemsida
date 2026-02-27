@@ -47,7 +47,7 @@ export async function getAllAvailabilities(): Promise<Availability[]> {
 }
 
 // Add new availability (for admin)
-function toLocalIso(d: Date | string): string {
+export function toLocalIso(d: Date | string): string {
   if (typeof d === 'string') return d;
   const pad = (n: number) => n.toString().padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;

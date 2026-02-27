@@ -1,6 +1,10 @@
 import type ProjectType from "../Types/ProjectType";
 import type { AddProjectDto, UpdateProjectDto } from "../Types/Dto/ProjectDto";
 
+export function computeLightbulbs(difficulty: number): boolean[] {
+    return Array(5).fill(false).map((_, i) => i < difficulty);
+}
+
 export const projectService = {
     fetchProjects: async (): Promise<ProjectType[]> => {
         const response = await fetch('/api/fetch-projects', {
@@ -9,10 +13,10 @@ export const projectService = {
         responseAction(response);
         const data = await response.json() as ProjectType[];
         data.forEach(proj => {
-            proj.lightbulbs = Array(5).fill(false).map((_, i) => i < proj.difficulty);
+            proj.lightbulbs = computeLightbulbs(proj.difficulty);
         });
         return data;
-        
+
     },
     addProject: async (project: AddProjectDto): Promise<boolean> => {
         const response = await fetch('/api/add-project', {

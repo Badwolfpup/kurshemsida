@@ -2,7 +2,7 @@ import { AlertTriangle, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Participant } from "@/pages/Deltagare";
 
-function hasAbsenceAlert(p: Participant): boolean {
+export function hasAbsenceAlert(p: Participant): boolean {
   const today = new Date();
   const twoWeeksAgo = new Date(today);
   twoWeeksAgo.setDate(today.getDate() - 14);
