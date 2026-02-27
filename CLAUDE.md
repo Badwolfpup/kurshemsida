@@ -6,7 +6,7 @@
 - After any implementation (even quick edits that don't go through `/makepr`), update `CHANGELOG.md` under `## [Unreleased]`, grouped by feature area
 
 ## SCENARIO Comments & Static Trace
-- After implementing a feature, add SCENARIO comments to every hook and endpoint that was added or modified. See comment convention in MEMORY.md.
+- After implementing a feature, add SCENARIO comments to every hook and endpoint that was added or modified. See comment convention in `.claude/PROJECT_CONTEXT.md`.
 - **Plan mode**: After adding comments, automatically run `/static-trace` on every changed feature. Always show the full PASS/FAIL report.
 - **Quick edits**: After finishing, if any logic changed (hooks, endpoints, service methods), ask if user wants to run `/static-trace`. Skip for CSS, copy, config, and cosmetic changes.
 
