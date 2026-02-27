@@ -1,6 +1,10 @@
 import type ExerciseType from "../Types/ExerciseType";
 import type { AddExerciseDto, UpdateExerciseDto } from "../Types/Dto/ExerciseDto";
 
+export function computeLightbulbs(difficulty: number): boolean[] {
+    return Array(5).fill(false).map((_, i) => i < difficulty);
+}
+
 export const exerciseService = {
     async fetchExercises(): Promise<ExerciseType[]> {
 
@@ -10,7 +14,7 @@ export const exerciseService = {
         responseAction(response);
         const data = await response.json() as ExerciseType[];
         data.forEach(proj => {
-            proj.lightbulbs = Array(5).fill(false).map((_, i) => i < proj.difficulty);
+            proj.lightbulbs = computeLightbulbs(proj.difficulty);
         });
         return data;
     },

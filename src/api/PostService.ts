@@ -1,6 +1,10 @@
 import type PostType from "../Types/PostType";
 import type { AddPostDto, UpdatePostDto } from "../Types/Dto/PostDto";
 
+export function sortPostsByDate(posts: PostType[]): PostType[] {
+    return [...posts].sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+}
+
 export const postService = {
     fetchPosts: async (): Promise<PostType[]> => {
         const response = await fetch('/api/fetch-posts', {
@@ -8,8 +12,7 @@ export const postService = {
         });
         responseAction(response);
         const posts: PostType[] = await response.json();
-        posts.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
-        return posts;
+        return sortPostsByDate(posts);
     } ,
     addPost: async (post: AddPostDto): Promise<boolean> => { 
         const response = await fetch('/api/add-posts', {
