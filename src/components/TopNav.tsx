@@ -2,6 +2,7 @@ import { Menu, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { KomIgangDialog } from '@/components/KomIgangDialog';
 import { NewsDialog } from '@/components/NewsDialog';
+import { ChangelogDialog } from '@/components/ChangelogDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { useNavigate } from 'react-router-dom';
@@ -45,6 +46,7 @@ export function TopNav({ onMenuToggle }: TopNavProps) {
 
       <div className="topnav__actions">
         {isLoggedIn && <KomIgangDialog />}
+        {isLoggedIn && <ChangelogDialog />}
         {isLoggedIn && <NewsDialog />}
         {isLoggedIn ? (
           avatarUrl ? (
