@@ -19,14 +19,12 @@ import Admin from './pages/Admin';
 import Terminal from './pages/Terminal';
 import Preferenser from './pages/Preferenser';
 import CoachSettings from './pages/CoachSettings';
-import CoachTickets from './pages/CoachTickets';
 import CoachMyParticipants from './pages/CoachMyParticipants';
 import CoachContact from './pages/CoachContact';
 import CoachProjects from './pages/CoachProjects';
 import CoachBookingView from './pages/CoachBookingView';
 import Deltagare from './pages/Deltagare';
-import StudentTickets from './pages/StudentTickets';
-import AdminTickets from './components/admin/AdminTickets';
+import TicketsPage from './pages/TicketsPage';
 
 const queryClient = new QueryClient();
 
@@ -78,16 +76,16 @@ function AppRoutes() {
         <Route path="/projekt" element={<Projekt />} />
         <Route path="/ovningar" element={<Ovningar />} />
         <Route path="/portfolio" element={<Portfolio />} />
-        <Route path="/student-arenden" element={<StudentTickets />} />
+        <Route path="/student-arenden" element={<TicketsPage />} />
         <Route path="/deltagare" element={<Deltagare />} />
         <Route path="/preferenser" element={<Preferenser />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/terminal" element={<Terminal />} />
         <Route path="/admin-schedule" element={<AdminSchedule />} />
-        <Route path="/tickets" element={<AdminTickets />} />
+        <Route path="/tickets" element={<TicketsPage />} />
         {/* Coach routes */}
         <Route path="/mina-deltagare" element={<CoachMyParticipants />} />
-        <Route path="/arenden" element={<CoachTickets />} />
+        <Route path="/arenden" element={<TicketsPage />} />
         <Route path="/kontakt" element={<CoachContact />} />
         <Route path="/coach-installningar" element={<CoachSettings />} />
         <Route path="/profil" element={<Preferenser />} />
