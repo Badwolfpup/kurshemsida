@@ -146,6 +146,17 @@
   margin-bottom: 0.5rem;
 }
 
+.sidebar__unread-badge {
+  margin-left: auto;
+  background-color: hsl(var(--destructive));
+  color: hsl(var(--destructive-foreground));
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.15rem 0.4rem;
+  border-radius: 9999px;
+}
+
 .sidebar__link {
   display: flex;
   align-items: center;
