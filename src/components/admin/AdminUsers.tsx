@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, Pencil, UserCheck, UserX } from 'lucide-react';
+import { Plus, Pencil, Trash2, UserCheck, UserX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,6 +34,7 @@ import {
   useAddUser,
   useUpdateUser,
   useUpdateActivityStatus,
+  useDeleteUser,
 } from '@/hooks/useUsers';
 import type UserType from '@/Types/User';
 
@@ -128,6 +129,7 @@ export default function AdminUsers() {
   const addUserMutation = useAddUser();
   const updateUserMutation = useUpdateUser();
   const toggleActivityMutation = useUpdateActivityStatus();
+  const deleteUserMutation = useDeleteUser();
   const [showInactive, setShowInactive] = useState(false);
   const [activeTab, setActiveTab] = useState<TabValue>('deltagare');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -421,13 +423,23 @@ export default function AdminUsers() {
                     <TableCell>{getCoachName(p.coachId)}</TableCell>
                     <TableCell>{getContactName(p.contactId)}</TableCell>
                     <TableCell className="text-right space-x-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEdit(p)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
+                      {showInactive ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteUserMutation.mutate({ id: p.id })}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openEdit(p)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"
