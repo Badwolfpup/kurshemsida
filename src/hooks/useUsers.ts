@@ -54,6 +54,13 @@ export function useUpdateActivityStatus() {
 
 
 
+/**
+ * SCENARIO: Admin permanently deletes an inactive user
+ * CALLS: DELETE /api/delete-user (UserEndpoints.cs)
+ * SIDE EFFECTS:
+ *   - Removes user from database (backend)
+ *   - Invalidates ["users"] cache
+ */
 export function useDeleteUser() {
     const queryClient = useQueryClient();
     return useMutation({
