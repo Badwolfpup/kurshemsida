@@ -1,0 +1,8 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": ["Admins can now permanently delete inactive users — in the inactive users view, the edit button is replaced by a delete button"],
+    "coach": [],
+    "student": []
+  }
+}
