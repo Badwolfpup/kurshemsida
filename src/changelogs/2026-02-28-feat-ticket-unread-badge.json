@@ -1,0 +1,8 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": ["En röd !-badge visas nu på \"Ärenden\" i sidomenyn när det finns olästa ärenden"],
+    "coach": ["En röd !-badge visas nu på \"Ärenden\" i sidomenyn när det finns olästa ärenden"],
+    "student": ["En röd !-badge visas nu på \"Skapa ärende\" i sidomenyn när det finns olästa svar på dina ärenden"]
+  }
+}
