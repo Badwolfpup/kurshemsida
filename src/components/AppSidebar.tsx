@@ -21,15 +21,17 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useTickets } from '@/hooks/useTickets';
 import './AppSidebar.css';
 
 interface NavItem {
   title: string;
   url: string;
   icon: any;
+  showBadge?: boolean;
 }
 
-function getMainNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
+function getMainNav(isAdmin: boolean, isCoach: boolean, hasUnreadTicket: boolean): NavItem[] {
   const items: NavItem[] = [{ title: 'Startsida', url: '/', icon: Home }];
 
   if (isAdmin) {
@@ -45,12 +47,12 @@ function getMainNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
       },
       // { title: 'Profil', url: '/profil', icon: UserCircle },
       { title: 'Terminal', url: '/terminal', icon: TerminalIcon },
-      { title: 'Ärenden', url: '/tickets', icon: Ticket }
+      { title: 'Ärenden', url: '/tickets', icon: Ticket, showBadge: hasUnreadTicket }
     );
   } else if (isCoach) {
     items.push(
       { title: 'Mina deltagare', url: '/mina-deltagare', icon: Users },
-      { title: 'Ärenden', url: '/arenden', icon: Ticket },
+      { title: 'Ärenden', url: '/arenden', icon: Ticket, showBadge: hasUnreadTicket },
       { title: 'Kontakt', url: '/kontakt', icon: Contact },
       {
         title: 'Kalender: Boka intro',
@@ -66,7 +68,7 @@ function getMainNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
       { title: 'Portfolio', url: '/portfolio', icon: Briefcase },
       // { title: 'Profil', url: '/profil', icon: UserCircle },
       { title: 'Terminal', url: '/terminal', icon: TerminalIcon },
-      { title: 'Skapa ärende', url: '/student-arenden', icon: CircleFadingPlus }
+      { title: 'Skapa ärende', url: '/student-arenden', icon: CircleFadingPlus, showBadge: hasUnreadTicket }
     );
   }
 
@@ -95,6 +97,8 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
   const navigate = useNavigate();
   const { signOut, isGuest } = useAuth();
   const { isAdmin, isCoach } = useUserRole();
+  const { data: tickets = [] } = useTickets();
+  const hasUnreadTicket = tickets.some((t) => t.hasUnread);
 
   if (isGuest) return null;
 
@@ -103,7 +107,7 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
     navigate('/login');
   };
 
-  const mainNav = getMainNav(isAdmin, isCoach);
+  const mainNav = getMainNav(isAdmin, isCoach, hasUnreadTicket);
   const bottomNav = getBottomNav(isAdmin, isCoach);
 
   const isActive = (path: string) =>
@@ -168,7 +172,14 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
               activeClassName=""
             >
               <item.icon className="sidebar__link-icon" />
-              {(!collapsed || mobileOpen) && <span>{item.title}</span>}
+              {(!collapsed || mobileOpen) && (
+                <>
+                  <span>{item.title}</span>
+                  {item.showBadge && (
+                    <span className="sidebar__unread-badge">!</span>
+                  )}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>

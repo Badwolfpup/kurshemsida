@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ticketService } from "@/api/TicketService";
 import type { AddTicketDto, UpdateTicketDto, AddTicketReplyDto, AddTicketTimeSuggestionDto, RespondToTimeSuggestionDto } from "@/Types/TicketType";
 
+/** SCENARIO: Fetches all tickets for the current user; used to derive unread state for the sidebar badge */
 export function useTickets() {
   return useQuery({
     queryKey: ["tickets"],
