@@ -396,14 +396,6 @@ function AdminSchedule() {
       toast({ title: 'Fel', description: 'Starttid måste vara före sluttid.', variant: 'destructive' });
       return;
     }
-    if (editAvailConstraints) {
-      const newStartTotal = editAvailStartHour * 60 + editAvailStartMinute;
-      const newEndTotal = editAvailEndHour * 60 + editAvailEndMinute;
-      if (newStartTotal > editAvailConstraints.maxStartTotal || newEndTotal < editAvailConstraints.minEndTotal) {
-        toast({ title: 'Fel', description: 'Det nya tidsfönstret täcker inte alla godkända bokningar.', variant: 'destructive' });
-        return;
-      }
-    }
     try {
       await updateAvailability({
         id: selectedAvailability.id,
@@ -562,25 +554,6 @@ function AdminSchedule() {
   }, [rescheduleOptions, rescheduleStart]);
 
   const isBookingInPast = (b: Booking) => isBefore(startOfDay(new Date(b.startTime)), today);
-
-  // For the edit-availability dialog: the new window must contain all accepted bookings.
-  // Compute the earliest accepted booking start and latest accepted booking end for the selected availability.
-  const editAvailConstraints = useMemo(() => {
-    if (!selectedAvailability) return null;
-    const accepted = bookings.filter(
-      (b) => b.adminAvailabilityId === selectedAvailability.id && b.status === 'accepted'
-    );
-    if (accepted.length === 0) return null;
-    const earliestStart = Math.min(...accepted.map((b) => {
-      const d = new Date(b.startTime);
-      return d.getHours() * 60 + d.getMinutes();
-    }));
-    const latestEnd = Math.max(...accepted.map((b) => {
-      const d = new Date(b.endTime);
-      return d.getHours() * 60 + d.getMinutes();
-    }));
-    return { maxStartTotal: earliestStart, minEndTotal: latestEnd };
-  }, [selectedAvailability, bookings]);
 
   return (
     <div className="p-6 lg:p-10 max-w-6xl mx-auto">
@@ -881,15 +854,6 @@ function AdminSchedule() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            {editAvailConstraints && (
-              <p className="text-xs text-muted-foreground">
-                Det finns godkända bokningar inom detta pass. Starttid kan vara senast {
-                  `${Math.floor(editAvailConstraints.maxStartTotal / 60).toString().padStart(2, '0')}:${(editAvailConstraints.maxStartTotal % 60).toString().padStart(2, '0')}`
-                } och sluttid minst {
-                  `${Math.floor(editAvailConstraints.minEndTotal / 60).toString().padStart(2, '0')}:${(editAvailConstraints.minEndTotal % 60).toString().padStart(2, '0')}`
-                }.
-              </p>
-            )}
             <div className="space-y-2">
               <Label>Starttid</Label>
               <Select
@@ -907,7 +871,6 @@ function AdminSchedule() {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {ALL_TIME_OPTIONS.slice(0, -1)
-                    .filter((o) => !editAvailConstraints || o.hour * 60 + o.minute <= editAvailConstraints.maxStartTotal)
                     .map((o) => (
                       <SelectItem key={o.label} value={`${o.hour}:${o.minute}`}>{o.label}</SelectItem>
                     ))}
@@ -923,11 +886,7 @@ function AdminSchedule() {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {ALL_TIME_OPTIONS
-                    .filter((o) => {
-                      const total = o.hour * 60 + o.minute;
-                      return total > editAvailStartHour * 60 + editAvailStartMinute &&
-                             (!editAvailConstraints || total >= editAvailConstraints.minEndTotal);
-                    })
+                    .filter((o) => o.hour * 60 + o.minute > editAvailStartHour * 60 + editAvailStartMinute)
                     .map((o) => (
                       <SelectItem key={o.label} value={`${o.hour}:${o.minute}`}>{o.label}</SelectItem>
                     ))}
@@ -941,8 +900,6 @@ function AdminSchedule() {
                 variant="outline"
                 className="text-destructive border-destructive hover:bg-destructive/10"
                 onClick={handleDeleteAvailability}
-                disabled={!!editAvailConstraints}
-                title={editAvailConstraints ? 'Kan inte ta bort: det finns godkända bokningar' : undefined}
               >
                 <Trash2 className="h-4 w-4 mr-1" /> Ta bort
               </Button>

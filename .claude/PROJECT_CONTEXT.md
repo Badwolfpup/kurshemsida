@@ -70,6 +70,16 @@ Skip service methods — they are pure HTTP wrappers with no side effects.
 - **Backend auth**: Endpoints use `[Authorize]` attribute (not `.RequireAuthorization()`). Role checks done manually inside handler via `context.User.FindFirst(ClaimTypes.Role)?.Value` compared to `Role.Admin.ToString()` etc.
 - **HTML content**: News posts (`Post.html`) are raw admin-authored HTML stored in DB — always sanitize on render, never trust the stored value
 
+## Backend Unit Tests
+- `Kursserver.Tests` covers pure helpers/parsers only (`ScheduleHelpers`, `HasAdminPriviligies`, `FromClaims`, exercise/project parsers)
+- No HTTP endpoint integration tests — endpoint logic is not unit-tested
+- New endpoints only need tests if they extract pure logic into a static helper method
+
+## Coach Calendar
+- `src/pages/CoachBookingView.tsx` calls service functions directly (no mutation hook wrappers) — same pattern as `AdminSchedule`
+- SCENARIO comments are N/A for direct service calls; only applies to `use*.ts` mutation hooks
+- `generate30MinOptions(fromH, fromM, toH, toM)` helper already exists in the file — reuse it, do not add a new zero-arg version
+
 ## Recurring Patterns
 - cloc command: `cloc . --exclude-dir=node_modules,dist,.git --exclude-ext=json,lock`
 - When switching branches: `git checkout main && git pull && git checkout <branch>` (changes stay on original branch)
