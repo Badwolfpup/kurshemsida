@@ -25,6 +25,7 @@ import CoachProjects from './pages/CoachProjects';
 import CoachBookingView from './pages/CoachBookingView';
 import Deltagare from './pages/Deltagare';
 import TicketsPage from './pages/TicketsPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const queryClient = new QueryClient();
 
@@ -79,9 +80,9 @@ function AppRoutes() {
         <Route path="/student-arenden" element={<TicketsPage />} />
         <Route path="/deltagare" element={<Deltagare />} />
         <Route path="/preferenser" element={<Preferenser />} />
-        <Route path="/admin" element={<Admin />} />
+        <Route path="/admin" element={<ProtectedRoute allow="admin"><Admin /></ProtectedRoute>} />
         <Route path="/terminal" element={<Terminal />} />
-        <Route path="/admin-schedule" element={<AdminSchedule />} />
+        <Route path="/admin-schedule" element={<ProtectedRoute allow="admin"><AdminSchedule /></ProtectedRoute>} />
         <Route path="/tickets" element={<TicketsPage />} />
         {/* Coach routes */}
         <Route path="/mina-deltagare" element={<CoachMyParticipants />} />
