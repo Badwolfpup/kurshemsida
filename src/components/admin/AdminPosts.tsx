@@ -1,4 +1,5 @@
 import { useState } from "react";
+import DOMPurify from "dompurify";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,7 +100,7 @@ export default function AdminPosts() {
                 <p className="text-sm text-muted-foreground mt-1">
                   Publicerad: {p.publishedAt ? new Date(p.publishedAt).toLocaleDateString("sv-SE") : "—"}
                 </p>
-                <div className="text-foreground mt-3 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: p.html || "" }} />
+                <div className="text-foreground mt-3 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(p.html || "") }} />
               </div>
               <div className="flex gap-1 shrink-0">
                 <Button variant="ghost" size="icon" onClick={() => openEdit(p)}><Pencil className="h-4 w-4" /></Button>

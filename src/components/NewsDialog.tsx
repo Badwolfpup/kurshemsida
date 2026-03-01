@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -59,7 +60,7 @@ export function NewsDialog() {
                     </div>
                     <div
                       className="text-muted-foreground text-sm leading-relaxed prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: p.html || "" }}
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(p.html || "") }}
                     />
                   </div>
                 ))
@@ -81,7 +82,7 @@ export function NewsDialog() {
                     </div>
                     <div
                       className="text-muted-foreground text-sm leading-relaxed prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: p.html || "" }}
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(p.html || "") }}
                     />
                   </div>
                 ))

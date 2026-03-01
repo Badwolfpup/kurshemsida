@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import DOMPurify from "dompurify";
 import {
   Dialog,
   DialogContent,
@@ -80,7 +81,7 @@ function OmKursenContent() {
               <p className="cd-post-date">
                 {new Date(post.publishedAt).toLocaleDateString("sv-SE")}
               </p>
-              <div dangerouslySetInnerHTML={{ __html: post.html }} />
+              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.html) }} />
             </div>
           ))}
         </div>
