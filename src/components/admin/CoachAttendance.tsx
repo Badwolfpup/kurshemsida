@@ -243,7 +243,8 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null }) => 
                             {item.startDate !== null && new Date(item.startDate) <= getDate(index + 2 - 7) && (
                               <Checkbox
                                 checked={attendance.filter((x) => x.userId === item.id).filter((dates) => dates.date.some((d) => compareDates(new Date(d), getDate(index + 1 - 7)))).length > 0}
-                                onCheckedChange={() => { console.log("Toggle attendance for", item.id, getDate(index + 1 - 7)); }}
+                                disabled={userType === "Coach"}
+                                onCheckedChange={() => {}}
                               />
                             )}
                           </TableCell>
