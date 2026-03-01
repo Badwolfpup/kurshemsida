@@ -1,0 +1,11 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Administratörer kan nu fritt ändra start- och sluttid för befintliga tillgänglighetstider, oavsett om det finns godkända bokningar inom passet",
+      "Administratörer kan nu ta bort tillgänglighetstider även när det finns godkända bokningar — befintliga bokningar bevaras i systemet"
+    ],
+    "coach": [],
+    "student": []
+  }
+}
