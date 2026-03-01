@@ -145,6 +145,35 @@ export async function createAdminAppointment(data: {
   return res.json();
 }
 
+// Create standalone appointment (for coach) — returns 409 on conflict
+export async function createCoachAppointment(data: {
+  adminId: number;
+  studentId?: number | null;
+  startTime: string;
+  endTime: string;
+  note: string;
+  meetingType: string;
+  force?: boolean;
+}): Promise<Booking> {
+  const res = await fetch(`${API_URL}/coach-appointments`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (res.status === 409) {
+    const parsed = await res.json();
+    const err = new Error('conflict') as BookingConflictError;
+    err.conflictData = parsed;
+    throw err;
+  }
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Coach appointment creation failed (${res.status})`);
+  }
+  return res.json();
+}
+
 // Get all bookings (for admin)
 export async function getBookings(): Promise<Booking[]> {
   const res = await fetch(`${API_URL}/bookings`, { credentials: 'include' });

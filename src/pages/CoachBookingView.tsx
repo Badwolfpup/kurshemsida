@@ -22,6 +22,7 @@ import TimeGrid from 'react-big-calendar/lib/TimeGrid';
 import {
   bookAvailability,
   cancelBooking,
+  createCoachAppointment,
   rescheduleBooking,
   updateBookingStatus,
   getAvailabilities,
@@ -29,6 +30,7 @@ import {
   getVisibleBookings,
   type Availability,
   type Booking,
+  type BookingConflictError,
 } from '@/api/BookingService';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -52,7 +54,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar as CalendarIcon, Check, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Check, Plus, X } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const WORKDAY_START_HOUR = 8;
@@ -125,7 +127,6 @@ class FourDayView extends React.Component<any> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (FourDayView as any).title = () => '';
 
-
 interface CalendarEvent {
   id: string;
   title: string;
@@ -197,6 +198,8 @@ function generate30MinOptions(
   return opts;
 }
 
+const ALL_TIME_OPTIONS = generate30MinOptions(WORKDAY_START_HOUR, 0, WORKDAY_END_HOUR, 0);
+
 function CoachBookingView() {
   const { user } = useAuth();
   const { data: allUsers = [], isLoading: usersLoading } = useUsers();
@@ -242,6 +245,23 @@ function CoachBookingView() {
   }>({ hour: 9, minute: 0 });
   const [fetchedParentAvail, setFetchedParentAvail] =
     useState<Availability | null>(null);
+
+  // Suggest meeting dialog (coach initiates meeting with admin)
+  const [showSuggestDialog, setShowSuggestDialog] = useState(false);
+  const [suggestAdminId, setSuggestAdminId] = useState<number | null>(null);
+  const [suggestDay, setSuggestDay] = useState<string>('');
+  const [suggestStartHour, setSuggestStartHour] = useState(9);
+  const [suggestStartMinute, setSuggestStartMinute] = useState(0);
+  const [suggestEndHour, setSuggestEndHour] = useState(9);
+  const [suggestEndMinute, setSuggestEndMinute] = useState(30);
+  const [suggestNote, setSuggestNote] = useState('');
+  const [suggestMeetingType, setSuggestMeetingType] = useState<'intro' | 'followup' | 'other'>('intro');
+  const [suggestStudentId, setSuggestStudentId] = useState<number | null>(null);
+  const [pendingSuggestData, setPendingSuggestData] = useState<{
+    adminId: number; studentId: number | null; startTime: string; endTime: string; note: string; meetingType: string;
+  } | null>(null);
+  const [showSuggestConflictError, setShowSuggestConflictError] = useState(false);
+  const [showSuggestConflictWarning, setShowSuggestConflictWarning] = useState(false);
 
   const today = useMemo(() => startOfDay(new Date()), []);
 
@@ -633,6 +653,71 @@ function CoachBookingView() {
     }
   };
 
+  const submitSuggestMeeting = async (
+    adminId: number, studentId: number | null, startTime: string, endTime: string,
+    note: string, meetingType: string, force = false
+  ) => {
+    await createCoachAppointment({ adminId, studentId, startTime, endTime, note, meetingType, force });
+    toast({ title: 'Möte föreslagit', description: 'Handledaren behöver godkänna mötet.' });
+    setShowSuggestDialog(false);
+    setSuggestAdminId(null);
+    setSuggestDay('');
+    setSuggestNote('');
+    setSuggestMeetingType('intro');
+    setSuggestStudentId(null);
+    loadData();
+  };
+
+  const handleCreateSuggestMeeting = async () => {
+    if (!suggestAdminId || !suggestDay) {
+      toast({ title: 'Fel', description: 'Välj handledare och dag.', variant: 'destructive' });
+      return;
+    }
+    if (suggestMeetingType === 'followup' && !suggestStudentId) {
+      toast({ title: 'Fel', description: 'Välj en elev för uppföljningsmötet.', variant: 'destructive' });
+      return;
+    }
+    const dayDate = new Date(suggestDay);
+    const startTime = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate(), suggestStartHour, suggestStartMinute);
+    const endTime = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate(), suggestEndHour, suggestEndMinute);
+    if (startTime >= endTime) {
+      toast({ title: 'Fel', description: 'Starttid måste vara före sluttid.', variant: 'destructive' });
+      return;
+    }
+    const startIso = format(startTime, "yyyy-MM-dd'T'HH:mm:ss");
+    const endIso = format(endTime, "yyyy-MM-dd'T'HH:mm:ss");
+    const studentId = suggestMeetingType === 'followup' ? suggestStudentId : null;
+    try {
+      await submitSuggestMeeting(suggestAdminId, studentId, startIso, endIso, suggestNote, suggestMeetingType);
+    } catch (err) {
+      const conflictErr = err as BookingConflictError;
+      if (conflictErr.conflictData?.type === 'conflict') {
+        setShowSuggestConflictError(true);
+      } else if (conflictErr.conflictData?.type === 'warning') {
+        setPendingSuggestData({ adminId: suggestAdminId, studentId, startTime: startIso, endTime: endIso, note: suggestNote, meetingType: suggestMeetingType });
+        setShowSuggestConflictWarning(true);
+      } else {
+        toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte föreslå mötet.', variant: 'destructive' });
+      }
+    }
+  };
+
+  const handleConfirmSuggestWarning = async () => {
+    if (!pendingSuggestData) return;
+    try {
+      await submitSuggestMeeting(
+        pendingSuggestData.adminId, pendingSuggestData.studentId,
+        pendingSuggestData.startTime, pendingSuggestData.endTime,
+        pendingSuggestData.note, pendingSuggestData.meetingType, true
+      );
+    } catch {
+      toast({ title: 'Fel', description: 'Kunde inte föreslå mötet.', variant: 'destructive' });
+    } finally {
+      setShowSuggestConflictWarning(false);
+      setPendingSuggestData(null);
+    }
+  };
+
   const timeOptions = useMemo(() => {
     if (!selectedFreeSlot) return [];
     const slotStart = selectedFreeSlot.start;
@@ -796,7 +881,7 @@ function CoachBookingView() {
             const thisWeekStart = startOfWeek(new Date(), { locale: sv });
             const canGoBack = isBefore(thisWeekStart, weekStart);
             return (
-              <div className="flex items-center justify-center gap-4 mb-4">
+              <div className="flex items-center justify-center gap-4 mb-4 flex-wrap">
                 <Button
                   variant="outline"
                   onClick={() => setCurrentDate(subWeeks(currentDate, 1))}
@@ -811,6 +896,9 @@ function CoachBookingView() {
                   onClick={() => setCurrentDate(addWeeks(currentDate, 1))}
                 >
                   Nästa vecka →
+                </Button>
+                <Button onClick={() => setShowSuggestDialog(true)} className="ml-2">
+                  <Plus className="h-4 w-4 mr-1" /> Föreslå möte
                 </Button>
               </div>
             );
@@ -1379,6 +1467,164 @@ function CoachBookingView() {
                 Stäng
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Suggest meeting dialog */}
+      <Dialog open={showSuggestDialog} onOpenChange={setShowSuggestDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Föreslå möte</DialogTitle>
+            <DialogDescription>
+              Välj handledare, mötestyp, dag och tid för mötet.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Handledare</Label>
+              <Select
+                value={suggestAdminId?.toString() || ''}
+                onValueChange={(val) => setSuggestAdminId(Number(val))}
+              >
+                <SelectTrigger><SelectValue placeholder="Välj handledare..." /></SelectTrigger>
+                <SelectContent>
+                  {admins.map((a) => (
+                    <SelectItem key={a.id} value={a.id.toString()}>{a.firstName} {a.lastName}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Mötestyp</Label>
+              <Select
+                value={suggestMeetingType}
+                onValueChange={(val) => {
+                  setSuggestMeetingType(val as 'intro' | 'followup' | 'other');
+                  setSuggestStudentId(null);
+                }}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="intro">Intromöte</SelectItem>
+                  <SelectItem value="followup">Uppföljningsmöte</SelectItem>
+                  <SelectItem value="other">Annan anledning</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {suggestMeetingType === 'followup' && (
+              <div className="space-y-2">
+                <Label>Elev</Label>
+                <Select
+                  value={suggestStudentId?.toString() || ''}
+                  onValueChange={(val) => setSuggestStudentId(Number(val))}
+                >
+                  <SelectTrigger><SelectValue placeholder="Välj elev..." /></SelectTrigger>
+                  <SelectContent>
+                    {students.map((s) => (
+                      <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label>Dag</Label>
+              <Select value={suggestDay} onValueChange={setSuggestDay}>
+                <SelectTrigger><SelectValue placeholder="Välj dag..." /></SelectTrigger>
+                <SelectContent>
+                  {fourDayRange(currentDate)
+                    .filter((d) => !isBefore(startOfDay(d), today))
+                    .map((d) => (
+                      <SelectItem key={d.toISOString()} value={d.toISOString()}>
+                        {DAY_NAMES[getDay(d)]} {format(d, 'd/M')}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Starttid</Label>
+              <Select
+                value={`${suggestStartHour}:${suggestStartMinute}`}
+                onValueChange={(val) => {
+                  const [h, m] = val.split(':').map(Number);
+                  setSuggestStartHour(h);
+                  setSuggestStartMinute(m);
+                  const newTotal = h * 60 + m;
+                  if (suggestEndHour * 60 + suggestEndMinute <= newTotal) {
+                    const next = ALL_TIME_OPTIONS.find((o) => o.hour * 60 + o.minute > newTotal);
+                    if (next) { setSuggestEndHour(next.hour); setSuggestEndMinute(next.minute); }
+                  }
+                }}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ALL_TIME_OPTIONS.slice(0, -1).map((o) => (
+                    <SelectItem key={o.label} value={`${o.hour}:${o.minute}`}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Sluttid</Label>
+              <Select
+                value={`${suggestEndHour}:${suggestEndMinute}`}
+                onValueChange={(val) => { const [h, m] = val.split(':').map(Number); setSuggestEndHour(h); setSuggestEndMinute(m); }}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ALL_TIME_OPTIONS
+                    .filter((o) => o.hour * 60 + o.minute > suggestStartHour * 60 + suggestStartMinute)
+                    .map((o) => (
+                      <SelectItem key={o.label} value={`${o.hour}:${o.minute}`}>{o.label}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Meddelande (valfritt)</Label>
+              <Textarea
+                placeholder="Lägg till ett meddelande..."
+                value={suggestNote}
+                onChange={(e) => setSuggestNote(e.target.value)}
+                rows={2}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSuggestDialog(false)}>Avbryt</Button>
+            <Button onClick={handleCreateSuggestMeeting}>Föreslå</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Suggest meeting — hard conflict error */}
+      <Dialog open={showSuggestConflictError} onOpenChange={(open) => { setShowSuggestConflictError(open); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tid inte tillgänglig</DialogTitle>
+            <DialogDescription>
+              Det finns redan ett godkänt möte vid den valda tiden. Välj en annan tid.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSuggestConflictError(false)}>Stäng</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Suggest meeting — pending conflict warning */}
+      <Dialog open={showSuggestConflictWarning} onOpenChange={(open) => { setShowSuggestConflictWarning(open); if (!open) setPendingSuggestData(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Möjlig konflikt</DialogTitle>
+            <DialogDescription>
+              Det finns ett ohanterat möte vid den valda tiden. Vill du föreslå tid ändå?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowSuggestConflictWarning(false); setPendingSuggestData(null); }}>Avbryt</Button>
+            <Button onClick={handleConfirmSuggestWarning}>Fortsätt</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
