@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { History } from 'lucide-react';
+import type { ChangelogItem } from '@/hooks/useChangelog';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -54,7 +55,18 @@ export function ChangelogDialog() {
                   <ul className="space-y-1 list-disc list-inside">
                     {items.map((item, i) => (
                       <li key={i} className="text-muted-foreground text-sm leading-relaxed">
-                        {item}
+                        {typeof item === 'string' ? item : (
+                          <>
+                            {item.text}
+                            <ul className="mt-1 ml-4 space-y-0.5 list-[circle] list-inside">
+                              {item.children.map((child, j) => (
+                                <li key={j} className="text-muted-foreground text-sm leading-relaxed">
+                                  {child}
+                                </li>
+                              ))}
+                            </ul>
+                          </>
+                        )}
                       </li>
                     ))}
                   </ul>

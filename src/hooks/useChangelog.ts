@@ -1,17 +1,19 @@
 import { useMemo } from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
 
+export type ChangelogItem = string | { text: string; children: string[] };
+
 export interface ChangelogEntry {
   displaydate: string;
-  items: string[];
+  items: ChangelogItem[];
 }
 
 interface ChangelogFile {
   displaydate: string | null;
   entries: {
-    admin: string[];
-    coach: string[];
-    student: string[];
+    admin: ChangelogItem[];
+    coach: ChangelogItem[];
+    student: ChangelogItem[];
   };
 }
 

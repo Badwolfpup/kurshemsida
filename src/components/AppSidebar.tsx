@@ -68,7 +68,7 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, hasUnreadTicket: boolean
       { title: 'Portfolio', url: '/portfolio', icon: Briefcase },
       // { title: 'Profil', url: '/profil', icon: UserCircle },
       { title: 'Terminal', url: '/terminal', icon: TerminalIcon },
-      { title: 'Skapa ärende', url: '/student-arenden', icon: CircleFadingPlus, showBadge: hasUnreadTicket }
+      { title: 'Mina ärenden', url: '/student-arenden', icon: CircleFadingPlus, showBadge: hasUnreadTicket }
     );
   }
 

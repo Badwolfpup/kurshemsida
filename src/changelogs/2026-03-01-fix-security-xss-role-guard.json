@@ -1,5 +1,5 @@
 {
-  "displaydate": null,
+  "displaydate": "2026-03-02",
   "entries": {
     "admin": ["HTML-innehåll i nyhetsflödet rensas nu automatiskt för att förhindra skadlig kod (XSS-skydd)", "Inloggade användare utan adminbehörighet omdirigeras nu till startsidan om de försöker nå adminsidorna direkt via URL"],
     "coach": [],

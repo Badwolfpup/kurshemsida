@@ -1,5 +1,5 @@
 {
-  "displaydate": null,
+  "displaydate": "2026-03-02",
   "entries": {
     "admin": ["De tre separata ärendesidorna (admin, coach, student) har slagits ihop till en enda komponent som automatiskt anpassar sig efter roll", "E-post skickas inte längre för ärenden i utvecklingsläge (backend)"],
     "coach": [],

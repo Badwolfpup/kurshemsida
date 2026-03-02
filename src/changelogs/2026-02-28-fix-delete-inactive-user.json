@@ -1,7 +1,7 @@
 {
-  "displaydate": null,
+  "displaydate": "2026-03-02",
   "entries": {
-    "admin": ["Admins can now permanently delete inactive users — in the inactive users view, the edit button is replaced by a delete button"],
+    "admin": ["Administratörer kan nu permanent ta bort inaktiva användare — i vyn för inaktiva deltagare är redigeringsknappen ersatt med en raderingsknapp"],
     "coach": [],
     "student": []
   }
