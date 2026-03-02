@@ -33,7 +33,7 @@ export function useChangelog(): ChangelogEntry[] {
           ? 'coach'
           : 'student';
 
-    const dateMap = new Map<string, string[]>();
+    const dateMap = new Map<string, ChangelogItem[]>();
 
     for (const file of Object.values(changelogModules)) {
       if (!file.displaydate) continue;
