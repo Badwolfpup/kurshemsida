@@ -1,12 +1,14 @@
 {
-  "displaydate": null,
+  "displaydate": "2026-03-02",
   "entries": {
     "admin": [
-      "Added \"Ändringar\" button in the navbar showing a role-filtered list of recent changes to the site",
-      "The dialog opens automatically once per browser session, and can be reopened at any time via the navbar button",
-      "Changes are grouped by date with a bullet list per date; only entries that have been published (assigned a display date) are shown",
-      "Added /changelog command to assign display dates to unpublished changelog entries",
-      "/makepr now drafts role-based changelog entries from the diff as its first step before creating a PR"
+      {
+        "text": "En ny \"Ändringar\"-knapp har lagts till i navigeringsfältet som visar en rollfiltrerad lista över senaste ändringar på sajten",
+        "children": [
+          "Dialogen öppnas automatiskt en gång per webbläsarsession och kan när som helst öppnas igen via knappen i navigeringsfältet",
+          "Ändringar grupperas per datum med en punktlista per datum — endast poster med ett publicerat datum visas"
+        ]
+      }
     ],
     "coach": [
       "En ny knapp \"Ändringar\" har lagts till i navigeringsfältet — öppnar en dialog med senaste ändringar relevanta för coacher, grupperade per datum"

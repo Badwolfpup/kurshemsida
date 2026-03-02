@@ -1,5 +1,5 @@
 {
-  "displaydate": null,
+  "displaydate": "2026-03-02",
   "entries": {
     "admin": [
       "Coacher kan nu föreslå ett möte med en handledare för tider utanför handledarens tillgänglighet, via en ny \"Föreslå möte\"-knapp på coachdagboken",
@@ -7,9 +7,13 @@
       "Konflikthantering blockerar vid godkända överlapp och varnar vid väntande överlapp"
     ],
     "coach": [
-      "Ny \"Föreslå möte\"-knapp i kalendervyn — låter dig föreslå ett möte med en handledare även när de inte lagt till tillgänglighet för den tiden",
-      "Välj mötestyp: Intromöte, Uppföljningsmöte (med elevval) eller Annan anledning",
-      "Handledaren får ett e-postmeddelande och måste godkänna mötet"
+      {
+        "text": "Ny \"Föreslå möte\"-knapp i kalendervyn — låter dig föreslå ett möte med en handledare även när de inte lagt till tillgänglighet för den tiden",
+        "children": [
+          "Välj mötestyp: Intromöte, Uppföljningsmöte (med elevval) eller Annan anledning",
+          "Handledaren får ett e-postmeddelande och måste godkänna mötet"
+        ]
+      }
     ],
     "student": []
   }
