@@ -1,0 +1,18 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "En hjälpknapp (?) har lagts till i sidhuvudet på alla sidor i sidomenyn — klicka för att öppna en dialog med kort förklaring av vad du kan göra på sidan",
+      "Sidor med flikar (Övningar, Projekt, Hantera deltagare, Deltagarprofil) visar flik-specifik hjälptext som uppdateras när du byter flik",
+      "Hjälptexterna är skrivna på svenska och anpassade efter din roll"
+    ],
+    "coach": [
+      "En hjälpknapp (?) har lagts till på alla sidor — klicka för att se vad du kan göra på sidan",
+      "På Deltagarprofil → Närvaro visas en beskrivning anpassad för coacher (visningsläge)"
+    ],
+    "student": [
+      "En hjälpknapp (?) har lagts till på alla sidor — klicka för att se vad du kan göra på sidan",
+      "På sidor med flikar (Övningar, Projekt) visas flik-specifik hjälptext"
+    ]
+  }
+}
