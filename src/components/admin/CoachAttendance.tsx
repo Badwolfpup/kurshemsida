@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import HelpDialog from "@/components/HelpDialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -26,6 +27,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null }) => 
   const [selectedUser, setSelectedUser] = useState<UserType | null>(seluser || null);
   const [selectedUserId, setSelectedUserId] = useState<number>(seluser?.id || 0);
   const [selectedCoachId, setSelectedCoachId] = useState<number>(0);
+  const [activeTab, setActiveTab] = useState("narvaro");
 
   const { toast } = useToast();
 
@@ -194,15 +196,18 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null }) => 
           </div>
 
           {selectedUser && selectedUser.id !== 0 && (
-            <Tabs defaultValue="narvaro">
-              <TabsList className="mb-6">
-                <TabsTrigger value="narvaro">Närvaro</TabsTrigger>
-                <TabsTrigger value="schema">Schemalagda dagar</TabsTrigger>
-                <TabsTrigger value="kontaktinfo">Kontaktinfo</TabsTrigger>
-                <TabsTrigger value="larare">Lärare på kursen</TabsTrigger>
-                <TabsTrigger value="progression">Progression</TabsTrigger>
-                <TabsTrigger value="statistik">Statistik</TabsTrigger>
-              </TabsList>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <div className="flex items-center gap-2 mb-6">
+                <TabsList>
+                  <TabsTrigger value="narvaro">Närvaro</TabsTrigger>
+                  <TabsTrigger value="schema">Schemalagda dagar</TabsTrigger>
+                  <TabsTrigger value="kontaktinfo">Kontaktinfo</TabsTrigger>
+                  <TabsTrigger value="larare">Lärare på kursen</TabsTrigger>
+                  <TabsTrigger value="progression">Progression</TabsTrigger>
+                  <TabsTrigger value="statistik">Statistik</TabsTrigger>
+                </TabsList>
+                <HelpDialog helpKey={activeTab === "narvaro" && userType === "Coach" ? "attendance.narvaro.coach" : `attendance.${activeTab}`} />
+              </div>
               <TabsContent value="narvaro">
                 <div className="flex items-center justify-center gap-4 mb-4">
                   <div className="flex items-center gap-2"><div className="w-4 h-4 bg-blue-500 rounded-full"></div><span>Närvaro</span></div>

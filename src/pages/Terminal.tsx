@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { TerminalIcon, BookOpen, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import HelpDialog from "@/components/HelpDialog";
 
 type FsNode = { [key: string]: FsNode | null };
 
@@ -176,6 +177,7 @@ const Terminal = () => {
           <TerminalIcon className="h-5 w-5 text-primary-foreground" />
         </div>
         <h1 className="font-display text-2xl font-bold text-foreground">Terminal</h1>
+        <HelpDialog helpKey="terminal" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import HelpDialog from "@/components/HelpDialog";
 import {
   Settings,
   Sun,
@@ -114,6 +115,7 @@ const Preferenser = () => {
           <Settings className="h-5 w-5 text-primary-foreground" />
         </div>
         <h1 className="font-display text-2xl font-bold text-foreground">Inställningar</h1>
+        <HelpDialog helpKey="preferenser" />
       </div>
 
       <div className="space-y-6">

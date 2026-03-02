@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Plus, Pencil, Trash2, UserCheck, UserX } from 'lucide-react';
+import HelpDialog from '@/components/HelpDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -333,12 +334,15 @@ export default function AdminUsers() {
         value={activeTab}
         onValueChange={(v) => setActiveTab(v as TabValue)}
       >
-        <TabsList className="mb-4">
-          {role === 'Admin' && <TabsTrigger value="admin">Admin</TabsTrigger>}
-          <TabsTrigger value="larare">Lärare</TabsTrigger>
-          <TabsTrigger value="coach">Coach</TabsTrigger>
-          <TabsTrigger value="deltagare">Deltagare</TabsTrigger>
-        </TabsList>
+        <div className="flex items-center gap-2 mb-4">
+          <TabsList>
+            {role === 'Admin' && <TabsTrigger value="admin">Admin</TabsTrigger>}
+            <TabsTrigger value="larare">Lärare</TabsTrigger>
+            <TabsTrigger value="coach">Coach</TabsTrigger>
+            <TabsTrigger value="deltagare">Deltagare</TabsTrigger>
+          </TabsList>
+          <HelpDialog helpKey={`admin.users.${activeTab}`} />
+        </div>
 
         {/* Admin tab */}
         {role === 'Admin' && (

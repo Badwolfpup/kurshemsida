@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Briefcase, FolderKanban, Dumbbell, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import HelpDialog from "@/components/HelpDialog";
 
 interface Exercise { id: number; title: string; description: string; difficulty: number; exerciseType: string; }
 interface Project { id: number; title: string; description: string; difficulty: number; projectType: string; }
@@ -63,6 +64,7 @@ const Portfolio = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">Min portfolio</h1>
           <p className="text-sm text-muted-foreground">{user.email}</p>
         </div>
+        <HelpDialog helpKey="portfolio" />
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">

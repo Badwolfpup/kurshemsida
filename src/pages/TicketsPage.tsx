@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import HelpDialog from '@/components/HelpDialog';
 import {
   Ticket,
   Plus,
@@ -233,6 +234,7 @@ export default function TicketsPage() {
         <h1 className="font-display text-2xl font-bold text-foreground">
           {config.pageTitle}
         </h1>
+        <HelpDialog helpKey={isAdmin ? 'tickets.admin' : isCoach ? 'tickets.coach' : 'tickets.student'} />
         {config.canCreate && (
           <Button onClick={() => setDialogOpen(true)} className="ml-auto gap-2">
             <Plus className="h-4 w-4" /> Nytt ärende

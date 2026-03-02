@@ -56,6 +56,7 @@ import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar as CalendarIcon, Check, Plus, X } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import HelpDialog from '@/components/HelpDialog';
 
 const WORKDAY_START_HOUR = 8;
 const WORKDAY_END_HOUR = 15;
@@ -847,6 +848,7 @@ function CoachBookingView() {
         <h1 className="font-display text-2xl font-bold text-foreground">
           Boka möte
         </h1>
+        <HelpDialog helpKey="coach-booking" />
       </div>
 
       <Card className="bg-card space-y-6 p-6">

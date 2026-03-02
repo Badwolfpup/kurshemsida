@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { FolderOpen, Sparkles, BookOpen } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProjektAIGenerate from "./Projekt/ProjektAIGenerate";
 import ProjektSaved from "./Projekt/ProjektSaved";
+import HelpDialog from "@/components/HelpDialog";
 
 const Projekt = () => {
+  const [activeTab, setActiveTab] = useState("ai");
   return (
     <div className="p-6 lg:p-10 max-w-7xl mx-auto">
       {/* Header */}
@@ -17,15 +20,18 @@ const Projekt = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="ai">
-        <TabsList className="mb-6">
-          <TabsTrigger value="ai" className="gap-2">
-            <Sparkles className="h-4 w-4" /> AI-generera
-          </TabsTrigger>
-          <TabsTrigger value="saved" className="gap-2">
-            <BookOpen className="h-4 w-4" /> Sparade
-          </TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <div className="flex items-center gap-2 mb-6">
+          <TabsList>
+            <TabsTrigger value="ai" className="gap-2">
+              <Sparkles className="h-4 w-4" /> AI-generera
+            </TabsTrigger>
+            <TabsTrigger value="saved" className="gap-2">
+              <BookOpen className="h-4 w-4" /> Sparade
+            </TabsTrigger>
+          </TabsList>
+          <HelpDialog helpKey={`projekt.${activeTab}`} />
+        </div>
         <TabsContent value="ai">
           <ProjektAIGenerate />
         </TabsContent>

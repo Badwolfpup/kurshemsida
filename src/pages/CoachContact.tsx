@@ -1,5 +1,6 @@
 import { Contact } from "lucide-react";
 import { useUsers } from "@/hooks/useUsers";
+import HelpDialog from "@/components/HelpDialog";
 
 const CoachContact = () => {
   const { data: allUsers = [], isLoading } = useUsers();
@@ -21,6 +22,7 @@ const CoachContact = () => {
           <Contact className="h-5 w-5 text-primary-foreground" />
         </div>
         <h1 className="font-display text-2xl font-bold text-foreground">Kontakt</h1>
+        <HelpDialog helpKey="kontakt" />
       </div>
 
       {admins.length === 0 ? (
