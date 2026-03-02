@@ -80,6 +80,16 @@ Skip service methods — they are pure HTTP wrappers with no side effects.
 - SCENARIO comments are N/A for direct service calls; only applies to `use*.ts` mutation hooks
 - `generate30MinOptions(fromH, fromM, toH, toM)` helper already exists in the file — reuse it, do not add a new zero-arg version
 
+## Changelog System (`src/changelogs/`)
+- One JSON file per feature/fix: `src/changelogs/<YYYY-MM-DD>-<slug>.json`
+- Schema: `{ displaydate: string | null, entries: { admin, coach, student } }`
+- Each role's entries is `ChangelogItem[]` — either a plain `string` or `{ text: string; children: string[] }` for nested bullets
+- `displaydate: null` = unpublished (hidden from dialog); set to a date string to publish
+- Loaded by `src/hooks/useChangelog.ts`, rendered by `src/components/ChangelogDialog.tsx`
+- Dialog renders two-level bullets: top-level = disc, children = circle (indented)
+- `/makepr` drafts changelog entries in **Swedish** as its first step
+- Student sidebar item is "Mina ärenden" (not "Skapa ärende")
+
 ## Recurring Patterns
 - cloc command: `cloc . --exclude-dir=node_modules,dist,.git --exclude-ext=json,lock`
 - When switching branches: `git checkout main && git pull && git checkout <branch>` (changes stay on original branch)
