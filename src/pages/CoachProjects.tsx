@@ -1,6 +1,7 @@
 import { FolderKanban } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useProjects } from "@/hooks/useProjects";
+import HelpDialog from "@/components/HelpDialog";
 
 const TYPE_LABELS: Record<string, string> = {
   html: "HTML",
@@ -27,6 +28,7 @@ const CoachProjects = () => {
         </div>
         <h1 className="font-display text-2xl font-bold text-foreground">Projekt</h1>
         <Badge variant="secondary">{projects.length} projekt</Badge>
+        <HelpDialog helpKey="coach-projekt" />
       </div>
 
       {projects.length === 0 ? (

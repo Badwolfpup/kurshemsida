@@ -19,6 +19,7 @@ import AdminPosts from '@/components/admin/AdminPosts';
 import AdminSettings from '@/components/admin/AdminSettings';
 import CoachAttendance from '@/components/admin/CoachAttendance';
 import AdminTickets from '@/components/admin/AdminTickets';
+import HelpDialog from '@/components/HelpDialog';
 
 const StubPanel = ({ label }: { label: string }) => (
   <div className="bg-card rounded-2xl shadow-card border border-border p-8 text-center">
@@ -81,6 +82,7 @@ const Admin = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">
             {current?.label}
           </h1>
+          <HelpDialog helpKey={`admin.${view}`} />
         </div>
         {renderContent()}
       </div>
@@ -96,6 +98,7 @@ const Admin = () => {
         <h1 className="font-display text-2xl font-bold text-foreground">
           Admin Panel
         </h1>
+        <HelpDialog helpKey="admin.menu" />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {menuItems.map((item) => (

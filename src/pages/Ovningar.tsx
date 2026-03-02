@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { Dumbbell, Sparkles, BookOpen } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserRole } from "@/hooks/useUserRole";
 import AdminExercises from "@/components/admin/AdminExercises";
 import OvningarSaved from "./Ovningar/OvningarSaved";
 import OvningarAIGenerate from "./Ovningar/OvningarAIGenerate";
+import HelpDialog from "@/components/HelpDialog";
 
 const Ovningar = () => {
   const { isAdmin, loading: roleLoading } = useUserRole();
+  const [activeTab, setActiveTab] = useState("ai");
 
   if (roleLoading) {
     return (
@@ -30,15 +33,26 @@ const Ovningar = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="ai">
-        <TabsList className="mb-6">
-          <TabsTrigger value="ai" className="gap-2">
-            <Sparkles className="h-4 w-4" /> AI-generera
-          </TabsTrigger>
-          <TabsTrigger value="saved" className="gap-2">
-            <BookOpen className="h-4 w-4" /> Sparade
-          </TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <div className="flex items-center gap-2 mb-6">
+          <TabsList>
+            <TabsTrigger value="ai" className="gap-2">
+              <Sparkles className="h-4 w-4" /> AI-generera
+            </TabsTrigger>
+            <TabsTrigger value="saved" className="gap-2">
+              <BookOpen className="h-4 w-4" /> Sparade
+            </TabsTrigger>
+          </TabsList>
+          <HelpDialog
+            helpKey={
+              activeTab === "saved"
+                ? isAdmin
+                  ? "ovningar.saved.admin"
+                  : "ovningar.saved.student"
+                : "ovningar.ai"
+            }
+          />
+        </div>
         <TabsContent value="ai">
           <OvningarAIGenerate />
         </TabsContent>

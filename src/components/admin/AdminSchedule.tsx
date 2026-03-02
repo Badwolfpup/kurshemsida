@@ -18,6 +18,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
 import { Check, X, Trash2, Plus } from 'lucide-react';
+import HelpDialog from '@/components/HelpDialog';
 
 const WORKDAY_START_HOUR = 8;
 const WORKDAY_END_HOUR = 15;
@@ -559,11 +560,14 @@ function AdminSchedule() {
     <div className="p-6 lg:p-10 max-w-6xl mx-auto">
       <Card className="bg-card space-y-6 p-6">
         <section>
-          <div>
-            <h2 className="font-display text-2xl font-bold text-foreground">Veckoschema &amp; Bokningar</h2>
-            <p className="text-muted-foreground text-sm mt-1">
-              Klicka på en tom tid i kalendern för att lägga till tillgänglighet.
-            </p>
+          <div className="flex items-center gap-3">
+            <div>
+              <h2 className="font-display text-2xl font-bold text-foreground">Veckoschema &amp; Bokningar</h2>
+              <p className="text-muted-foreground text-sm mt-1">
+                Klicka på en tom tid i kalendern för att lägga till tillgänglighet.
+              </p>
+            </div>
+            <HelpDialog helpKey="admin-schedule" />
           </div>
 
           <div className="flex items-center justify-center gap-4 mt-4 mb-4">

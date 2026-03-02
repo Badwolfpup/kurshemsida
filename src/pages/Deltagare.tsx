@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Users, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import HelpDialog from "@/components/HelpDialog";
 import { useUsers } from "@/hooks/useUsers";
 import { DeltagareList } from "@/components/deltagare/DeltagareList";
 import { DeltagareDetail } from "@/components/deltagare/DeltagareDetail";
@@ -128,6 +129,7 @@ const Deltagare = () => {
           <Users className="h-5 w-5 text-primary-foreground" />
         </div>
         <h1 className="font-display text-2xl font-bold text-foreground">Deltagare</h1>
+        <HelpDialog helpKey="deltagare" />
       </div>
       <DeltagareList participants={participants} onSelect={setSelectedId} />
     </div>

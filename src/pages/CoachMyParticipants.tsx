@@ -1,6 +1,7 @@
 import { ArrowLeft, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUsers } from "@/hooks/useUsers";
+import HelpDialog from "@/components/HelpDialog";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CircleUserRound, CalendarDays, Laptop } from "lucide-react";
@@ -49,6 +50,7 @@ const CoachMyParticipants = () => {
         </div>
         <h1 className="font-display text-2xl font-bold text-foreground">Mina deltagare</h1>
         <Badge variant="secondary">{participants.length} deltagare</Badge>
+        <HelpDialog helpKey="mina-deltagare" />
       </div>
 
       <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
