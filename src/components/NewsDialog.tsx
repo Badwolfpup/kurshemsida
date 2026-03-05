@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import DOMPurify from "dompurify";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,11 +11,15 @@ import {
 } from "@/components/ui/dialog";
 import { usePosts } from "@/hooks/usePosts";
 
+const LS_KEY = 'nyheter_last_seen';
+
 export function NewsDialog() {
   const { data: posts = [], isLoading } = usePosts();
+  const [open, setOpen] = useState(false);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const todayStr = today.toISOString().split('T')[0];
 
   const upcoming = posts
     .filter((p) => new Date(p.publishedAt) >= today)
@@ -25,13 +30,58 @@ export function NewsDialog() {
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
     .slice(0, 3);
 
+  // Blue dot: show when at least one post has publishedAt within next 7 days
+  const showDot = posts.some((p) => {
+    const pubDate = new Date(p.publishedAt);
+    pubDate.setHours(0, 0, 0, 0);
+    const diffDays = (pubDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+    return diffDays >= 0 && diffDays <= 7;
+  });
+
+  // Auto-open popup on login (only if changelog didn't fire)
+  useEffect(() => {
+    if (isLoading || posts.length === 0) return;
+
+    // Changelog takes priority — if it fired this session, skip Nyheter popup
+    if (sessionStorage.getItem('changelog_popup_fired') === 'true') return;
+
+    const lastSeen = localStorage.getItem(LS_KEY);
+
+    // Check: any post with publishedAt newer than lastSeen (new post user hasn't seen)
+    const hasNewPost = posts.some((p) => {
+      const pubStr = new Date(p.publishedAt).toISOString().split('T')[0];
+      return !lastSeen || pubStr > lastSeen;
+    });
+
+    // Check: any post with publishedAt within 3 days from today, and lastSeen is not today
+    const hasUpcoming = lastSeen !== todayStr && posts.some((p) => {
+      const pubDate = new Date(p.publishedAt);
+      pubDate.setHours(0, 0, 0, 0);
+      const diffDays = (pubDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+      return diffDays >= 0 && diffDays <= 3;
+    });
+
+    if (hasNewPost || hasUpcoming) {
+      setOpen(true);
+    }
+  }, [isLoading, posts.length]);
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      localStorage.setItem(LS_KEY, todayStr);
+    }
+  };
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="text-muted-foreground gap-2 text-sm relative">
           <Bell className="h-4 w-4" />
           <span className="topnav__nyheter-label">Nyheter</span>
-          <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
+          {showDot && (
+            <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
+          )}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
