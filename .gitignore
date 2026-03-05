@@ -13,6 +13,8 @@ dist-ssr
 *.local
 *.tsbuildinfo
 .claude/settings.local.json
+.claude/worktrees/
+.claude/task-plans/
 
 # Editor directories and files
 .vscode/*
