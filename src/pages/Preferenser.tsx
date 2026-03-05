@@ -20,7 +20,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUsers, useUpdateUser, useUpdateMySettings } from "@/hooks/useUsers";
+import { useUsers, useUpdateUser, useUpdateMySettings, useUpdateStudentProfile } from "@/hooks/useUsers";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useToast } from "@/hooks/use-toast";
 import { useAddTicket } from "@/hooks/useTickets";
 
@@ -30,6 +31,8 @@ const Preferenser = () => {
   const { toast } = useToast();
   const { data: allUsers = [] } = useUsers();
   const updateUser = useUpdateUser();
+  const { isStudent } = useUserRole();
+  const updateStudentProfile = useUpdateStudentProfile();
   const addTicket = useAddTicket();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -65,23 +68,43 @@ const Preferenser = () => {
 
   const handleSave = () => {
     if (!user) return;
-    updateUser.mutate(
-      { id: user.id, firstName, lastName, email, telephone },
-      {
-        onSuccess: () => {
-          toast({ title: "Sparad", description: "Dina uppgifter har uppdaterats." });
-          setIsEditing(false);
-          login();
-        },
-        onError: () => {
-          toast({
-            title: "Fel",
-            description: "Kunde inte spara ändringarna.",
-            variant: "destructive",
-          });
-        },
-      }
-    );
+    if (isStudent) {
+      updateStudentProfile.mutate(
+        { email, telephone },
+        {
+          onSuccess: () => {
+            toast({ title: "Ändringar sparade", duration: 3000 });
+            setIsEditing(false);
+            login();
+          },
+          onError: () => {
+            toast({
+              title: "Kunde inte spara ändringar. Kontakta din lärare om problemet kvarstår",
+              variant: "destructive",
+              duration: 3000,
+            });
+          },
+        }
+      );
+    } else {
+      updateUser.mutate(
+        { id: user.id, firstName, lastName, email, telephone },
+        {
+          onSuccess: () => {
+            toast({ title: "Sparad", description: "Dina uppgifter har uppdaterats." });
+            setIsEditing(false);
+            login();
+          },
+          onError: () => {
+            toast({
+              title: "Fel",
+              description: "Kunde inte spara ändringarna.",
+              variant: "destructive",
+            });
+          },
+        }
+      );
+    }
   };
 
   const handleCancel = () => {
@@ -191,11 +214,11 @@ const Preferenser = () => {
               <div className="flex gap-3 mt-4">
                 <Button
                   onClick={handleSave}
-                  disabled={updateUser.isPending}
+                  disabled={updateUser.isPending || updateStudentProfile.isPending}
                   className="gap-2"
                 >
                   <Save className="h-4 w-4" />
-                  {updateUser.isPending ? "Sparar..." : "Spara"}
+                  {updateUser.isPending || updateStudentProfile.isPending ? "Sparar..." : "Spara"}
                 </Button>
                 <Button variant="outline" onClick={handleCancel} className="gap-2">
                   <X className="h-4 w-4" /> Avbryt

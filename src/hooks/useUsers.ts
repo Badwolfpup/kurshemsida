@@ -55,6 +55,25 @@ export function useUpdateActivityStatus() {
 
 
 /**
+ * SCENARIO: Student saves their own email and phone number from the profile/settings page
+ * CALLS: PUT /api/update-student-profile (UserEndpoints.cs)
+ * SIDE EFFECTS:
+ *   - Updates the student's Email and Telephone in the database (backend)
+ *   - Invalidates ["users"] cache so the UI reflects the new values
+ *   - Returns 409 if email or phone is already taken by another user
+ */
+export function useUpdateStudentProfile() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data: { email: string; telephone: string }) =>
+            userService.updateStudentProfile(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['users'] });
+        },
+    });
+}
+
+/**
  * SCENARIO: Admin permanently deletes an inactive user
  * CALLS: DELETE /api/delete-user (UserEndpoints.cs)
  * SIDE EFFECTS:

@@ -61,6 +61,16 @@ export const userService = {
         responseAction(response);
         return response.json();
     },
+    updateStudentProfile: async (data: { email: string; telephone: string }) => {
+        const response = await fetch('/api/update-student-profile', {
+            method: 'PUT',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        responseAction(response);
+        return response.json();
+    },
     updateActivity: async (userId: number): Promise<boolean> => {
         const response = await fetch(`/api/update-activity`, {
             method: 'PUT',
