@@ -1,0 +1,8 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": ["Deltagare kan nu uppdatera sin e-postadress och sitt telefonnummer via profilsidan. Ny dedikerad backend-endpoint med dubblettvalidering."],
+    "coach": [],
+    "student": ["Du kan nu ändra din e-postadress och ditt telefonnummer på profilsidan. Ändringarna sparas direkt."]
+  }
+}
