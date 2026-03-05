@@ -1,0 +1,8 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": ["Blå pricken på Nyheter-knappen visas nu bara när det finns kommande nyheter inom 7 dagar. Nyheter-popup öppnas automatiskt vid inloggning om det finns nya poster."],
+    "coach": [],
+    "student": []
+  }
+}
