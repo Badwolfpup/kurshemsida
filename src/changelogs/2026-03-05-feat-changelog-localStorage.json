@@ -1,0 +1,8 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": ["Ändringsloggen sparas nu i localStorage och visar en indikatorprick för nya ändringar (coacher/deltagare)."],
+    "coach": [],
+    "student": []
+  }
+}

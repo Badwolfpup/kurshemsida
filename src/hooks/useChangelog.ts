@@ -21,6 +21,18 @@ const changelogModules = import.meta.glob<ChangelogFile>('/src/changelogs/*.json
   eager: true,
 });
 
+/** Returns the displaydate of the most recent non-null changelog entry. */
+export function getLatestChangelogDate(): string | null {
+  let latest: string | null = null;
+  for (const file of Object.values(changelogModules)) {
+    if (!file.displaydate) continue;
+    if (!latest || file.displaydate > latest) {
+      latest = file.displaydate;
+    }
+  }
+  return latest;
+}
+
 /** SCENARIO: Loads and filters changelog entries by role and non-null displaydate, grouped by date descending. */
 export function useChangelog(): ChangelogEntry[] {
   const { role } = useUserRole();
