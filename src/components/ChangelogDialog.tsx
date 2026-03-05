@@ -9,28 +9,55 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useChangelog } from '@/hooks/useChangelog';
+import { useChangelog, getLatestChangelogDate } from '@/hooks/useChangelog';
+import { useUserRole } from '@/hooks/useUserRole';
 
-const SESSION_KEY = 'changelog_shown';
+const LS_KEY = 'changelog_last_seen';
 
 export function ChangelogDialog() {
   const entries = useChangelog();
   const [open, setOpen] = useState(false);
+  const { isCoach, isStudent } = useUserRole();
 
+  const latestDate = getLatestChangelogDate();
+
+  // Show dot for Coach/Student when latest entry is less than 7 days old
+  const showDot = (() => {
+    if (!latestDate || (!isCoach && !isStudent)) return false;
+    const entryDate = new Date(latestDate);
+    const now = new Date();
+    const diffDays = (now.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24);
+    return diffDays <= 7;
+  })();
+
+  // Auto-open on login if there's a new entry the user hasn't seen
   useEffect(() => {
-    if (entries.length === 0) return;
-    if (!sessionStorage.getItem(SESSION_KEY)) {
-      sessionStorage.setItem(SESSION_KEY, '1');
+    if (entries.length === 0 || !latestDate) return;
+    const lastSeen = localStorage.getItem(LS_KEY);
+    if (!lastSeen || latestDate > lastSeen) {
       setOpen(true);
     }
-  }, [entries.length]);
+  }, [entries.length, latestDate]);
+
+  // When dialog is dismissed, mark as seen
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      localStorage.setItem(LS_KEY, new Date().toISOString().split('T')[0]);
+      // Signal for Nyheter popup coordination
+      sessionStorage.setItem('changelog_popup_fired', 'true');
+    }
+  };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="text-muted-foreground gap-2 text-sm">
+        <Button variant="ghost" size="sm" className="relative text-muted-foreground gap-2 text-sm">
           <History className="h-4 w-4" />
           <span className="topnav__nyheter-label">Ändringar</span>
+          {showDot && (
+            <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
+          )}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
