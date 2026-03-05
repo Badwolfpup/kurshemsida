@@ -36,6 +36,9 @@ export function ChangelogDialog() {
     const lastSeen = localStorage.getItem(LS_KEY);
     if (!lastSeen || latestDate > lastSeen) {
       setOpen(true);
+      // Signal for Nyheter popup coordination — set immediately on open
+      // so NewsDialog's useEffect sees it before deciding to auto-open
+      sessionStorage.setItem('changelog_popup_fired', 'true');
     }
   }, [entries.length, latestDate]);
 
@@ -44,8 +47,6 @@ export function ChangelogDialog() {
     setOpen(isOpen);
     if (!isOpen) {
       localStorage.setItem(LS_KEY, new Date().toISOString().split('T')[0]);
-      // Signal for Nyheter popup coordination
-      sessionStorage.setItem('changelog_popup_fired', 'true');
     }
   };
 
