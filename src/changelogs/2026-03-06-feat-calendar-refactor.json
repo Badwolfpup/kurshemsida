@@ -1,0 +1,21 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Kalendern har omarbetats med delat kalenderbibliotek, återkommande event, NoClass-dagar, och admin-toggle för att visa/dölja andra lärares bokningar och tillgänglighet.",
+      "Ny funktion: skapa återkommande event med valbar ansvarig lärare.",
+      "Admin kan nu föreslå möten direkt till coacher och elever via \"Föreslå möte\"-knappen.",
+      "Konfliktkontroll vid bokning — varning vid krock med väntande bokningar, blockering vid krock med godkända.",
+      "Hjälptexter uppdaterade för alla tre kalendervyer (admin, coach, elev).",
+      "NoClass-dagar visas med rödare bakgrund i kalendern."
+    ],
+    "coach": [
+      "Kalendern har uppdaterats med nytt utseende, återkommande event (lila block), och NoClass-dagar (röda dagar)."
+    ],
+    "student": [
+      "Ny sida: \"Min kalender\" — se bokade möten, boka handledning, och se återkommande event.",
+      "Elever kan nu godkänna eller neka mötesförslag från admin.",
+      "Klicka på återkommande event för att se detaljer och ansvarig lärare."
+    ]
+  }
+}

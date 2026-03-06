@@ -66,9 +66,11 @@ export const helpContent: Record<string, HelpEntry> = {
     content: [
       "Här hanterar du din tillgänglighet och ser bokade möten med coacher och deltagare.",
       "• Klicka på ett tomt tidsfält i kalendern för att lägga till en tillgänglig tid.",
-      "• Tillgängliga tider visas i blått – coacher kan boka dem för möten.",
+      "• Tillgängliga tider visas i blått – coacher och elever kan boka dem för möten.",
       "• Bokade möten visas med information om vem som har bokat och status.",
       "• Du kan godkänna, neka eller avboka möten direkt från kalendern.",
+      "• Återkommande event – skapa schemalagda event (t.ex. coachträff) som upprepas varje vecka eller varannan vecka. Välj ansvarig lärare i dropdown.",
+      "• Visa bokningar – använd toggeln för att visa/dölja bokningar och tillgänglighet från andra admins/lärare.",
     ],
   },
 
@@ -191,6 +193,20 @@ export const helpContent: Record<string, HelpEntry> = {
       "Här kan du boka ett möte med en administratör eller lärare.",
       "Välj en person i tabben ovanför kalendern och klicka på en grön tillgänglig tid för att boka. Du kan också lägga till en anteckning när du bokar.",
       "Dina bokningar visas i kalendern. Du kan avboka eller begära ombokning direkt från kalendern.",
+      "• Återkommande event (t.ex. coachträffar) visas som lila block i kalendern.",
+    ],
+  },
+
+  // ── Student Calendar ─────────────────────────────────────────────────────────
+  "student-calendar": {
+    title: "Min kalender",
+    content: [
+      "Här ser du dina bokade möten och återkommande event.",
+      "• Boka handledning – klicka på knappen för att boka ett möte med en lärare.",
+      "• Dina bokningar visas med status (förfrågan, godkänd, ombokning, nekad).",
+      "• Klicka på en bokning för att se detaljer, godkänna/neka ombokning eller avboka.",
+      "• Återkommande event (t.ex. coachträffar) visas som lila block – klicka för att se detaljer.",
+      "• Röda dagar i kalendern markerar dagar utan undervisning.",
     ],
   },
 

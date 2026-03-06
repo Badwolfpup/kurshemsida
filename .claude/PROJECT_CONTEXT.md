@@ -33,7 +33,9 @@
 - `Booking`: AdminId, CoachId, StudentId, AdminAvailabilityId, Note, MeetingType, StartTime, EndTime, BookedAt, Seen, Status, Reason, RescheduledBy
 - `Ticket`: SenderId (student), RecipientId (admin), Subject, Message, Type, Status
 - `TicketTimeSuggestion`: TicketId, SuggestedById, StartTime, EndTime, Status (pending/accepted/declined), DeclineReason
-- Admin calendar (`AdminSchedule`) only renders `Booking` records — ticket suggestions must be converted to bookings to appear
+- `RecurringEvent`: Name, Weekday, StartTime, EndTime, Frequency (weekly/biweekly), StartDate, AdminId, CreatedAt
+- `RecurringEventException`: RecurringEventId, Date, IsDeleted, Name, StartTime, EndTime
+- Admin calendar renders `Booking` + `RecurringEvent` instances — ticket suggestions must be converted to bookings to appear
 
 ## SCENARIO Comment Convention
 Add to mutation hooks (frontend) and endpoint registrations (backend) after implementing features. Used by `/static-trace` to verify code matches intent.
@@ -75,10 +77,16 @@ Skip service methods — they are pure HTTP wrappers with no side effects.
 - No HTTP endpoint integration tests — endpoint logic is not unit-tested
 - New endpoints only need tests if they extract pure logic into a static helper method
 
-## Coach Calendar
-- `src/pages/CoachBookingView.tsx` calls service functions directly (no mutation hook wrappers) — same pattern as `AdminSchedule`
-- SCENARIO comments are N/A for direct service calls; only applies to `use*.ts` mutation hooks
-- `generate30MinOptions(fromH, fromM, toH, toM)` helper already exists in the file — reuse it, do not add a new zero-arg version
+## Calendar System
+- Shared components in `src/components/calendar/`: `CalendarShell`, `FourDayView`, `BookingDetailsDialog`, `ConflictDialog`, `RecurringEventDialog`, `RecurringEventClickDialog`, `StudentBookingDialog`, `calendarUtils`
+- Admin-specific: `src/components/admin/AdminSchedule.tsx`, `AdminBookingDialog.tsx`
+- Coach: `src/pages/CoachBookingView.tsx`
+- Student: `src/pages/StudentCalendar.tsx`
+- All calendars use React Query hooks: `useBookings`, `useAvailabilities`, `useRecurringEvents`, `useNoClasses` (in `src/hooks/`)
+- Unified booking API via `src/api/BookingService.ts` (new endpoints: `/api/bookings`, `/api/availability`) — legacy old-API functions removed except `getBookings` (used by TimeSuggestionDialog, marked `@deprecated`)
+- `RecurringEventService.ts` handles `/api/recurring-events` CRUD + exceptions
+- `calendarUtils.ts` exports: `getFreeSegments`, `getAdminColorMap`, `ALL_TIME_OPTIONS`, `padTime`, `STATUS_COLORS`, `RECURRING_EVENT_COLOR`
+- `ProtectedRoute` supports `allow: 'admin' | 'student'` for route guarding
 
 ## Changelog System (`src/changelogs/`)
 - One JSON file per feature/fix: `src/changelogs/<YYYY-MM-DD>-<slug>.json`

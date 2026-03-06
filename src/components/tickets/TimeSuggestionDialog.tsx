@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useAddTicketTimeSuggestion, useTicketTimeSuggestions } from "@/hooks/useTickets";
-import { getBookings, type Booking } from "@/api/BookingService";
+import { getBookings, toLocalIso, type Booking } from "@/api/BookingService";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
@@ -17,11 +17,6 @@ interface Props {
 
 const HOURS = [10, 11, 12, 13, 14];
 const MINUTES = [0, 30];
-
-function toLocalIso(d: Date): string {
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-}
 
 export default function TimeSuggestionDialog({ open, onOpenChange, ticketId, adminId }: Props) {
   const { toast } = useToast();

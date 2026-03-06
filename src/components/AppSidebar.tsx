@@ -66,6 +66,7 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, hasUnreadTicket: boolean
       { title: 'Projekt', url: '/projekt', icon: FolderKanban },
       { title: 'Övningar', url: '/ovningar', icon: Dumbbell },
       { title: 'Portfolio', url: '/portfolio', icon: Briefcase },
+      { title: 'Min kalender', url: '/student-calendar', icon: CalendarIcon },
       // { title: 'Profil', url: '/profil', icon: UserCircle },
       { title: 'Terminal', url: '/terminal', icon: TerminalIcon },
       { title: 'Mina ärenden', url: '/student-arenden', icon: CircleFadingPlus, showBadge: hasUnreadTicket }

@@ -1,683 +1,249 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Calendar,
-  dateFnsLocalizer,
-  type NavigateAction,
-} from 'react-big-calendar';
-import {
-  addDays,
-  addWeeks,
-  format,
-  getDay,
-  isBefore,
-  startOfDay,
-  startOfWeek,
-  subWeeks,
-} from 'date-fns';
+import React, { useMemo, useState } from 'react';
+import { format, isBefore, startOfDay, startOfWeek, addDays, getDay } from 'date-fns';
 import { sv } from 'date-fns/locale';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
-import '@/components/admin/BookingCalendar.css';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-import TimeGrid from 'react-big-calendar/lib/TimeGrid';
-import {
-  bookAvailability,
-  cancelBooking,
-  createCoachAppointment,
-  rescheduleBooking,
-  updateBookingStatus,
-  getAvailabilities,
-  getAvailabilityById,
-  getVisibleBookings,
-  type Availability,
-  type Booking,
-  type BookingConflictError,
-} from '@/api/BookingService';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import CalendarShell from '@/components/calendar/CalendarShell';
+import BookingDetailsDialog from '@/components/calendar/BookingDetailsDialog';
+import ConflictDialog from '@/components/calendar/ConflictDialog';
+import { getFreeSegments, getAdminColorMap, RECURRING_EVENT_COLOR, DAY_NAMES, ALL_TIME_OPTIONS } from '@/components/calendar/calendarUtils';
+import { fourDayRange } from '@/components/calendar/FourDayView';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar as CalendarIcon, Check, Plus, X } from 'lucide-react';
+import { useBookings, useAvailabilities, useCreateBooking, useUpdateBookingStatus, useCancelBooking, useRescheduleBooking } from '@/hooks/useBookings';
+import { useRecurringEvents } from '@/hooks/useRecurringEvents';
+import { useNoClasses } from '@/hooks/useNoClass';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus } from 'lucide-react';
 import HelpDialog from '@/components/HelpDialog';
-
-const WORKDAY_START_HOUR = 8;
-const WORKDAY_END_HOUR = 15;
-
-const localizer = dateFnsLocalizer({
-  format: (date: Date, formatStr: string) =>
-    format(date, formatStr, { locale: sv }),
-  parse: (value: string) => new Date(value),
-  startOfWeek: () => startOfWeek(new Date(), { locale: sv }),
-  getDay: (date: Date) => getDay(date),
-  locales: { sv },
-});
-
-const ADMIN_COLORS = [
-  '#2563eb',
-  '#c6a04a',
-  '#b45309',
-  '#be123c',
-  '#4338ca',
-  '#0369a1',
-  '#8b5cf6',
-  '#7c2d12',
-];
-const DAY_NAMES = ['', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'];
-
-function fourDayRange(date: Date) {
-  const start = startOfWeek(date, { locale: sv });
-  return [start, addDays(start, 1), addDays(start, 2), addDays(start, 3)];
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-class FourDayView extends React.Component<any> {
-  render() {
-    const {
-      date,
-      localizer: loc,
-      min,
-      max,
-      scrollToTime,
-      enableAutoScroll,
-      ...props
-    } = this.props;
-    const range = fourDayRange(date);
-    return React.createElement(TimeGrid, {
-      ...props,
-      range,
-      eventOffset: 15,
-      localizer: loc,
-      min: min || loc.startOf(new Date(), 'day'),
-      max: max || loc.endOf(new Date(), 'day'),
-      scrollToTime: scrollToTime || loc.startOf(new Date(), 'day'),
-      enableAutoScroll: enableAutoScroll ?? true,
-    });
-  }
-}
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(FourDayView as any).range = fourDayRange;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(FourDayView as any).navigate = (date: Date, action: NavigateAction) => {
-  switch (action) {
-    case 'PREV':
-      return addDays(date, -7);
-    case 'NEXT':
-      return addDays(date, 7);
-    default:
-      return date;
-  }
-};
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(FourDayView as any).title = () => '';
-
-interface CalendarEvent {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  allDay: boolean;
-  resource: {
-    type: 'free' | 'my-booking' | 'other-booking';
-    availability?: Availability;
-    booking?: Booking;
-    adminId: number;
-    adminName: string;
-    color: string;
-    freeStart?: Date;
-    freeEnd?: Date;
-  };
-}
-
-const isWithinWorkHours = (start: Date, end: Date) => {
-  const s = start.getHours() * 60 + start.getMinutes();
-  const e = end.getHours() * 60 + end.getMinutes();
-  return (
-    s >= WORKDAY_START_HOUR * 60 && e <= WORKDAY_END_HOUR * 60 && start < end
-  );
-};
-
-/** Subtract only accepted bookings — pending/declined stay as overlays */
-function getFreeSegments(
-  avail: Availability,
-  bookings: Booking[]
-): { start: Date; end: Date }[] {
-  const aStart = new Date(avail.startTime);
-  const aEnd = new Date(avail.endTime);
-
-  const sorted = bookings
-    .filter((b) => b.adminAvailabilityId === avail.id && b.status !== 'declined')
-    .map((b) => ({ start: new Date(b.startTime), end: new Date(b.endTime) }))
-    .sort((a, b) => a.start.getTime() - b.start.getTime());
-
-  const segments: { start: Date; end: Date }[] = [];
-  let cursor = aStart;
-  for (const booking of sorted) {
-    if (booking.start > cursor)
-      segments.push({ start: cursor, end: booking.start });
-    if (booking.end > cursor) cursor = booking.end;
-  }
-  if (cursor < aEnd) segments.push({ start: cursor, end: aEnd });
-  return segments;
-}
-
-function generate30MinOptions(
-  fromH: number,
-  fromM: number,
-  toH: number,
-  toM: number
-) {
-  const opts: { hour: number; minute: number; label: string }[] = [];
-  const fromTotal = fromH * 60 + fromM;
-  const toTotal = toH * 60 + toM;
-  for (let total = fromTotal; total <= toTotal; total += 30) {
-    const h = Math.floor(total / 60);
-    const m = total % 60;
-    opts.push({
-      hour: h,
-      minute: m,
-      label: `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`,
-    });
-  }
-  return opts;
-}
-
-const ALL_TIME_OPTIONS = generate30MinOptions(WORKDAY_START_HOUR, 0, WORKDAY_END_HOUR, 0);
+import type { CalendarEvent } from '@/Types/CalendarTypes';
+import type { Booking, Availability, BookingConflictError } from '@/api/BookingService';
 
 function CoachBookingView() {
   const { user } = useAuth();
-  const { data: allUsers = [], isLoading: usersLoading } = useUsers();
+  const { data: allUsers = [] } = useUsers();
   const { toast } = useToast();
   const coachId = user?.id || 0;
 
-  const [availabilities, setAvailabilities] = useState<Availability[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedAdminId, setSelectedAdminId] = useState<number | null>(null);
 
-  // New booking dialog
-  const [showBookingDialog, setShowBookingDialog] = useState(false);
-  const [selectedFreeSlot, setSelectedFreeSlot] = useState<{
-    availability: Availability;
-    start: Date;
-    end: Date;
-  } | null>(null);
-  const [note, setNote] = useState('');
-  const [studentId, setStudentId] = useState<number | null>(null);
-  const [meetingType, setMeetingType] = useState<'intro' | 'followup' | null>(
-    null
-  );
-  const [startHour, setStartHour] = useState(8);
-  const [startMinute, setStartMinute] = useState(0);
-  const [endHour, setEndHour] = useState(9);
-  const [endMinute, setEndMinute] = useState(0);
+  // Data
+  const { data: allBookings = [] } = useBookings();
+  const { data: availabilities = [] } = useAvailabilities();
+  const weekStart = startOfWeek(currentDate, { locale: sv });
+  const weekEnd = addDays(weekStart, 6);
+  const { data: recurringInstances = [] } = useRecurringEvents(weekStart, weekEnd);
+  const { data: noClassDates = [] } = useNoClasses();
 
-  // Booking details dialog
-  const [showBookingDetails, setShowBookingDetails] = useState(false);
-  const [bookingDetailsMode, setBookingDetailsMode] = useState<
-    'view' | 'reschedule'
-  >('view');
+  // Mutations
+  const createBooking = useCreateBooking();
+  const updateStatus = useUpdateBookingStatus();
+  const cancelBookingMut = useCancelBooking();
+  const rescheduleMut = useRescheduleBooking();
+
+  // Dialog state
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [actionReason, setActionReason] = useState('');
-  const [rescheduleStart, setRescheduleStart] = useState<{
-    hour: number;
-    minute: number;
-  }>({ hour: 8, minute: 0 });
-  const [rescheduleEnd, setRescheduleEnd] = useState<{
-    hour: number;
-    minute: number;
-  }>({ hour: 9, minute: 0 });
-  const [fetchedParentAvail, setFetchedParentAvail] =
-    useState<Availability | null>(null);
+  const [showBookingDetails, setShowBookingDetails] = useState(false);
 
-  // Suggest meeting dialog (coach initiates meeting with admin)
+  // Booking dialog (click on free slot)
+  const [showBookDialog, setShowBookDialog] = useState(false);
+  const [bookDialogAvail, setBookDialogAvail] = useState<Availability | null>(null);
+  const [bookDialogStart, setBookDialogStart] = useState<Date | null>(null);
+  const [bookMeetingType, setBookMeetingType] = useState<string>('intro');
+  const [bookStudentId, setBookStudentId] = useState<number | null>(null);
+  const [bookNote, setBookNote] = useState('');
+  const [bookStartHour, setBookStartHour] = useState(9);
+  const [bookStartMinute, setBookStartMinute] = useState(0);
+  const [bookEndHour, setBookEndHour] = useState(9);
+  const [bookEndMinute, setBookEndMinute] = useState(30);
+
+  // Suggest meeting dialog
   const [showSuggestDialog, setShowSuggestDialog] = useState(false);
   const [suggestAdminId, setSuggestAdminId] = useState<number | null>(null);
-  const [suggestDay, setSuggestDay] = useState<string>('');
+  const [suggestMeetingType, setSuggestMeetingType] = useState<string>('intro');
+  const [suggestStudentId, setSuggestStudentId] = useState<number | null>(null);
+  const [suggestDay, setSuggestDay] = useState('');
   const [suggestStartHour, setSuggestStartHour] = useState(9);
   const [suggestStartMinute, setSuggestStartMinute] = useState(0);
   const [suggestEndHour, setSuggestEndHour] = useState(9);
   const [suggestEndMinute, setSuggestEndMinute] = useState(30);
   const [suggestNote, setSuggestNote] = useState('');
-  const [suggestMeetingType, setSuggestMeetingType] = useState<'intro' | 'followup' | 'other'>('intro');
-  const [suggestStudentId, setSuggestStudentId] = useState<number | null>(null);
-  const [pendingSuggestData, setPendingSuggestData] = useState<{
-    adminId: number; studentId: number | null; startTime: string; endTime: string; note: string; meetingType: string;
-  } | null>(null);
-  const [showSuggestConflictError, setShowSuggestConflictError] = useState(false);
-  const [showSuggestConflictWarning, setShowSuggestConflictWarning] = useState(false);
 
-  const today = useMemo(() => startOfDay(new Date()), []);
+  // Conflict
+  const [conflictErrorBookings, setConflictErrorBookings] = useState<Booking[]>([]);
+  const [showConflictError, setShowConflictError] = useState(false);
+  const [conflictWarningBookings, setConflictWarningBookings] = useState<Booking[]>([]);
+  const [showConflictWarning, setShowConflictWarning] = useState(false);
+  const [pendingForceData, setPendingForceData] = useState<Parameters<typeof createBooking.mutateAsync>[0] | null>(null);
 
-  const admins = useMemo(
-    () => allUsers.filter((u) => u.authLevel <= 2 && u.isActive && u.firstName !== "Alexandra"),
+  // Derived
+  const admins = useMemo(() =>
+    allUsers.filter((u) => u.authLevel <= 2 && u.isActive && u.firstName !== 'Alexandra'),
     [allUsers]
   );
-
-  const adminColorMap = useMemo(() => {
-    const map = new Map<number, string>();
-    admins.forEach((admin, i) =>
-      map.set(admin.id, ADMIN_COLORS[i % ADMIN_COLORS.length])
-    );
-    return map;
-  }, [admins]);
-
-  const adminNameMap = useMemo(() => {
-    const map = new Map<number, string>();
-    admins.forEach((admin) =>
-      map.set(admin.id, `${admin.firstName} ${admin.lastName}`)
-    );
-    return map;
-  }, [admins]);
-
-  const students = useMemo(
-    () =>
-      allUsers.filter(
-        (u) => u.authLevel === 4 && u.isActive && u.coachId === coachId
-      ),
+  const myStudents = useMemo(() =>
+    allUsers.filter((u) => u.authLevel === 4 && u.isActive && u.coachId === coachId),
     [allUsers, coachId]
   );
-
-  const studentNameMap = useMemo(() => {
+  const adminColorMap = useMemo(() => getAdminColorMap(admins), [admins]);
+  const nameMap = useMemo(() => {
     const map = new Map<number, string>();
-    allUsers
-      .filter((u) => u.authLevel === 4)
-      .forEach((s) => map.set(s.id, `${s.firstName} ${s.lastName}`));
+    allUsers.forEach((u) => map.set(u.id, `${u.firstName} ${u.lastName}`));
     return map;
   }, [allUsers]);
 
-  const loadData = async () => {
-    try {
-      const [availData, bookingData] = await Promise.all([
-        getAvailabilities(),
-        getVisibleBookings(),
-      ]);
-      setAvailabilities(
-        availData.filter((a: Availability) =>
-          isWithinWorkHours(new Date(a.startTime), new Date(a.endTime))
-        )
-      );
-      setBookings(bookingData);
-    } catch {
-      toast({
-        title: 'Fel',
-        description: 'Kunde inte ladda data.',
-        variant: 'destructive',
-      });
-    }
-  };
+  const noClassDateObjects = useMemo(() =>
+    noClassDates.map((d) => startOfDay(new Date(d))),
+    [noClassDates]
+  );
 
-  useEffect(() => {
-    if (admins.length > 0 && selectedAdminId === null) {
-      setSelectedAdminId(admins[0].id);
-    }
+  // Auto-select first admin
+  React.useEffect(() => {
+    if (admins.length > 0 && !selectedAdminId) setSelectedAdminId(admins[0].id);
   }, [admins, selectedAdminId]);
 
-  useEffect(() => {
-    loadData();
-  }, [currentDate]);
-  useEffect(() => {
-    const pollId = window.setInterval(loadData, 15000);
-    return () => window.clearInterval(pollId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const today = useMemo(() => startOfDay(new Date()), []);
+  const SEVEN_DAYS_AGO = useMemo(() => { const d = new Date(); d.setDate(d.getDate() - 7); return d; }, []);
 
-  const filteredAvailabilities = useMemo(
-    () => selectedAdminId !== null ? availabilities.filter((a) => a.adminId === selectedAdminId) : availabilities,
+  const myBookings = useMemo(() => allBookings.filter((b) => b.coachId === coachId), [allBookings, coachId]);
+
+  // Filter availabilities to selected admin
+  const filteredAvailabilities = useMemo(() =>
+    selectedAdminId ? availabilities.filter((a) => a.adminId === selectedAdminId) : [],
     [availabilities, selectedAdminId]
   );
 
+  // Build events
   const events = useMemo((): CalendarEvent[] => {
     const result: CalendarEvent[] = [];
 
+    // Free segments
     for (const avail of filteredAvailabilities) {
-      const adminName =
-        adminNameMap.get(avail.adminId) || `Admin ${avail.adminId}`;
-      const color = adminColorMap.get(avail.adminId) || '#6b7280';
-      const freeSegs = getFreeSegments(avail, bookings);
-
+      const color = adminColorMap.get(avail.adminId) || '#2563eb';
+      const freeSegs = getFreeSegments(avail, allBookings);
       for (let i = 0; i < freeSegs.length; i++) {
         const seg = freeSegs[i];
-        if (!isWithinWorkHours(seg.start, seg.end)) continue;
+        // Filter to work hours
+        if (seg.start.getHours() >= 15 || seg.end.getHours() < 8) continue;
         result.push({
           id: `free-${avail.id}-${i}`,
-          title: `${adminName} - Tillgänglig`,
+          title: 'Tillgänglig',
           start: seg.start,
           end: seg.end,
           allDay: false,
-          resource: {
-            type: 'free',
-            availability: avail,
-            adminId: avail.adminId,
-            adminName,
-            color,
-            freeStart: seg.start,
-            freeEnd: seg.end,
-          },
+          resource: { type: 'availability', availabilityId: avail.id, availability: avail, adminId: avail.adminId, color, isOwn: true },
         });
       }
     }
 
-    for (const b of bookings) {
-      if (b.coachId !== coachId && selectedAdminId !== null && b.adminId !== selectedAdminId) continue;
-      if (b.status === 'declined' && b.coachId !== coachId) continue;
-      const bStart = new Date(b.startTime);
-      const bEnd = new Date(b.endTime);
-      if (!isWithinWorkHours(bStart, bEnd)) continue;
-
-      const isOwn = b.coachId === coachId;
-      const adminName = adminNameMap.get(b.adminId) || `Admin ${b.adminId}`;
-      const color = adminColorMap.get(b.adminId) || '#6b7280';
-      const titleMap: Record<string, string> = {
-        pending: 'Inväntar svar',
-        accepted: 'Godkänd',
-        declined: 'Nekad',
-        rescheduled: 'Ombokning – svar krävs',
-      };
-
+    // My bookings
+    for (const b of myBookings) {
+      if (b.status === 'declined' && new Date(b.bookedAt) < SEVEN_DAYS_AGO) continue;
+      const adminName = nameMap.get(b.adminId) || '';
+      const typeLabel = b.status === 'pending' ? 'Förfrågan' : b.status === 'accepted' ? 'Godkänd' : b.status === 'rescheduled' ? 'Ombokning' : 'Nekad';
       result.push({
         id: `booking-${b.id}`,
-        title: isOwn ? titleMap[b.status] || 'Din bokning' : 'Bokad',
-        start: bStart,
-        end: bEnd,
+        title: `${adminName} – ${typeLabel}`,
+        start: new Date(b.startTime),
+        end: new Date(b.endTime),
         allDay: false,
-        resource: {
-          type: isOwn ? 'my-booking' : 'other-booking',
-          booking: b,
-          adminId: b.adminId,
-          adminName,
-          color,
-        },
+        resource: { type: b.status as CalendarEvent['resource']['type'], booking: b, isOwn: true },
+      });
+    }
+
+    // Other coaches' bookings on this admin
+    if (selectedAdminId) {
+      const otherBookings = allBookings.filter((b) => b.adminId === selectedAdminId && b.coachId !== coachId && b.status !== 'declined');
+      for (const b of otherBookings) {
+        result.push({
+          id: `other-${b.id}`,
+          title: 'Upptagen',
+          start: new Date(b.startTime),
+          end: new Date(b.endTime),
+          allDay: false,
+          resource: { type: b.status as CalendarEvent['resource']['type'], color: '#ef4444', isOwn: false },
+        });
+      }
+    }
+
+    // Recurring events (read-only)
+    for (const inst of recurringInstances) {
+      result.push({
+        id: `recurring-${inst.eventId}-${inst.date}`,
+        title: inst.name,
+        start: new Date(inst.start),
+        end: new Date(inst.end),
+        allDay: false,
+        resource: { type: 'recurring', recurringEventId: inst.eventId, color: RECURRING_EVENT_COLOR, isOwn: false },
       });
     }
 
     return result;
-  }, [filteredAvailabilities, bookings, adminNameMap, adminColorMap, coachId, selectedAdminId]);
+  }, [filteredAvailabilities, myBookings, allBookings, selectedAdminId, coachId, adminColorMap, nameMap, SEVEN_DAYS_AGO, recurringInstances]);
 
-  const openBookingDialog = (
-    avail: Availability,
-    freeStart: Date,
-    freeEnd: Date,
-    clickedTime: Date
-  ) => {
-    if (isBefore(startOfDay(freeStart), today)) return;
-
-    const freeStartTotal = freeStart.getHours() * 60 + freeStart.getMinutes();
-    const freeEndTotal = freeEnd.getHours() * 60 + freeEnd.getMinutes();
-    const totalMinutes = clickedTime.getHours() * 60 + clickedTime.getMinutes();
-    const snapped = Math.floor(totalMinutes / 30) * 30;
-    const startTotal = Math.max(
-      freeStartTotal,
-      Math.min(snapped, freeEndTotal - 30)
-    );
-    const endTotal = Math.min(startTotal + 30, freeEndTotal);
-
-    setSelectedFreeSlot({
-      availability: avail,
-      start: freeStart,
-      end: freeEnd,
-    });
-    setStartHour(Math.floor(startTotal / 60));
-    setStartMinute(startTotal % 60);
-    setEndHour(Math.floor(endTotal / 60));
-    setEndMinute(endTotal % 60);
-    setShowBookingDialog(true);
-    setNote('');
-    setStudentId(null);
-    setMeetingType(null);
-  };
-
-  const FreeEventComponent = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return ({ event }: { event: any }) => {
-      const calEvent = event as CalendarEvent;
-      if (calEvent.resource.type !== 'free')
-        return <span>{calEvent.title}</span>;
-      const isPast = isBefore(
-        startOfDay(calEvent.start),
-        startOfDay(new Date())
-      );
-
-      const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isPast) return;
-        e.stopPropagation();
-        const rect = e.currentTarget.getBoundingClientRect();
-        const fraction = Math.max(
-          0,
-          Math.min(1, (e.clientY - rect.top) / rect.height)
-        );
-        const freeStart = calEvent.resource.freeStart!;
-        const freeEnd = calEvent.resource.freeEnd!;
-        const durationMinutes =
-          (freeEnd.getTime() - freeStart.getTime()) / 60000;
-        const clickedTime = new Date(
-          freeStart.getTime() + fraction * durationMinutes * 60000
-        );
-        openBookingDialog(
-          calEvent.resource.availability!,
-          freeStart,
-          freeEnd,
-          clickedTime
-        );
-      };
-
-      return (
-        <div
-          onClick={handleClick}
-          style={{
-            height: '100%',
-            width: '100%',
-            cursor: isPast ? 'default' : 'pointer',
-          }}
-        >
-          {calEvent.title}
-        </div>
-      );
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [today]);
-
-  const handleSelectSlot = ({ start }: { start: Date }) => {
-    if (isBefore(startOfDay(start), today)) return;
-    for (const avail of availabilities) {
-      const freeSegs = getFreeSegments(avail, bookings);
-      for (const seg of freeSegs) {
-        if (
-          start >= seg.start &&
-          start < seg.end &&
-          isWithinWorkHours(seg.start, seg.end)
-        ) {
-          openBookingDialog(avail, seg.start, seg.end, start);
-          return;
-        }
-      }
-    }
+  // Open booking dialog from free slot click
+  const openBookingDialog = (avail: Availability, clickedTime: Date) => {
+    setBookDialogAvail(avail);
+    setBookDialogStart(clickedTime);
+    setBookStartHour(clickedTime.getHours());
+    setBookStartMinute(clickedTime.getMinutes());
+    const endMin = clickedTime.getMinutes() + 30;
+    setBookEndHour(endMin >= 60 ? clickedTime.getHours() + 1 : clickedTime.getHours());
+    setBookEndMinute(endMin % 60);
+    setBookMeetingType('intro');
+    setBookStudentId(null);
+    setBookNote('');
+    setShowBookDialog(true);
   };
 
   const handleSelectEvent = (event: CalendarEvent) => {
-    if (event.resource.type === 'my-booking' && event.resource.booking) {
+    if (event.resource.type === 'availability' && event.resource.availability) {
+      if (isBefore(startOfDay(event.start), today)) return;
+      // Calculate clicked time (snap to 30 min)
+      openBookingDialog(event.resource.availability, event.start);
+      return;
+    }
+
+    if (event.resource.booking && event.resource.isOwn) {
       setSelectedBooking(event.resource.booking);
-      setBookingDetailsMode('view');
-      setActionReason('');
       setShowBookingDetails(true);
     }
   };
 
-  const handleBook = async () => {
-    if (!selectedFreeSlot || !coachId || !meetingType) return;
-    if (meetingType === 'followup' && !studentId) {
-      toast({
-        title: 'Fel',
-        description: 'Välj en student för uppföljningsmöte.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    const baseDate = selectedFreeSlot.start;
-    const bookingStart = new Date(
-      baseDate.getFullYear(),
-      baseDate.getMonth(),
-      baseDate.getDate(),
-      startHour,
-      startMinute
-    );
-    const bookingEnd = new Date(
-      baseDate.getFullYear(),
-      baseDate.getMonth(),
-      baseDate.getDate(),
-      endHour,
-      endMinute
-    );
-    if (bookingStart >= bookingEnd) {
-      toast({
-        title: 'Fel',
-        description: 'Starttid måste vara före sluttid.',
-        variant: 'destructive',
-      });
+  const handleBookSlot = async () => {
+    if (!bookDialogAvail) return;
+    const base = bookDialogStart || new Date();
+    const startTime = new Date(base.getFullYear(), base.getMonth(), base.getDate(), bookStartHour, bookStartMinute);
+    const endTime = new Date(base.getFullYear(), base.getMonth(), base.getDate(), bookEndHour, bookEndMinute);
+    if (startTime >= endTime) {
+      toast({ title: 'Fel', description: 'Starttid måste vara före sluttid.', variant: 'destructive' });
       return;
     }
     try {
-      await bookAvailability({
-        adminAvailabilityId: selectedFreeSlot.availability.id,
-        coachId,
-        studentId: meetingType === 'intro' ? null : studentId,
-        note,
-        meetingType,
-        startTime: format(bookingStart, "yyyy-MM-dd'T'HH:mm:ss"),
-        endTime: format(bookingEnd, "yyyy-MM-dd'T'HH:mm:ss"),
+      await createBooking.mutateAsync({
+        adminAvailabilityId: bookDialogAvail.id,
+        studentId: bookStudentId,
+        note: bookNote,
+        meetingType: bookMeetingType,
+        startTime: format(startTime, "yyyy-MM-dd'T'HH:mm:ss"),
+        endTime: format(endTime, "yyyy-MM-dd'T'HH:mm:ss"),
       });
-      toast({ title: 'Bokning skickad' });
-      setShowBookingDialog(false);
-      setSelectedFreeSlot(null);
-      setNote('');
-      setMeetingType(null);
-      loadData();
-    } catch {
-      toast({
-        title: 'Fel',
-        description: 'Kunde inte boka tiden.',
-        variant: 'destructive',
-      });
-      loadData();
-    }
-  };
-
-  const handleCancelAccepted = async () => {
-    if (!selectedBooking) return;
-    try {
-      await cancelBooking(selectedBooking.id, actionReason || undefined);
-      toast({ title: 'Avbokad' });
-      setShowBookingDetails(false);
-      setActionReason('');
-      loadData();
+      toast({ title: 'Bokad' });
+      setShowBookDialog(false);
     } catch (err) {
-      toast({ title: 'Fel', description: String(err), variant: 'destructive' });
+      toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte boka.', variant: 'destructive' });
     }
   };
 
-  const handleReschedule = async () => {
-    if (!selectedBooking) return;
-    const base = new Date(selectedBooking.startTime);
-    const newStart = new Date(
-      base.getFullYear(),
-      base.getMonth(),
-      base.getDate(),
-      rescheduleStart.hour,
-      rescheduleStart.minute
-    );
-    const newEnd = new Date(
-      base.getFullYear(),
-      base.getMonth(),
-      base.getDate(),
-      rescheduleEnd.hour,
-      rescheduleEnd.minute
-    );
-    try {
-      await rescheduleBooking(
-        selectedBooking.id,
-        format(newStart, "yyyy-MM-dd'T'HH:mm:ss"),
-        format(newEnd, "yyyy-MM-dd'T'HH:mm:ss"),
-        actionReason || undefined,
-        'coach'
-      );
-      toast({
-        title: 'Ombokning skickad',
-        description: 'Ny tid sparad. Adminen behöver godkänna den nya tiden.',
-      });
-      setShowBookingDetails(false);
-      setBookingDetailsMode('view');
-      setActionReason('');
-      loadData();
-    } catch (err) {
-      toast({ title: 'Fel', description: String(err), variant: 'destructive' });
-    }
-  };
+  const handleSuggestMeeting = async () => {
+    if (!suggestAdminId || !suggestDay) return;
+    if (suggestMeetingType === 'followup' && !suggestStudentId) return;
 
-  const handleAcceptReschedule = async () => {
-    if (!selectedBooking) return;
-    try {
-      await updateBookingStatus(
-        selectedBooking.id,
-        'accepted',
-        actionReason || undefined
-      );
-      toast({
-        title: 'Tid godkänd',
-        description: 'Den nya tiden är bekräftad.',
-      });
-      setShowBookingDetails(false);
-      setActionReason('');
-      loadData();
-    } catch {
-      toast({
-        title: 'Fel',
-        description: 'Kunde inte godkänna tiden.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const submitSuggestMeeting = async (
-    adminId: number, studentId: number | null, startTime: string, endTime: string,
-    note: string, meetingType: string, force = false
-  ) => {
-    await createCoachAppointment({ adminId, studentId, startTime, endTime, note, meetingType, force });
-    toast({ title: 'Möte föreslagit', description: 'Handledaren behöver godkänna mötet.' });
-    setShowSuggestDialog(false);
-    setSuggestAdminId(null);
-    setSuggestDay('');
-    setSuggestNote('');
-    setSuggestMeetingType('intro');
-    setSuggestStudentId(null);
-    loadData();
-  };
-
-  const handleCreateSuggestMeeting = async () => {
-    if (!suggestAdminId || !suggestDay) {
-      toast({ title: 'Fel', description: 'Välj handledare och dag.', variant: 'destructive' });
-      return;
-    }
-    if (suggestMeetingType === 'followup' && !suggestStudentId) {
-      toast({ title: 'Fel', description: 'Välj en elev för uppföljningsmötet.', variant: 'destructive' });
-      return;
-    }
     const dayDate = new Date(suggestDay);
     const startTime = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate(), suggestStartHour, suggestStartMinute);
     const endTime = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate(), suggestEndHour, suggestEndMinute);
@@ -685,563 +251,185 @@ function CoachBookingView() {
       toast({ title: 'Fel', description: 'Starttid måste vara före sluttid.', variant: 'destructive' });
       return;
     }
-    const startIso = format(startTime, "yyyy-MM-dd'T'HH:mm:ss");
-    const endIso = format(endTime, "yyyy-MM-dd'T'HH:mm:ss");
-    const studentId = suggestMeetingType === 'followup' ? suggestStudentId : null;
+
+    const data = {
+      adminId: suggestAdminId,
+      studentId: suggestMeetingType === 'followup' ? suggestStudentId : null,
+      meetingType: suggestMeetingType,
+      note: suggestNote,
+      startTime: format(startTime, "yyyy-MM-dd'T'HH:mm:ss"),
+      endTime: format(endTime, "yyyy-MM-dd'T'HH:mm:ss"),
+      force: false,
+    };
+
     try {
-      await submitSuggestMeeting(suggestAdminId, studentId, startIso, endIso, suggestNote, suggestMeetingType);
+      await createBooking.mutateAsync(data);
+      toast({ title: 'Mötesförfrågan skickad' });
+      setShowSuggestDialog(false);
+      resetSuggestDialog();
     } catch (err) {
       const conflictErr = err as BookingConflictError;
       if (conflictErr.conflictData?.type === 'conflict') {
-        setShowSuggestConflictError(true);
+        setConflictErrorBookings(conflictErr.conflictData.bookings);
+        setShowConflictError(true);
       } else if (conflictErr.conflictData?.type === 'warning') {
-        setPendingSuggestData({ adminId: suggestAdminId, studentId, startTime: startIso, endTime: endIso, note: suggestNote, meetingType: suggestMeetingType });
-        setShowSuggestConflictWarning(true);
+        setPendingForceData({ ...data, force: true });
+        setConflictWarningBookings(conflictErr.conflictData.bookings);
+        setShowConflictWarning(true);
       } else {
-        toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte föreslå mötet.', variant: 'destructive' });
+        toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte skicka.', variant: 'destructive' });
       }
     }
   };
 
-  const handleConfirmSuggestWarning = async () => {
-    if (!pendingSuggestData) return;
+  const handleConfirmWarning = async () => {
+    if (!pendingForceData) return;
+    setShowConflictWarning(false);
     try {
-      await submitSuggestMeeting(
-        pendingSuggestData.adminId, pendingSuggestData.studentId,
-        pendingSuggestData.startTime, pendingSuggestData.endTime,
-        pendingSuggestData.note, pendingSuggestData.meetingType, true
-      );
-    } catch {
-      toast({ title: 'Fel', description: 'Kunde inte föreslå mötet.', variant: 'destructive' });
+      await createBooking.mutateAsync(pendingForceData);
+      toast({ title: 'Mötesförfrågan skickad' });
+      setShowSuggestDialog(false);
+      resetSuggestDialog();
+    } catch (err) {
+      toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte skicka.', variant: 'destructive' });
     } finally {
-      setShowSuggestConflictWarning(false);
-      setPendingSuggestData(null);
+      setPendingForceData(null);
+      setConflictWarningBookings([]);
     }
   };
 
-  const timeOptions = useMemo(() => {
-    if (!selectedFreeSlot) return [];
-    const slotStart = selectedFreeSlot.start;
-    const slotEnd = selectedFreeSlot.end;
-    const options: { hour: number; minute: number; label: string }[] = [];
-    let cursor = new Date(slotStart);
-    while (cursor <= slotEnd) {
-      const h = cursor.getHours();
-      const m = cursor.getMinutes();
-      options.push({
-        hour: h,
-        minute: m,
-        label: `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`,
-      });
-      cursor = new Date(cursor.getTime() + 30 * 60 * 1000);
-    }
-    return options;
-  }, [selectedFreeSlot]);
-
-  const endTimeOptions = useMemo(() => {
-    const startTotal = startHour * 60 + startMinute;
-    return timeOptions.filter((o) => o.hour * 60 + o.minute > startTotal);
-  }, [timeOptions, startHour, startMinute]);
-
-  const rescheduleOptions = useMemo(() => {
-    if (!selectedBooking) return [];
-    const avail =
-      availabilities.find(
-        (a) => a.id === selectedBooking.adminAvailabilityId
-      ) ?? fetchedParentAvail;
-    if (!avail) return [];
-    const aStart = new Date(avail.startTime);
-    const aEnd = new Date(avail.endTime);
-    return generate30MinOptions(
-      aStart.getHours(),
-      aStart.getMinutes(),
-      aEnd.getHours(),
-      aEnd.getMinutes()
-    );
-  }, [selectedBooking, availabilities, fetchedParentAvail]);
-
-  const rescheduleEndOptions = useMemo(() => {
-    const startTotal = rescheduleStart.hour * 60 + rescheduleStart.minute;
-    return rescheduleOptions.filter((o) => o.hour * 60 + o.minute > startTotal);
-  }, [rescheduleOptions, rescheduleStart]);
-
-  const eventStyleGetter = (event: CalendarEvent) => {
-    const base = {
-      borderRadius: '6px',
-      border: 'none',
-      padding: '2px 6px',
-      cursor: 'pointer',
-    };
-    if (event.resource.type === 'free') {
-      return {
-        style: {
-          ...base,
-          backgroundColor: event.resource.color || '#6b7280',
-          color: '#fff',
-        },
-      };
-    }
-    if (event.resource.type === 'my-booking') {
-      const status = event.resource.booking?.status;
-      const colorMap: Record<string, string> = {
-        pending: '#f59e0b',
-        accepted: '#22c55e',
-        declined: '#ef4444',
-        rescheduled: '#8b5cf6',
-      };
-      const opacity =
-        status === 'pending'
-          ? 0.75
-          : status === 'declined'
-            ? 0.6
-            : status === 'rescheduled'
-              ? 0.9
-              : 1;
-      return {
-        style: {
-          ...base,
-          backgroundColor: colorMap[status || ''] || '#6b7280',
-          color: '#fff',
-          opacity,
-        },
-      };
-    }
-    if (event.resource.type === 'other-booking') {
-      return {
-        style: {
-          ...base,
-          backgroundColor: '#ef4444',
-          color: '#fff',
-          opacity: 0.6,
-          cursor: 'default',
-        },
-      };
-    }
-    return {};
+  const resetSuggestDialog = () => {
+    setSuggestAdminId(null);
+    setSuggestMeetingType('intro');
+    setSuggestStudentId(null);
+    setSuggestDay('');
+    setSuggestNote('');
   };
 
-  const dayPropGetter = (date: Date) => {
-    if (isBefore(startOfDay(date), today))
-      return { className: 'rbc-day--past' };
-    return {};
-  };
+  // Admin tabs
+  const adminTabs = (
+    <div className="mb-4">
+      <Tabs value={selectedAdminId?.toString() || ''} onValueChange={(v) => setSelectedAdminId(Number(v))}>
+        <TabsList>
+          {admins.map((admin) => {
+            const color = adminColorMap.get(admin.id) || '#6b7280';
+            return (
+              <TabsTrigger key={admin.id} value={admin.id.toString()}>
+                <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: color }} />
+                {admin.firstName} {admin.lastName}
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+      </Tabs>
+    </div>
+  );
 
-  const isBookingInPast = (b: Booking) =>
-    isBefore(startOfDay(new Date(b.startTime)), today);
-
-  if (usersLoading) {
-    return (
-      <div className="p-6 lg:p-10 max-w-6xl mx-auto">
-        <div className="flex justify-center items-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        </div>
-      </div>
-    );
-  }
+  // Availability time options for booking dialog
+  const bookTimeOptions = useMemo(() => {
+    if (!bookDialogAvail) return ALL_TIME_OPTIONS;
+    const as = new Date(bookDialogAvail.startTime);
+    const ae = new Date(bookDialogAvail.endTime);
+    return ALL_TIME_OPTIONS.filter((o) => {
+      const t = o.hour * 60 + o.minute;
+      return t >= as.getHours() * 60 + as.getMinutes() && t <= ae.getHours() * 60 + ae.getMinutes();
+    });
+  }, [bookDialogAvail]);
 
   return (
-    <div className="p-6 lg:p-10 max-w-6xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl gradient-hero flex items-center justify-center">
-          <CalendarIcon className="h-5 w-5 text-primary-foreground" />
-        </div>
-        <h1 className="font-display text-2xl font-bold text-foreground">
-          Boka möte
-        </h1>
-        <HelpDialog helpKey="coach-booking" />
-      </div>
+    <>
+      <CalendarShell
+        title="Kalender & Bokning"
+        subtitle="Klicka på en tillgänglig tid för att boka."
+        events={events}
+        currentDate={currentDate}
+        onDateChange={setCurrentDate}
+        onSelectEvent={handleSelectEvent}
+        noClassDates={noClassDateObjects}
+        helpButton={<HelpDialog helpKey="coach-booking" />}
+        rightActions={
+          <Button onClick={() => setShowSuggestDialog(true)} className="ml-4">
+            <Plus className="h-4 w-4 mr-1" /> Föreslå möte
+          </Button>
+        }
+        legend={adminTabs}
+      />
 
-      <Card className="bg-card space-y-6 p-6">
-        <section>
-          <p className="text-muted-foreground text-sm mb-4">
-            Klicka på en tillgänglig tid för att boka.
-          </p>
-
-          {admins.length > 0 && (
-            <Tabs
-              value={selectedAdminId?.toString() ?? ''}
-              onValueChange={(val) => setSelectedAdminId(Number(val))}
-              className="mb-4 flex flex-col items-center"
-            >
-              <TabsList>
-                {admins.map((admin) => (
-                  <TabsTrigger key={admin.id} value={admin.id.toString()}>
-                    <span
-                      className="w-2.5 h-2.5 rounded-full mr-2 inline-block flex-shrink-0"
-                      style={{ backgroundColor: adminColorMap.get(admin.id) || '#6b7280' }}
-                    />
-                    {admin.firstName} {admin.lastName}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-          )}
-
-          {(() => {
-            const weekStart = startOfWeek(currentDate, { locale: sv });
-            const weekEnd = addDays(weekStart, 3);
-            const thisWeekStart = startOfWeek(new Date(), { locale: sv });
-            const canGoBack = isBefore(thisWeekStart, weekStart);
-            return (
-              <div className="flex items-center justify-center gap-4 mb-4 flex-wrap">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentDate(subWeeks(currentDate, 1))}
-                >
-                  ← Föregående vecka
-                </Button>
-                <span className="text-sm font-semibold text-foreground min-w-[100px] text-center">
-                  {format(weekStart, 'd/M')} – {format(weekEnd, 'd/M')}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentDate(addWeeks(currentDate, 1))}
-                >
-                  Nästa vecka →
-                </Button>
-                <Button onClick={() => setShowSuggestDialog(true)} className="ml-2">
-                  <Plus className="h-4 w-4 mr-1" /> Föreslå möte
-                </Button>
-              </div>
-            );
-          })()}
-
-          <div style={{ height: 600 }}>
-            {/* @ts-expect-error custom fourDay view not in type defs */}
-            <Calendar<CalendarEvent>
-              localizer={localizer}
-              className="booking-calendar--workhours"
-              events={events}
-              startAccessor={(e) => e.start}
-              endAccessor={(e) => e.end}
-              titleAccessor={(e) => e.title}
-              defaultView="fourDay"
-              views={{ fourDay: FourDayView as never }}
-              step={30}
-              timeslots={1}
-              toolbar={false}
-              min={new Date(1970, 0, 1, WORKDAY_START_HOUR, 0, 0)}
-              max={new Date(1970, 0, 1, WORKDAY_END_HOUR, 0, 0)}
-              date={currentDate}
-              onNavigate={setCurrentDate}
-              selectable
-              onSelectSlot={handleSelectSlot}
-              onSelectEvent={handleSelectEvent}
-              eventPropGetter={eventStyleGetter}
-              dayPropGetter={dayPropGetter}
-              components={{ event: FreeEventComponent }}
-              formats={{
-                timeGutterFormat: 'HH:mm',
-                dayFormat: (date: Date) =>
-                  `${DAY_NAMES[getDay(date)] || ''} ${format(date, 'd/M')}`,
-              }}
-              messages={{
-                today: 'Idag',
-                next: 'Nästa',
-                previous: 'Föregående',
-                month: 'Månad',
-                week: 'Vecka',
-                day: 'Dag',
-              }}
-            />
-          </div>
-        </section>
-
-        {availabilities.length === 0 && bookings.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>Inga tillgängliga tider just nu.</p>
-            <p className="text-sm mt-2">
-              Kontakta en admin om du saknar bokningsbara tider.
-            </p>
-          </div>
-        )}
-      </Card>
-
-      {/* New booking dialog */}
-      <Dialog open={showBookingDialog} onOpenChange={setShowBookingDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {!meetingType
-                ? 'Välj mötestyp'
-                : meetingType === 'intro'
-                  ? 'Boka intromöte'
-                  : 'Boka uppföljningsmöte'}
-            </DialogTitle>
-            <DialogDescription asChild>
-              <div>
-                {selectedFreeSlot && (
-                  <>
-                    <p className="mt-2">
-                      <strong>Admin:</strong>{' '}
-                      {adminNameMap.get(
-                        selectedFreeSlot.availability.adminId
-                      ) || 'Okänd'}
-                    </p>
-                    <p>
-                      <strong>Datum:</strong>{' '}
-                      {format(selectedFreeSlot.start, 'yyyy-MM-dd')}
-                    </p>
-                    <p>
-                      <strong>Tillgänglig:</strong>{' '}
-                      {format(selectedFreeSlot.start, 'HH:mm')} –{' '}
-                      {format(selectedFreeSlot.end, 'HH:mm')}
-                    </p>
-                  </>
-                )}
-              </div>
-            </DialogDescription>
-          </DialogHeader>
-
-          {!meetingType ? (
-            <div className="flex flex-col gap-3 py-4">
-              <Button
-                variant="outline"
-                className="h-16 text-base"
-                onClick={() => setMeetingType('intro')}
-              >
-                Intromöte
-                <span className="block text-xs text-muted-foreground font-normal ml-2">
-                  Ny möjlig deltagare
-                </span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-16 text-base"
-                onClick={() => {
-                  setMeetingType('followup');
-                  setStudentId(students.length > 0 ? students[0].id : null);
-                }}
-              >
-                Uppföljningsmöte
-                <span className="block text-xs text-muted-foreground font-normal ml-2">
-                  Befintlig deltagare
-                </span>
-              </Button>
-            </div>
-          ) : (
-            <>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label>Starttid</Label>
-                  <Select
-                    value={`${startHour}:${startMinute}`}
-                    onValueChange={(val) => {
-                      const [h, m] = val.split(':').map(Number);
-                      setStartHour(h);
-                      setStartMinute(m);
-                      const newStartTotal = h * 60 + m;
-                      if (endHour * 60 + endMinute <= newStartTotal) {
-                        const next = timeOptions.find(
-                          (o) => o.hour * 60 + o.minute > newStartTotal
-                        );
-                        if (next) {
-                          setEndHour(next.hour);
-                          setEndMinute(next.minute);
-                        }
-                      }
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeOptions.slice(0, -1).map((o) => (
-                        <SelectItem
-                          key={o.label}
-                          value={`${o.hour}:${o.minute}`}
-                        >
-                          {o.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Sluttid</Label>
-                  <Select
-                    value={`${endHour}:${endMinute}`}
-                    onValueChange={(val) => {
-                      const [h, m] = val.split(':').map(Number);
-                      setEndHour(h);
-                      setEndMinute(m);
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {endTimeOptions.map((o) => (
-                        <SelectItem
-                          key={o.label}
-                          value={`${o.hour}:${o.minute}`}
-                        >
-                          {o.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {meetingType === 'followup' &&
-                  (students.length > 0 ? (
-                    <div className="space-y-2">
-                      <Label>Välj student</Label>
-                      <Select
-                        value={studentId?.toString() || ''}
-                        onValueChange={(v) => setStudentId(Number(v))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Välj en student" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {students.map((s) => (
-                            <SelectItem key={s.id} value={s.id.toString()}>
-                              {s.firstName.charAt(0)}.{s.lastName.charAt(0)}.
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  ) : (
-                    <div className="p-3 bg-muted rounded-md">
-                      <p className="text-sm text-muted-foreground">
-                        Du har inga aktiva studenter just nu.
-                      </p>
-                    </div>
-                  ))}
-                <div className="space-y-2">
-                  <Label htmlFor="note">Meddelande (valfritt)</Label>
-                  <Textarea
-                    id="note"
-                    placeholder={
-                      meetingType === 'intro'
-                        ? 'Lägg till ett meddelande om intromötet...'
-                        : 'Lägg till ett meddelande om uppföljningen...'
-                    }
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setMeetingType(null)}>
-                  Tillbaka
-                </Button>
-                <Button
-                  onClick={handleBook}
-                  disabled={
-                    meetingType === 'followup' &&
-                    (!studentId || students.length === 0)
-                  }
-                >
-                  Bekräfta bokning
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Booking details dialog */}
-      <Dialog
+      {/* Booking details */}
+      <BookingDetailsDialog
         open={showBookingDetails}
-        onOpenChange={(open) => {
-          setShowBookingDetails(open);
-          if (!open) {
-            setBookingDetailsMode('view');
-            setFetchedParentAvail(null);
-          }
+        onOpenChange={setShowBookingDetails}
+        booking={selectedBooking}
+        role="coach"
+        nameMap={nameMap}
+        availabilities={availabilities}
+        onAccept={async (id, reason) => {
+          await updateStatus.mutateAsync({ id, status: 'accepted', reason });
+          toast({ title: 'Godkänd' });
         }}
-      >
+        onDecline={async (id, reason) => {
+          await updateStatus.mutateAsync({ id, status: 'declined', reason });
+          toast({ title: 'Nekad' });
+        }}
+        onCancel={async (id, reason) => {
+          await cancelBookingMut.mutateAsync({ id, reason });
+          toast({ title: 'Avbokad' });
+        }}
+        onReschedule={async (id, startTime, endTime, reason) => {
+          await rescheduleMut.mutateAsync({ id, startTime, endTime, reason, rescheduledBy: 'coach' });
+          toast({ title: 'Ombokning skickad' });
+        }}
+      />
+
+      {/* Book availability slot dialog */}
+      <Dialog open={showBookDialog} onOpenChange={setShowBookDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {bookingDetailsMode === 'reschedule'
-                ? 'Ändra tid'
-                : selectedBooking?.meetingType === 'intro'
-                  ? 'Intromöte'
-                  : 'Uppföljningsmöte'}
-            </DialogTitle>
-            <DialogDescription asChild>
-              <div className="space-y-2 mt-2">
-                {selectedBooking && bookingDetailsMode === 'view' && (
-                  <>
-                    <p>
-                      <strong>Admin:</strong>{' '}
-                      {adminNameMap.get(selectedBooking.adminId) || 'Okänd'}
-                    </p>
-                    <p>
-                      <strong>Tid:</strong>{' '}
-                      {format(
-                        new Date(selectedBooking.startTime),
-                        'yyyy-MM-dd HH:mm'
-                      )}{' '}
-                      – {format(new Date(selectedBooking.endTime), 'HH:mm')}
-                    </p>
-                    {selectedBooking.studentId && (
-                      <p>
-                        <strong>Student:</strong>{' '}
-                        {studentNameMap.get(selectedBooking.studentId) ||
-                          `ID ${selectedBooking.studentId}`}
-                      </p>
-                    )}
-                    {selectedBooking.note && (
-                      <p>
-                        <strong>Meddelande:</strong> {selectedBooking.note}
-                      </p>
-                    )}
-                    {selectedBooking.reason && (
-                      <p>
-                        <strong>Anledning:</strong> {selectedBooking.reason}
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      Bokad:{' '}
-                      {format(
-                        new Date(selectedBooking.bookedAt),
-                        'yyyy-MM-dd HH:mm'
-                      )}
-                    </p>
-                  </>
-                )}
-              </div>
-            </DialogDescription>
+            <DialogTitle>Boka tid</DialogTitle>
+            <DialogDescription>Välj mötestyp och tid.</DialogDescription>
           </DialogHeader>
-
-          {bookingDetailsMode === 'reschedule' && selectedBooking && (
-            <div className="space-y-4 py-2">
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Mötestyp</Label>
+              <Select value={bookMeetingType} onValueChange={setBookMeetingType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="intro">Intromöte</SelectItem>
+                  <SelectItem value="followup">Uppföljning</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {bookMeetingType === 'followup' && (
+              <div className="space-y-2">
+                <Label>Elev</Label>
+                <Select value={bookStudentId?.toString() || ''} onValueChange={(v) => setBookStudentId(Number(v))}>
+                  <SelectTrigger><SelectValue placeholder="Välj elev..." /></SelectTrigger>
+                  <SelectContent>
+                    {myStudents.map((s) => (
+                      <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Starttid</Label>
                 <Select
-                  value={`${rescheduleStart.hour}:${rescheduleStart.minute}`}
+                  value={`${bookStartHour}:${bookStartMinute}`}
                   onValueChange={(val) => {
                     const [h, m] = val.split(':').map(Number);
-                    setRescheduleStart({ hour: h, minute: m });
-                    const newTotal = h * 60 + m;
-                    if (
-                      rescheduleEnd.hour * 60 + rescheduleEnd.minute <=
-                      newTotal
-                    ) {
-                      const next = rescheduleOptions.find(
-                        (o) => o.hour * 60 + o.minute > newTotal
-                      );
-                      if (next)
-                        setRescheduleEnd({
-                          hour: next.hour,
-                          minute: next.minute,
-                        });
+                    setBookStartHour(h); setBookStartMinute(m);
+                    if (bookEndHour * 60 + bookEndMinute <= h * 60 + m) {
+                      const next = bookTimeOptions.find((o) => o.hour * 60 + o.minute > h * 60 + m);
+                      if (next) { setBookEndHour(next.hour); setBookEndMinute(next.minute); }
                     }
                   }}
                 >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {rescheduleOptions.slice(0, -1).map((o) => (
-                      <SelectItem key={o.label} value={`${o.hour}:${o.minute}`}>
-                        {o.label}
-                      </SelectItem>
+                    {bookTimeOptions.slice(0, -1).map((o) => (
+                      <SelectItem key={o.label} value={`${o.hour}:${o.minute}`}>{o.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -1249,245 +437,41 @@ function CoachBookingView() {
               <div className="space-y-2">
                 <Label>Sluttid</Label>
                 <Select
-                  value={`${rescheduleEnd.hour}:${rescheduleEnd.minute}`}
-                  onValueChange={(val) => {
-                    const [h, m] = val.split(':').map(Number);
-                    setRescheduleEnd({ hour: h, minute: m });
-                  }}
+                  value={`${bookEndHour}:${bookEndMinute}`}
+                  onValueChange={(val) => { const [h, m] = val.split(':').map(Number); setBookEndHour(h); setBookEndMinute(m); }}
                 >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {rescheduleEndOptions.map((o) => (
-                      <SelectItem key={o.label} value={`${o.hour}:${o.minute}`}>
-                        {o.label}
-                      </SelectItem>
+                    {bookTimeOptions.filter((o) => o.hour * 60 + o.minute > bookStartHour * 60 + bookStartMinute).map((o) => (
+                      <SelectItem key={o.label} value={`${o.hour}:${o.minute}`}>{o.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label>Anledning (valfritt)</Label>
-                <Textarea
-                  placeholder="Ange anledning till tidsändringen..."
-                  value={actionReason}
-                  onChange={(e) => setActionReason(e.target.value)}
-                  rows={3}
-                />
-              </div>
             </div>
-          )}
-
-          {bookingDetailsMode === 'view' &&
-            selectedBooking?.status === 'accepted' &&
-            !isBookingInPast(selectedBooking) && (
-              <div className="space-y-2 pt-2">
-                <Label>Anledning (valfritt)</Label>
-                <Textarea
-                  placeholder="Ange anledning till ändringen..."
-                  value={actionReason}
-                  onChange={(e) => setActionReason(e.target.value)}
-                  rows={2}
-                />
-              </div>
-            )}
-
-          {bookingDetailsMode === 'view' &&
-            selectedBooking?.status === 'rescheduled' &&
-            selectedBooking.rescheduledBy === 'admin' &&
-            !isBookingInPast(selectedBooking) && (
-              <div className="space-y-2 pt-2">
-                <Label>Anledning (valfritt)</Label>
-                <Textarea
-                  placeholder="Ange anledning till ditt svar..."
-                  value={actionReason}
-                  onChange={(e) => setActionReason(e.target.value)}
-                  rows={2}
-                />
-              </div>
-            )}
-
-          {bookingDetailsMode === 'view' &&
-            selectedBooking?.status === 'pending' &&
-            !isBookingInPast(selectedBooking) && (
-              <div className="space-y-2 pt-2">
-                <Label>Anledning (valfritt)</Label>
-                <Textarea
-                  placeholder="Ange anledning till nekande eller tidsändring..."
-                  value={actionReason}
-                  onChange={(e) => setActionReason(e.target.value)}
-                  rows={2}
-                />
-              </div>
-            )}
-
+            <div className="space-y-2">
+              <Label>Meddelande (valfritt)</Label>
+              <Textarea value={bookNote} onChange={(e) => setBookNote(e.target.value)} rows={2} />
+            </div>
+          </div>
           <DialogFooter>
-            {bookingDetailsMode === 'reschedule' ? (
-              <div className="flex gap-3 w-full justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => setBookingDetailsMode('view')}
-                >
-                  Tillbaka
-                </Button>
-                <Button onClick={handleReschedule}>Spara tid</Button>
-              </div>
-            ) : selectedBooking?.status === 'rescheduled' &&
-              selectedBooking.rescheduledBy === 'admin' &&
-              !isBookingInPast(selectedBooking) ? (
-              <div className="flex gap-3 w-full justify-end">
-                <Button
-                  variant="outline"
-                  className="text-destructive border-destructive hover:bg-destructive/10"
-                  onClick={() => handleCancelAccepted()}
-                >
-                  <X className="h-4 w-4 mr-1" /> Neka
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={async () => {
-                    const s = new Date(selectedBooking.startTime);
-                    const e = new Date(selectedBooking.endTime);
-                    setRescheduleStart({
-                      hour: s.getHours(),
-                      minute: s.getMinutes(),
-                    });
-                    setRescheduleEnd({
-                      hour: e.getHours(),
-                      minute: e.getMinutes(),
-                    });
-                    if (
-                      !availabilities.find(
-                        (a) => a.id === selectedBooking.adminAvailabilityId
-                      )
-                    ) {
-                      try {
-                        const avail = await getAvailabilityById(
-                          selectedBooking.adminAvailabilityId
-                        );
-                        setFetchedParentAvail(avail);
-                      } catch {
-                        /* fallback to current booking times */
-                      }
-                    }
-                    setBookingDetailsMode('reschedule');
-                  }}
-                >
-                  Föreslå annan tid
-                </Button>
-                <Button
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  onClick={handleAcceptReschedule}
-                >
-                  <Check className="h-4 w-4 mr-1" /> Godkänn
-                </Button>
-              </div>
-            ) : selectedBooking?.status === 'pending' &&
-              !isBookingInPast(selectedBooking) ? (
-              <div className="flex gap-3 w-full justify-end">
-                <Button
-                  variant="outline"
-                  className="text-destructive border-destructive hover:bg-destructive/10"
-                  onClick={() => handleCancelAccepted()}
-                >
-                  <X className="h-4 w-4 mr-1" /> Neka
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={async () => {
-                    const s = new Date(selectedBooking.startTime);
-                    const e = new Date(selectedBooking.endTime);
-                    setRescheduleStart({
-                      hour: s.getHours(),
-                      minute: s.getMinutes(),
-                    });
-                    setRescheduleEnd({
-                      hour: e.getHours(),
-                      minute: e.getMinutes(),
-                    });
-                    if (
-                      !availabilities.find(
-                        (a) => a.id === selectedBooking.adminAvailabilityId
-                      )
-                    ) {
-                      try {
-                        const avail = await getAvailabilityById(
-                          selectedBooking.adminAvailabilityId
-                        );
-                        setFetchedParentAvail(avail);
-                      } catch {
-                        /* fallback */
-                      }
-                    }
-                    setBookingDetailsMode('reschedule');
-                  }}
-                >
-                  Föreslå annan tid
-                </Button>
-                <Button
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  onClick={() => handleAcceptReschedule()}
-                >
-                  <Check className="h-4 w-4 mr-1" /> Godkänn
-                </Button>
-              </div>
-            ) : selectedBooking?.status === 'accepted' &&
-              !isBookingInPast(selectedBooking) ? (
-              <div className="flex gap-3 w-full justify-end">
-                <Button
-                  variant="outline"
-                  className="text-destructive border-destructive hover:bg-destructive/10"
-                  onClick={handleCancelAccepted}
-                >
-                  <X className="h-4 w-4 mr-1" /> Avboka
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    const s = new Date(selectedBooking.startTime);
-                    const e = new Date(selectedBooking.endTime);
-                    setRescheduleStart({
-                      hour: s.getHours(),
-                      minute: s.getMinutes(),
-                    });
-                    setRescheduleEnd({
-                      hour: e.getHours(),
-                      minute: e.getMinutes(),
-                    });
-                    setBookingDetailsMode('reschedule');
-                  }}
-                >
-                  Ändra tid
-                </Button>
-              </div>
-            ) : (
-              <Button
-                variant="outline"
-                onClick={() => setShowBookingDetails(false)}
-              >
-                Stäng
-              </Button>
-            )}
+            <Button variant="outline" onClick={() => setShowBookDialog(false)}>Avbryt</Button>
+            <Button onClick={handleBookSlot} disabled={bookMeetingType === 'followup' && !bookStudentId}>Boka</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       {/* Suggest meeting dialog */}
-      <Dialog open={showSuggestDialog} onOpenChange={setShowSuggestDialog}>
+      <Dialog open={showSuggestDialog} onOpenChange={(o) => { setShowSuggestDialog(o); if (!o) resetSuggestDialog(); }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Föreslå möte</DialogTitle>
-            <DialogDescription>
-              Välj handledare, mötestyp, dag och tid för mötet.
-            </DialogDescription>
+            <DialogDescription>Föreslå en tid utanför tillgängliga tider.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label>Handledare</Label>
-              <Select
-                value={suggestAdminId?.toString() || ''}
-                onValueChange={(val) => setSuggestAdminId(Number(val))}
-              >
+              <Select value={suggestAdminId?.toString() || ''} onValueChange={(v) => setSuggestAdminId(Number(v))}>
                 <SelectTrigger><SelectValue placeholder="Välj handledare..." /></SelectTrigger>
                 <SelectContent>
                   {admins.map((a) => (
@@ -1498,31 +482,22 @@ function CoachBookingView() {
             </div>
             <div className="space-y-2">
               <Label>Mötestyp</Label>
-              <Select
-                value={suggestMeetingType}
-                onValueChange={(val) => {
-                  setSuggestMeetingType(val as 'intro' | 'followup' | 'other');
-                  setSuggestStudentId(null);
-                }}
-              >
+              <Select value={suggestMeetingType} onValueChange={setSuggestMeetingType}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="intro">Intromöte</SelectItem>
-                  <SelectItem value="followup">Uppföljningsmöte</SelectItem>
-                  <SelectItem value="other">Annan anledning</SelectItem>
+                  <SelectItem value="followup">Uppföljning</SelectItem>
+                  <SelectItem value="other">Annat</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {suggestMeetingType === 'followup' && (
               <div className="space-y-2">
                 <Label>Elev</Label>
-                <Select
-                  value={suggestStudentId?.toString() || ''}
-                  onValueChange={(val) => setSuggestStudentId(Number(val))}
-                >
+                <Select value={suggestStudentId?.toString() || ''} onValueChange={(v) => setSuggestStudentId(Number(v))}>
                   <SelectTrigger><SelectValue placeholder="Välj elev..." /></SelectTrigger>
                   <SelectContent>
-                    {students.map((s) => (
+                    {myStudents.map((s) => (
                       <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</SelectItem>
                     ))}
                   </SelectContent>
@@ -1544,93 +519,72 @@ function CoachBookingView() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Starttid</Label>
-              <Select
-                value={`${suggestStartHour}:${suggestStartMinute}`}
-                onValueChange={(val) => {
-                  const [h, m] = val.split(':').map(Number);
-                  setSuggestStartHour(h);
-                  setSuggestStartMinute(m);
-                  const newTotal = h * 60 + m;
-                  if (suggestEndHour * 60 + suggestEndMinute <= newTotal) {
-                    const next = ALL_TIME_OPTIONS.find((o) => o.hour * 60 + o.minute > newTotal);
-                    if (next) { setSuggestEndHour(next.hour); setSuggestEndMinute(next.minute); }
-                  }
-                }}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {ALL_TIME_OPTIONS.slice(0, -1).map((o) => (
-                    <SelectItem key={o.label} value={`${o.hour}:${o.minute}`}>{o.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Sluttid</Label>
-              <Select
-                value={`${suggestEndHour}:${suggestEndMinute}`}
-                onValueChange={(val) => { const [h, m] = val.split(':').map(Number); setSuggestEndHour(h); setSuggestEndMinute(m); }}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {ALL_TIME_OPTIONS
-                    .filter((o) => o.hour * 60 + o.minute > suggestStartHour * 60 + suggestStartMinute)
-                    .map((o) => (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Starttid</Label>
+                <Select
+                  value={`${suggestStartHour}:${suggestStartMinute}`}
+                  onValueChange={(val) => {
+                    const [h, m] = val.split(':').map(Number);
+                    setSuggestStartHour(h); setSuggestStartMinute(m);
+                    if (suggestEndHour * 60 + suggestEndMinute <= h * 60 + m) {
+                      const next = ALL_TIME_OPTIONS.find((o) => o.hour * 60 + o.minute > h * 60 + m);
+                      if (next) { setSuggestEndHour(next.hour); setSuggestEndMinute(next.minute); }
+                    }
+                  }}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ALL_TIME_OPTIONS.slice(0, -1).map((o) => (
                       <SelectItem key={o.label} value={`${o.hour}:${o.minute}`}>{o.label}</SelectItem>
                     ))}
-                </SelectContent>
-              </Select>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Sluttid</Label>
+                <Select
+                  value={`${suggestEndHour}:${suggestEndMinute}`}
+                  onValueChange={(val) => { const [h, m] = val.split(':').map(Number); setSuggestEndHour(h); setSuggestEndMinute(m); }}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ALL_TIME_OPTIONS.filter((o) => o.hour * 60 + o.minute > suggestStartHour * 60 + suggestStartMinute).map((o) => (
+                      <SelectItem key={o.label} value={`${o.hour}:${o.minute}`}>{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Meddelande (valfritt)</Label>
-              <Textarea
-                placeholder="Lägg till ett meddelande..."
-                value={suggestNote}
-                onChange={(e) => setSuggestNote(e.target.value)}
-                rows={2}
-              />
+              <Textarea value={suggestNote} onChange={(e) => setSuggestNote(e.target.value)} rows={2} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowSuggestDialog(false)}>Avbryt</Button>
-            <Button onClick={handleCreateSuggestMeeting}>Föreslå</Button>
+            <Button variant="outline" onClick={() => { setShowSuggestDialog(false); resetSuggestDialog(); }}>Avbryt</Button>
+            <Button onClick={handleSuggestMeeting}>Skicka</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Suggest meeting — hard conflict error */}
-      <Dialog open={showSuggestConflictError} onOpenChange={(open) => { setShowSuggestConflictError(open); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Tid inte tillgänglig</DialogTitle>
-            <DialogDescription>
-              Det finns redan ett godkänt möte vid den valda tiden. Välj en annan tid.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowSuggestConflictError(false)}>Stäng</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Suggest meeting — pending conflict warning */}
-      <Dialog open={showSuggestConflictWarning} onOpenChange={(open) => { setShowSuggestConflictWarning(open); if (!open) setPendingSuggestData(null); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Möjlig konflikt</DialogTitle>
-            <DialogDescription>
-              Det finns ett ohanterat möte vid den valda tiden. Vill du föreslå tid ändå?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setShowSuggestConflictWarning(false); setPendingSuggestData(null); }}>Avbryt</Button>
-            <Button onClick={handleConfirmSuggestWarning}>Fortsätt</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+      {/* Conflict dialogs */}
+      <ConflictDialog
+        open={showConflictError}
+        onOpenChange={(o) => { setShowConflictError(o); if (!o) setConflictErrorBookings([]); }}
+        type="error"
+        bookings={conflictErrorBookings}
+        nameMap={nameMap}
+      />
+      <ConflictDialog
+        open={showConflictWarning}
+        onOpenChange={(o) => { setShowConflictWarning(o); if (!o) { setPendingForceData(null); setConflictWarningBookings([]); } }}
+        type="warning"
+        bookings={conflictWarningBookings}
+        nameMap={nameMap}
+        onConfirm={handleConfirmWarning}
+      />
+    </>
   );
 }
 
