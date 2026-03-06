@@ -52,12 +52,12 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, unreadCount: number): Na
     items.push(
       { title: 'Mina deltagare', url: '/mina-deltagare', icon: Users },
       { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, showBadge: unreadCount > 0 },
-      { title: 'Kontakt', url: '/kontakt', icon: Contact },
       {
-        title: 'Kalender: Boka intro',
+        title: 'Kalender: Boka möte',
         url: '/coach-booking',
         icon: CalendarIcon,
-      }
+      },
+      { title: 'Kontakt', url: '/kontakt', icon: Contact }
       // { title: 'Profil', url: '/profil', icon: UserCircle }
     );
   } else {
@@ -65,10 +65,10 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, unreadCount: number): Na
       { title: 'Projekt', url: '/projekt', icon: FolderKanban },
       { title: 'Övningar', url: '/ovningar', icon: Dumbbell },
       { title: 'Portfolio', url: '/portfolio', icon: Briefcase },
+      { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, showBadge: unreadCount > 0 },
       { title: 'Min kalender', url: '/student-calendar', icon: CalendarIcon },
       // { title: 'Profil', url: '/profil', icon: UserCircle },
-      { title: 'Terminal', url: '/terminal', icon: TerminalIcon },
-      { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, showBadge: unreadCount > 0 }
+      { title: 'Terminal', url: '/terminal', icon: TerminalIcon }
     );
   }
 
