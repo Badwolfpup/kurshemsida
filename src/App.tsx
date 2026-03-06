@@ -23,6 +23,7 @@ import CoachMyParticipants from './pages/CoachMyParticipants';
 import CoachContact from './pages/CoachContact';
 import CoachProjects from './pages/CoachProjects';
 import CoachBookingView from './pages/CoachBookingView';
+import StudentCalendar from './pages/StudentCalendar';
 import Deltagare from './pages/Deltagare';
 import TicketsPage from './pages/TicketsPage';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -92,6 +93,7 @@ function AppRoutes() {
         <Route path="/profil" element={<Preferenser />} />
         <Route path="/coach-projekt" element={<CoachProjects />} />
         <Route path="/coach-booking" element={<CoachBookingView />} />
+        <Route path="/student-calendar" element={<ProtectedRoute allow="student"><StudentCalendar /></ProtectedRoute>} />
         <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

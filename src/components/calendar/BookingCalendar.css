@@ -1,0 +1,63 @@
+.booking-calendar--workhours .rbc-time-content,
+.booking-calendar--workhours .rbc-time-gutter {
+  border-top: 0;
+}
+
+.booking-calendar--workhours .rbc-allday-cell {
+  display: none;
+}
+
+
+.booking-calendar--workhours .rbc-time-gutter .rbc-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.booking-calendar--workhours .rbc-event {
+  border: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+}
+
+.booking-calendar--workhours .rbc-event-label {
+  display: none;
+}
+
+.booking-calendar--workhours .rbc-event-content {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.booking-calendar--workhours .rbc-event--declined {
+  width: 50% !important;
+}
+
+/* Past day columns */
+.booking-calendar--workhours .rbc-day--past {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.dark .booking-calendar--workhours .rbc-day--past {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Current day highlight — fix dark mode invisibility */
+.booking-calendar--workhours .rbc-today {
+  background: rgba(99, 102, 241, 0.10);
+}
+
+.dark .booking-calendar--workhours .rbc-today {
+  background: rgba(99, 102, 241, 0.20);
+}
+
+/* NoClass day — red tint */
+.booking-calendar--workhours .rbc-day--noclass {
+  background: rgba(239, 68, 68, 0.14) !important;
+}
+
+.dark .booking-calendar--workhours .rbc-day--noclass {
+  background: rgba(239, 68, 68, 0.22) !important;
+}
