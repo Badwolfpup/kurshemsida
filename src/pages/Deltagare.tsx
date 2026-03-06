@@ -15,6 +15,7 @@ export type Participant = {
   startDate: string;
   track: number; // from user.course
   coach: string;
+  coachId: number | null;
   coachEmail: string;
   teacher: string;
   active: boolean;
@@ -75,6 +76,7 @@ function mapUserToParticipant(
       : "",
     track: user.course ?? 1,
     coach: coach ? `${coach.firstName} ${coach.lastName}` : "Ingen coach",
+    coachId: user.coachId ?? null,
     coachEmail: coach?.email ?? "",
     teacher: teacher ? `${teacher.firstName} ${teacher.lastName}` : "Ingen lärare",
     active: user.isActive ?? true,

@@ -4,10 +4,9 @@ import {
   Users,
   CalendarCheck,
   Megaphone,
-  Settings,
   ArrowLeft,
   Dumbbell,
-  Ticket,
+  Bug,
   FolderKanban,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,9 +15,8 @@ import AdminAttendance from '@/components/admin/AdminAttendance';
 import AdminExercises from '@/components/admin/AdminExercises';
 import AdminProjects from '@/components/admin/AdminProjects';
 import AdminPosts from '@/components/admin/AdminPosts';
-import AdminSettings from '@/components/admin/AdminSettings';
 import CoachAttendance from '@/components/admin/CoachAttendance';
-import AdminTickets from '@/components/admin/AdminTickets';
+import AdminBugReports from '@/components/admin/AdminBugReports';
 import HelpDialog from '@/components/HelpDialog';
 
 const StubPanel = ({ label }: { label: string }) => (
@@ -34,8 +32,7 @@ const menuItems = [
   { id: 'posts', label: 'Nyheter & Event', icon: Megaphone },
   { id: 'attendance', label: 'Närvarohantering', icon: CalendarCheck },
   { id: 'coach-attendance', label: 'Deltagarprofiler', icon: CalendarCheck },
-  // { id: 'tickets', label: 'Inkomna ärenden', icon: Ticket },
-  // { id: 'settings', label: 'Inställningar', icon: Settings },
+  { id: 'bug-reports', label: 'Buggar & Idéer', icon: Bug },
 ] as const;
 
 type AdminView = (typeof menuItems)[number]['id'] | 'menu';
@@ -57,10 +54,8 @@ const Admin = () => {
         return <AdminPosts />;
       case 'coach-attendance':
         return <CoachAttendance seluser={null} />;
-      // case 'tickets':
-      //   return <AdminTickets />;
-      // case 'settings':
-      //   return <AdminSettings />;
+      case 'bug-reports':
+        return <AdminBugReports />;
       default:
         return null;
     }

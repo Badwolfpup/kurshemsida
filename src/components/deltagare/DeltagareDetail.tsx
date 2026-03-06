@@ -1,7 +1,5 @@
-import { useState } from "react";
 import {
   AlertTriangle,
-  Send,
   CheckCircle2,
   Circle,
   Clock,
@@ -11,11 +9,8 @@ import {
   BookOpen,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { useAddTicket } from "@/hooks/useTickets";
-import { useToast } from "@/hooks/use-toast";
+import StudentContextChat from "@/components/messaging/StudentContextChat";
 import type { Participant } from "@/pages/Deltagare";
 
 function getAttendanceRate(p: Participant): number {
@@ -70,37 +65,10 @@ function getWeeklyAttendance(p: Participant) {
 }
 
 export function DeltagareDetail({ participant: p }: { participant: Participant }) {
-  const [message, setMessage] = useState("");
-  const addTicket = useAddTicket();
-  const { toast } = useToast();
-
   const exercisesDone = p.exercises.filter((e) => e.completed).length;
   const exercisesTotal = p.exercises.length;
 
   const weeks = getWeeklyAttendance(p);
-
-  const sendToCoach = () => {
-    if (!message.trim()) return;
-    addTicket.mutate(
-      { subject: `Uppdatering: ${p.firstName}`, message, type: "other" },
-      {
-        onSuccess: () => {
-          toast({
-            title: "Meddelande skickat",
-            description: `Uppdatering skickad till ${p.coach} (${p.coachEmail})`,
-          });
-          setMessage("");
-        },
-        onError: () => {
-          toast({
-            title: "Fel",
-            description: "Kunde inte skicka meddelandet.",
-            variant: "destructive",
-          });
-        },
-      }
-    );
-  };
 
   return (
     <div className="space-y-6">
@@ -256,31 +224,15 @@ export function DeltagareDetail({ participant: p }: { participant: Participant }
         </div>
       </div>
 
-      {/* Send update to coach */}
-      <div className="bg-card rounded-2xl shadow-card border border-border p-6 space-y-4">
-        <h3 className="font-display font-semibold text-foreground">
-          Skicka uppdatering till coach
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          Skicka en skriftlig uppdatering till{" "}
-          <span className="font-medium text-foreground">{p.coach}</span>{" "}
-          {p.coachEmail && `(${p.coachEmail})`}
-        </p>
-        <Textarea
-          placeholder="Skriv din uppdatering här..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          rows={3}
-        />
-        <Button
-          onClick={sendToCoach}
-          disabled={!message.trim() || addTicket.isPending}
-          className="gap-2"
-        >
-          <Send className="h-4 w-4" />
-          {addTicket.isPending ? "Skickar..." : "Skicka till coach"}
-        </Button>
-      </div>
+      {/* Chat with coach about student */}
+      {p.coachId && (
+        <div className="space-y-3">
+          <h3 className="font-display font-semibold text-foreground">
+            Chatt med coach om {p.firstName}
+          </h3>
+          <StudentContextChat studentId={p.id} otherUserId={p.coachId} />
+        </div>
+      )}
     </div>
   );
 }

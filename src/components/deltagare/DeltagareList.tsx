@@ -1,6 +1,7 @@
 import { AlertTriangle, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Participant } from "@/pages/Deltagare";
+import { useThreads } from "@/hooks/useMessages";
 
 export function hasAbsenceAlert(p: Participant): boolean {
   const today = new Date();
@@ -23,8 +24,13 @@ export function DeltagareList({
   participants: Participant[];
   onSelect: (id: number) => void;
 }) {
+  const { data: threads = [] } = useThreads();
   const active = participants.filter((p) => p.active);
   const inactive = participants.filter((p) => !p.active);
+
+  // Check which students have unread student-context threads
+  const hasUnreadForStudent = (studentId: number) =>
+    threads.some((t) => t.studentContextId === studentId && t.hasUnread);
 
   return (
     <div className="space-y-6">
@@ -65,10 +71,13 @@ export function DeltagareList({
                   {p.firstName.charAt(0)}
                 </div>
                 <div>
-                  <p className="font-medium text-foreground text-sm">
+                  <p className="font-medium text-foreground text-sm flex items-center gap-1.5">
                     {p.firstName} {p.lastName}
+                    {hasUnreadForStudent(p.id) && (
+                      <span className="w-2 h-2 rounded-full bg-destructive shrink-0" />
+                    )}
                     {hasAbsenceAlert(p) && (
-                      <AlertTriangle className="inline h-3.5 w-3.5 text-destructive ml-2" />
+                      <AlertTriangle className="inline h-3.5 w-3.5 text-destructive" />
                     )}
                   </p>
                   <p className="text-xs text-muted-foreground">{p.email}</p>
