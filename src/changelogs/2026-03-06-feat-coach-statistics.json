@@ -1,0 +1,17 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Statistik-fliken för coacher visar nu fyra nya datapunkter: totalt 3 månader, frånvaro per veckodag, längsta frånvarosvit och närvarosvitar",
+      "Buggfix: närvarostatistik per månad visade fel siffror för föregående månader (alltid samma som aktuell månad)",
+      "Sidomenyn för coacher: \"Kalender: Boka intro\" bytt namn till \"Kalender: Boka möte\", ordningen ändrad (Kalender före Kontakt)",
+      "Sidomenyn för elever: Meddelanden flyttad ovanför Min kalender"
+    ],
+    "coach": [
+      "Statistik-fliken visar nu mer detaljerad data: totalt närvaro senaste 3 månader, frånvaro per veckodag, längsta frånvarosvit och närvarosvitar"
+    ],
+    "student": [
+      "Meddelanden har flyttats upp i sidomenyn (ovanför Min kalender)"
+    ]
+  }
+}

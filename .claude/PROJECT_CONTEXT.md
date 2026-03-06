@@ -112,4 +112,5 @@ Skip service methods — they are pure HTTP wrappers with no side effects.
 ## Recurring Patterns
 - cloc command: `cloc . --exclude-dir=node_modules,dist,.git --exclude-ext=json,lock`
 - When switching branches: `git checkout main && git pull && git checkout <branch>` (changes stay on original branch)
-- Dev mode email suppression: backend wraps `EmailService.SendEmailFireAndForget()` calls with `if (!app.Environment.IsDevelopment())` — applied in TicketEndpoints.cs, consider using same pattern elsewhere
+- Dev mode email suppression: backend wraps `EmailService.SendEmailFireAndForget()` calls with `if (!app.Environment.IsDevelopment())` — applied in MessageEndpoints.cs
+- Booking email notifications: centralized in `Kursserver/Utils/BookingNotifier.cs` — handles created, status changed, cancelled, rescheduled notifications for admin/coach/student

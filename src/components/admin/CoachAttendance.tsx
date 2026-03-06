@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import HelpDialog from "@/components/HelpDialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -134,26 +134,103 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null }) => 
     return false;
   };
 
-  const getTotalScheduledDaysInMonth = (monthOffset: number): number => {
-    if (!selectedUser) return 0;
-    const firstday = getFirstDayOfMonth(monthOffset);
-    const lastday = getLastDayOfMonth(monthOffset);
-    let count = 0;
-    for (let d = new Date(firstday); d <= lastday; d.setDate(d.getDate() + 1)) {
-      if (attendsScheduledDay(getWeekday(d)) && !noClasses.some((nc) => compareDates(new Date(nc), d)) && !!selectedUser.startDate && d >= new Date(selectedUser.startDate)) count++;
+  const getScheduledDatesInRange = (start: Date, end: Date): Date[] => {
+    if (!selectedUser) return [];
+    const dates: Date[] = [];
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const current = new Date(d);
+      if (
+        attendsScheduledDay(getWeekday(current)) &&
+        !noClasses.some((nc) => compareDates(new Date(nc), current)) &&
+        !!selectedUser.startDate &&
+        current >= new Date(selectedUser.startDate)
+      )
+        dates.push(current);
     }
-    return count;
+    return dates;
+  };
+
+  const getAttendedDatesInRange = (start: Date, end: Date): Date[] => {
+    if (!selectedUser) return [];
+    const scheduledSet = new Set(
+      getScheduledDatesInRange(start, end).map((d) => d.toISOString().slice(0, 10))
+    );
+    return attendance
+      .filter((att) => att.userId === selectedUser.id)
+      .flatMap((att) => att.date)
+      .map((d) => new Date(d))
+      .filter((d) => d >= start && d <= end && scheduledSet.has(d.toISOString().slice(0, 10)));
   };
 
   const printScheduledDays = (offset: number): string => {
     if (!selectedUser) return "";
-    const attendedDays = attendance.filter((att) => att.userId === selectedUser.id).reduce((acc, att) => acc + att.date.filter((d) => {
-      const attDate = new Date(d);
-      return attDate >= getFirstDayOfMonth(0) && attDate <= getLastDayOfMonth(0) && attendsScheduledDay(getWeekday(attDate)) && !noClasses.some((nc) => compareDates(new Date(nc), attDate)) && !!selectedUser.startDate && attDate >= new Date(selectedUser.startDate);
-    }).length, 0);
-    const totalScheduled = getTotalScheduledDaysInMonth(offset);
+    const start = getFirstDayOfMonth(offset);
+    const end = getLastDayOfMonth(offset);
+    const attendedDays = getAttendedDatesInRange(start, end).length;
+    const totalScheduled = getScheduledDatesInRange(start, end).length;
     return `${attendedDays} / ${totalScheduled} (${totalScheduled > 0 ? Math.round((attendedDays / totalScheduled) * 100) : 0}%)`;
   };
+
+  // Memoize 3-month stats to avoid recomputing on every render
+  const threeMonthStats = useMemo(() => {
+    if (!selectedUser) return null;
+    const start = getFirstDayOfMonth(-2);
+    const end = getLastDayOfMonth(0);
+    const scheduled = getScheduledDatesInRange(start, end);
+    const attended = getAttendedDatesInRange(start, end);
+    const attendedSet = new Set(attended.map((d) => d.toISOString().slice(0, 10)));
+
+    // Aggregate
+    const pct = scheduled.length > 0 ? Math.round((attended.length / scheduled.length) * 100) : 0;
+    const aggregate = `${attended.length} / ${scheduled.length} (${pct}%)`;
+
+    // Absence by weekday
+    const weekdays = ["måndag", "tisdag", "onsdag", "torsdag"];
+    const labels = ["Måndag", "Tisdag", "Onsdag", "Torsdag"];
+    const absenceByWeekday = weekdays
+      .map((wd, i) => {
+        const total = scheduled.filter((d) => getWeekday(d) === wd).length;
+        if (total === 0) return null;
+        const present = attended.filter((d) => getWeekday(d) === wd).length;
+        return { label: labels[i], missed: total - present, total };
+      })
+      .filter(Boolean) as { label: string; missed: number; total: number }[];
+
+    // Longest absence streak
+    const sorted = [...scheduled].sort((a, b) => a.getTime() - b.getTime());
+    let maxAbsence = 0;
+    let absenceRun = 0;
+    for (const d of sorted) {
+      if (!attendedSet.has(d.toISOString().slice(0, 10))) {
+        absenceRun++;
+        maxAbsence = Math.max(maxAbsence, absenceRun);
+      } else {
+        absenceRun = 0;
+      }
+    }
+
+    // Attendance streaks (up to today)
+    const today = new Date();
+    const scheduledToToday = sorted.filter((d) => d <= today);
+    let longestAttendance = 0;
+    let attendanceRun = 0;
+    for (const d of scheduledToToday) {
+      if (attendedSet.has(d.toISOString().slice(0, 10))) {
+        attendanceRun++;
+        longestAttendance = Math.max(longestAttendance, attendanceRun);
+      } else {
+        attendanceRun = 0;
+      }
+    }
+    let currentAttendance = 0;
+    for (let i = scheduledToToday.length - 1; i >= 0; i--) {
+      if (attendedSet.has(scheduledToToday[i].toISOString().slice(0, 10))) currentAttendance++;
+      else break;
+    }
+
+    return { aggregate, absenceByWeekday, longestAbsenceStreak: maxAbsence, currentAttendanceStreak: currentAttendance, longestAttendanceStreak: longestAttendance };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedUser?.id, attendance, noClasses]);
 
   return (
     <div className="space-y-4">
@@ -324,6 +401,8 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null }) => 
                   const latest = dates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
                   return new Date(latest).toLocaleDateString("sv-SE");
                 })()}</p>
+
+                <h3 className="text-sm font-semibold mt-4 mb-2">Närvaro per månad</h3>
                 <Table>
                   <TableHeader><TableRow><TableHead></TableHead><TableHead>{getMonthName(0)}</TableHead><TableHead>{getMonthName(-1)}</TableHead><TableHead>{getMonthName(-2)}</TableHead></TableRow></TableHeader>
                   <TableBody>
@@ -335,6 +414,32 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null }) => 
                     </TableRow>
                   </TableBody>
                 </Table>
+
+                {threeMonthStats && (
+                  <>
+                    <p className="text-sm mt-4"><strong>Totalt senaste 3 månader:</strong> {threeMonthStats.aggregate}</p>
+
+                    <h3 className="text-sm font-semibold mt-4 mb-2">Frånvaro per veckodag</h3>
+                    <Table>
+                      <TableHeader><TableRow><TableHead>Veckodag</TableHead><TableHead>Missat</TableHead><TableHead>Schemalagt</TableHead></TableRow></TableHeader>
+                      <TableBody>
+                        {threeMonthStats.absenceByWeekday.map((row) => (
+                          <TableRow key={row.label}>
+                            <TableCell>{row.label}</TableCell>
+                            <TableCell>{row.missed}</TableCell>
+                            <TableCell>{row.total}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+
+                    <div className="mt-4 space-y-1">
+                      <p className="text-sm"><strong>Längsta frånvarosvit:</strong> {threeMonthStats.longestAbsenceStreak} schemalagda dagar</p>
+                      <p className="text-sm"><strong>Nuvarande närvarosvit:</strong> {threeMonthStats.currentAttendanceStreak} schemalagda dagar</p>
+                      <p className="text-sm"><strong>Längsta närvarosvit:</strong> {threeMonthStats.longestAttendanceStreak} schemalagda dagar</p>
+                    </div>
+                  </>
+                )}
               </TabsContent>
               <TabsContent value="kontaktinfo">
                 <Table>
