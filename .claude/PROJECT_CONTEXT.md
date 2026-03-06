@@ -23,19 +23,31 @@
 - Unit tests: `src/__tests__/`
 - Changelog: `CHANGELOG.md` (root, gitignored — local only)
 
-## Ticket System
-- **Unified page**: `src/pages/TicketsPage.tsx` — single component for all roles, uses `TicketPageConfig` + `getConfig(isAdmin, isCoach)` pattern
-- Old per-role files still exist but are unused (not imported): `StudentTickets.tsx`, `CoachTickets.tsx`, `AdminTickets.tsx`
-- Shared sub-components: `TicketReplyThread`, `TimeSuggestionDisplay`, `TimeSuggestionDialog` (in `src/components/tickets/`)
-- Backend: `TicketEndpoints.cs` — emails skipped in dev mode via `!app.Environment.IsDevelopment()`
+## Messaging System
+- **Replaced** the old ticket/ärende system with persistent 1-on-1 chat threads
+- Page: `src/pages/MeddelandenPage.tsx` — single page for all roles at `/meddelanden`
+  - Admin: two tabs (Deltagare | Coacher), shows all active users including those without existing threads ("virtual threads" with negative IDs)
+  - Coach: flat list of direct threads (admins/teachers + students)
+  - Student: flat list of direct threads (admins/teachers + coach)
+- Components: `src/components/messaging/` — `ThreadList`, `ChatThread`, `StudentContextChat`
+- `StudentContextChat`: about-student threads shown in Deltagare/Mina deltagare views (not on Meddelanden page)
+- Shared `FeedbackForm` component for bug/idea submission in settings pages
+- `AdminBugReports` module in admin panel with Buggar/Idéer tabs
+- Backend: `MessageEndpoints.cs` (threads, messages, view, unread-count), `BugReportEndpoints.cs`
+- Thread model: `User1Id < User2Id` enforced for uniqueness, `StudentContextId` nullable (null = direct, N = about-student)
+- Unique constraint uses computed column: `COALESCE(StudentContextId, 0)` for SQL Server null uniqueness
+- Lazy thread creation on first message via `POST /api/messages`
+- 10-second polling (`refetchInterval`) on threads and messages for near-real-time updates
+- Email notifications on new messages (respects `EmailNotifications` flag, skipped in dev)
 
 ## Data Model Notes
 - `Booking`: AdminId, CoachId, StudentId, AdminAvailabilityId, Note, MeetingType, StartTime, EndTime, BookedAt, Seen, Status, Reason, RescheduledBy
-- `Ticket`: SenderId (student), RecipientId (admin), Subject, Message, Type, Status
-- `TicketTimeSuggestion`: TicketId, SuggestedById, StartTime, EndTime, Status (pending/accepted/declined), DeclineReason
+- `Thread`: User1Id, User2Id, StudentContextId (nullable), CreatedAt, UpdatedAt — unique on (User1Id, User2Id, COALESCE(StudentContextId, 0))
+- `Message`: ThreadId, SenderId, Content, CreatedAt
+- `ThreadView`: UserId, ThreadId, LastViewedAt — unique on (UserId, ThreadId)
+- `BugReport`: Type ("bug"|"idea"), Content, SenderId, CreatedAt
 - `RecurringEvent`: Name, Weekday, StartTime, EndTime, Frequency (weekly/biweekly), StartDate, AdminId, CreatedAt
 - `RecurringEventException`: RecurringEventId, Date, IsDeleted, Name, StartTime, EndTime
-- Admin calendar renders `Booking` + `RecurringEvent` instances — ticket suggestions must be converted to bookings to appear
 
 ## SCENARIO Comment Convention
 Add to mutation hooks (frontend) and endpoint registrations (backend) after implementing features. Used by `/static-trace` to verify code matches intent.
@@ -96,7 +108,6 @@ Skip service methods — they are pure HTTP wrappers with no side effects.
 - Loaded by `src/hooks/useChangelog.ts`, rendered by `src/components/ChangelogDialog.tsx`
 - Dialog renders two-level bullets: top-level = disc, children = circle (indented)
 - `/makepr` drafts changelog entries in **Swedish** as its first step
-- Student sidebar item is "Mina ärenden" (not "Skapa ärende")
 
 ## Recurring Patterns
 - cloc command: `cloc . --exclude-dir=node_modules,dist,.git --exclude-ext=json,lock`

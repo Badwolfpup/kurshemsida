@@ -4,7 +4,6 @@ import {
   Settings,
   Sun,
   Moon,
-  Bug,
   UserCircle,
   Save,
   Phone,
@@ -13,13 +12,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import FeedbackForm from "@/components/FeedbackForm";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUpdateUser, useUsers } from "@/hooks/useUsers";
 import { useToast } from "@/hooks/use-toast";
-import { useAddTicket } from "@/hooks/useTickets";
 
 const CoachSettings = () => {
   const { theme, setTheme } = useTheme();
@@ -27,13 +25,10 @@ const CoachSettings = () => {
   const { toast } = useToast();
   const { data: allUsers = [] } = useUsers();
   const updateUser = useUpdateUser();
-  const addTicket = useAddTicket();
-
   const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [telephone, setTelephone] = useState("");
-  const [bugReport, setBugReport] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -76,19 +71,6 @@ const CoachSettings = () => {
     setLastName(user?.lastName ?? "");
     setTelephone(fullUser?.telephone ?? "");
     setIsEditing(false);
-  };
-
-  const submitBugReport = () => {
-    if (!bugReport.trim()) return;
-    addTicket.mutate(
-      { subject: "Buggrapport", message: bugReport, type: "bug" },
-      {
-        onSuccess: () => {
-          toast({ title: "Buggrapport skickad", description: "Tack för din rapport!" });
-          setBugReport("");
-        },
-      }
-    );
   };
 
   const initials =
@@ -215,28 +197,8 @@ const CoachSettings = () => {
           </div>
         </div>
 
-        {/* Bug report */}
-        <div className="bg-card rounded-2xl shadow-card border border-border p-6">
-          <h2 className="font-display font-semibold text-lg text-foreground mb-2 flex items-center gap-2">
-            <Bug className="h-5 w-5" /> Rapportera bugg
-          </h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Hittade du något som inte fungerar? Beskriv det nedan.
-          </p>
-          <Textarea
-            placeholder="Beskriv buggen..."
-            value={bugReport}
-            onChange={(e) => setBugReport(e.target.value)}
-            rows={4}
-          />
-          <Button
-            className="mt-3"
-            onClick={submitBugReport}
-            disabled={!bugReport.trim() || addTicket.isPending}
-          >
-            Skicka rapport
-          </Button>
-        </div>
+        {/* Bug report / Idea */}
+        <FeedbackForm />
       </div>
     </div>
   );

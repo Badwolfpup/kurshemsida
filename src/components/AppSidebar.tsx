@@ -11,17 +11,16 @@ import {
   ChevronLeft,
   TerminalIcon,
   X,
-  Ticket,
+  MessageSquare,
   Contact,
   Calendar as CalendarIcon,
-  CircleFadingPlus,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
-import { useTickets } from '@/hooks/useTickets';
+import { useUnreadCount } from '@/hooks/useMessages';
 import './AppSidebar.css';
 
 interface NavItem {
@@ -31,7 +30,7 @@ interface NavItem {
   showBadge?: boolean;
 }
 
-function getMainNav(isAdmin: boolean, isCoach: boolean, hasUnreadTicket: boolean): NavItem[] {
+function getMainNav(isAdmin: boolean, isCoach: boolean, unreadCount: number): NavItem[] {
   const items: NavItem[] = [{ title: 'Startsida', url: '/', icon: Home }];
 
   if (isAdmin) {
@@ -47,12 +46,12 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, hasUnreadTicket: boolean
       },
       // { title: 'Profil', url: '/profil', icon: UserCircle },
       { title: 'Terminal', url: '/terminal', icon: TerminalIcon },
-      { title: 'Ärenden', url: '/tickets', icon: Ticket, showBadge: hasUnreadTicket }
+      { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, showBadge: unreadCount > 0 }
     );
   } else if (isCoach) {
     items.push(
       { title: 'Mina deltagare', url: '/mina-deltagare', icon: Users },
-      { title: 'Ärenden', url: '/arenden', icon: Ticket, showBadge: hasUnreadTicket },
+      { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, showBadge: unreadCount > 0 },
       { title: 'Kontakt', url: '/kontakt', icon: Contact },
       {
         title: 'Kalender: Boka intro',
@@ -69,7 +68,7 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, hasUnreadTicket: boolean
       { title: 'Min kalender', url: '/student-calendar', icon: CalendarIcon },
       // { title: 'Profil', url: '/profil', icon: UserCircle },
       { title: 'Terminal', url: '/terminal', icon: TerminalIcon },
-      { title: 'Mina ärenden', url: '/student-arenden', icon: CircleFadingPlus, showBadge: hasUnreadTicket }
+      { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, showBadge: unreadCount > 0 }
     );
   }
 
@@ -98,8 +97,8 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
   const navigate = useNavigate();
   const { signOut, isGuest } = useAuth();
   const { isAdmin, isCoach } = useUserRole();
-  const { data: tickets = [] } = useTickets();
-  const hasUnreadTicket = tickets.some((t) => t.hasUnread);
+  const { data: unreadData } = useUnreadCount();
+  const unreadCount = unreadData?.count ?? 0;
 
   if (isGuest) return null;
 
@@ -108,7 +107,7 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
     navigate('/login');
   };
 
-  const mainNav = getMainNav(isAdmin, isCoach, hasUnreadTicket);
+  const mainNav = getMainNav(isAdmin, isCoach, unreadCount);
   const bottomNav = getBottomNav(isAdmin, isCoach);
 
   const isActive = (path: string) =>
@@ -177,7 +176,7 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
                 <>
                   <span>{item.title}</span>
                   {item.showBadge && (
-                    <span className="sidebar__unread-badge">!</span>
+                    <span className="sidebar__unread-badge">{unreadCount}</span>
                   )}
                 </>
               )}

@@ -4,7 +4,6 @@ import {
   Settings,
   Sun,
   Moon,
-  Bug,
   UserCircle,
   Save,
   Contact,
@@ -16,14 +15,13 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import FeedbackForm from "@/components/FeedbackForm";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUsers, useUpdateUser, useUpdateMySettings, useUpdateStudentProfile } from "@/hooks/useUsers";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useToast } from "@/hooks/use-toast";
-import { useAddTicket } from "@/hooks/useTickets";
 
 const Preferenser = () => {
   const { theme, setTheme } = useTheme();
@@ -33,14 +31,11 @@ const Preferenser = () => {
   const updateUser = useUpdateUser();
   const { isStudent } = useUserRole();
   const updateStudentProfile = useUpdateStudentProfile();
-  const addTicket = useAddTicket();
-
   const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [telephone, setTelephone] = useState("");
-  const [bugReport, setBugReport] = useState("");
   const [emailNotifications, setEmailNotifications] = useState(true);
   const updateMySettings = useUpdateMySettings();
 
@@ -113,19 +108,6 @@ const Preferenser = () => {
     setEmail(user?.email ?? "");
     setTelephone(fullUser?.telephone ?? "");
     setIsEditing(false);
-  };
-
-  const submitBugReport = () => {
-    if (!bugReport.trim()) return;
-    addTicket.mutate(
-      { subject: "Buggrapport", message: bugReport, type: "bug" },
-      {
-        onSuccess: () => {
-          toast({ title: "Buggrapport skickad", description: "Tack för din rapport!" });
-          setBugReport("");
-        },
-      }
-    );
   };
 
   const initials =
@@ -265,7 +247,7 @@ const Preferenser = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-foreground">E-postnotifikationer</p>
-              <p className="text-xs text-muted-foreground">Få e-post vid bokningsändringar och ärendeuppdateringar</p>
+              <p className="text-xs text-muted-foreground">Få e-post vid bokningsändringar och nya meddelanden</p>
             </div>
             <Switch
               checked={emailNotifications}
@@ -308,28 +290,8 @@ const Preferenser = () => {
           </div>
         )}
 
-        {/* Bug report */}
-        <div className="bg-card rounded-2xl shadow-card border border-border p-6">
-          <h2 className="font-display font-semibold text-lg text-foreground mb-2 flex items-center gap-2">
-            <Bug className="h-5 w-5" /> Rapportera bugg
-          </h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Hittade du något som inte fungerar? Beskriv det nedan.
-          </p>
-          <Textarea
-            placeholder="Beskriv buggen..."
-            value={bugReport}
-            onChange={(e) => setBugReport(e.target.value)}
-            rows={4}
-          />
-          <Button
-            className="mt-3"
-            onClick={submitBugReport}
-            disabled={!bugReport.trim() || addTicket.isPending}
-          >
-            Skicka rapport
-          </Button>
-        </div>
+        {/* Bug report / Idea */}
+        <FeedbackForm />
       </div>
     </div>
   );

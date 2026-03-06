@@ -4,10 +4,10 @@ import { useUsers } from "@/hooks/useUsers";
 import HelpDialog from "@/components/HelpDialog";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CircleUserRound, CalendarDays, Laptop } from "lucide-react";
 import { useState } from "react";
 import CoachAttendance from "@/components/admin/CoachAttendance";
 import { Button } from "@/components/ui/button";
+import StudentContextChat from "@/components/messaging/StudentContextChat";
 
 
 const CoachMyParticipants = () => {
@@ -30,6 +30,9 @@ const CoachMyParticipants = () => {
     );
   }
 
+  // Find first admin to use as chat partner for student-context threads
+  const admin = users.find((u) => u.authLevel === 1);
+
   if (showAttendance && selectedParticipant !== null) {
     const participant = participants.find((p) => p.id === selectedParticipant);
     return (
@@ -38,6 +41,14 @@ const CoachMyParticipants = () => {
           <ArrowLeft className="h-4 w-4" /> Tillbaka
         </Button>
         <CoachAttendance seluser={participant} />
+        {admin && selectedParticipant && (
+          <div className="mt-6 space-y-3">
+            <h3 className="font-display font-semibold text-foreground">
+              Chatt med handledare om {participant?.firstName}
+            </h3>
+            <StudentContextChat studentId={selectedParticipant} otherUserId={admin.id} />
+          </div>
+        )}
       </div>
     )
   }

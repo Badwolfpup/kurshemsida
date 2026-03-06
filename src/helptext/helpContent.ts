@@ -132,30 +132,13 @@ export const helpContent: Record<string, HelpEntry> = {
     ],
   },
 
-  // ── Ärenden (Tickets) ─────────────────────────────────────────────────────────
-  "tickets.admin": {
-    title: "Inkomna ärenden",
+  // ── Meddelanden ─────────────────────────────────────────────────────────────
+  "meddelanden": {
+    title: "Meddelanden",
     content: [
-      "Här ser du alla ärenden som deltagare och coacher har skickat in.",
-      "Du kan öppna ett ärende för att läsa meddelandet, svara i tråden, ändra status (Öppen → Pågående → Stängd) och föreslå mötestider för handlednings- och förfrågningsärenden.",
-      "Olästa ärenden markeras med ett utropstecken.",
-    ],
-  },
-  "tickets.coach": {
-    title: "Ärenden",
-    content: [
-      "Här kan du skicka ärenden till administratörer och lärare, till exempel förfrågningar, idéer eller buggrapporter.",
-      "Klicka på Nytt ärende för att skapa ett ärende. Du kan följa svaren och statusen på dina ärenden i listan.",
-    ],
-  },
-  "tickets.student": {
-    title: "Ärenden",
-    content: [
-      "Här kan du kontakta din coach eller lärare med frågor och förfrågningar.",
-      "• Handledning – begär en handledningssession; din coach kan föreslå en tid.",
-      "• Förfrågan – skicka en allmän fråga.",
-      "• Bugg – rapportera ett tekniskt problem.",
-      "Klicka på ett ärende för att se svaren och följa statusen.",
+      "Här ser du alla dina konversationer med andra användare.",
+      "Klicka på en konversation i listan för att öppna chatten. Du kan skicka meddelanden, visa äldre meddelanden med 'Visa fler' och se vem som skrivit vad.",
+      "Olästa konversationer markeras med en röd prick. Antalet olästa visas även i sidomenyn.",
     ],
   },
 
@@ -182,7 +165,7 @@ export const helpContent: Record<string, HelpEntry> = {
     title: "Kontakt",
     content: [
       "Här hittar du kontaktuppgifter till administratörer och lärare.",
-      "Använd e-post eller telefon för att nå dem direkt. Om du vill skicka ett formellt ärende, använd Ärenden-sidan i stället.",
+      "Använd e-post eller telefon för att nå dem direkt. Du kan också skicka meddelanden via Meddelanden-sidan.",
     ],
   },
 
@@ -227,7 +210,7 @@ export const helpContent: Record<string, HelpEntry> = {
       "• Profil – uppdatera din e-postadress och ditt telefonnummer.",
       "• Tema – byt mellan ljust och mörkt läge.",
       "• Notifikationer – styr om du vill ta emot e-postnotiser.",
-      "• Rapportera bugg – skicka in en buggrapport om något inte fungerar som det ska.",
+      "• Feedback – skicka in en buggrapport eller idé.",
     ],
   },
 
@@ -316,7 +299,16 @@ export const helpContent: Record<string, HelpEntry> = {
       "Här kan du hantera din profil och dina inställningar.",
       "• Profil – uppdatera ditt telefonnummer (e-post och namn hanteras av administratören).",
       "• Tema – byt mellan ljust och mörkt läge.",
-      "• Rapportera bugg – skicka in en buggrapport om något inte fungerar som det ska.",
+      "• Feedback – skicka in en buggrapport eller idé.",
+    ],
+  },
+
+  // ── Admin Bug Reports ───────────────────────────────────────────────────────
+  "admin.bug-reports": {
+    title: "Buggar & Idéer",
+    content: [
+      "Här ser du alla inskickade buggrapporter och idéer från användare.",
+      "Växla mellan flikarna Buggar och Idéer för att filtrera. Rapporterna visas med avsändarens namn, innehåll och datum.",
     ],
   },
 };

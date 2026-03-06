@@ -172,10 +172,3 @@ export interface BookingConflictError extends Error {
   conflictData: { type: 'conflict' | 'warning'; bookings: Booking[] };
 }
 
-// ── Legacy API (used by TimeSuggestionDialog) ──
-
-/** @deprecated Use getBookingsNew() via useBookings() hook instead */
-export async function getBookings(): Promise<Booking[]> {
-  const res = await fetch(`${API_URL}/bookings`, { credentials: 'include' });
-  return res.json();
-}
