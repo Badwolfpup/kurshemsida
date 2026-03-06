@@ -1,0 +1,22 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Ärendesystemet har ersatts med ett nytt meddelandesystem — direktchatt med coacher och deltagare",
+      "Alla användare som du kan skicka meddelanden till visas direkt i listan, även utan pågående konversation",
+      "Ny \"Buggar & Idéer\"-modul i Admin Panel för att se inskickade rapporter från användare",
+      "Olästa meddelanden visas med antal i sidomenyn",
+      "Deltagarprofiler visar chatt med deltagarens coach (om-elev-trådar)",
+      "Feedbackformuläret har nu två flikar: Bugg och Idé"
+    ],
+    "coach": [
+      "Ärendesystemet har ersatts med direktmeddelanden — se alla konversationer under \"Meddelanden\"",
+      "Chatt om enskilda deltagare visas i \"Mina deltagare\"-vyn",
+      "Feedbackformuläret har nu två flikar: Bugg och Idé"
+    ],
+    "student": [
+      "Ärenden har ersatts med direktmeddelanden — se konversationer under \"Meddelanden\"",
+      "Feedbackformuläret har nu två flikar: Bugg och Idé"
+    ]
+  }
+}
