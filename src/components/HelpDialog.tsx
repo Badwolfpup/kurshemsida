@@ -17,13 +17,13 @@ interface HelpDialogProps {
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const HelpDialog = ({ helpKey }: HelpDialogProps) => {
-  const entry = helpContent[helpKey];
-  if (!entry) return null;
-
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
   const helpbot = useHelpbot();
+
+  const entry = helpContent[helpKey];
+  if (!entry) return null;
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
