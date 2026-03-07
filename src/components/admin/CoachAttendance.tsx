@@ -76,8 +76,9 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
   const updateUserMutation = useUpdateUser();
   const { data: week } = useGetWeek(date, 2);
 
-  const admin = users.find((u) => u.authLevel === 1);
-  const chatPartnerId = userType === "Admin" ? selectedUser?.coachId : admin?.id;
+  const chatPartnerId = userType === "Admin"
+    ? selectedUser?.coachId
+    : users.find((u) => u.authLevel === 1 || u.authLevel === 2)?.id;
   const hasChat = showChat && !!chatPartnerId && !!selectedUser;
 
   const isLoading = isUsersLoading || isAttendanceLoading || isNoClassesLoading;
@@ -520,7 +521,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
               </TabsContent>
               {hasChat && (
                 <TabsContent value="meddelanden" className="h-[calc(100vh-16rem)]">
-                  <StudentContextChat studentId={selectedUser.id} otherUserId={chatPartnerId!} />
+                  <StudentContextChat studentId={selectedUser.id} recipientId={chatPartnerId!} />
                 </TabsContent>
               )}
               <TabsContent value="kontaktinfo">

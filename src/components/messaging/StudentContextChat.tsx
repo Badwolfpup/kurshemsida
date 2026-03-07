@@ -4,24 +4,20 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface StudentContextChatProps {
   studentId: number;
-  otherUserId: number;
+  recipientId: number;
 }
 
-export default function StudentContextChat({ studentId, otherUserId }: StudentContextChatProps) {
+export default function StudentContextChat({ studentId, recipientId }: StudentContextChatProps) {
   const { user } = useAuth();
   const { data: threads = [] } = useThreads();
 
-  // Find the thread for this student context between current user and other user
-  const thread = threads.find((t) => {
-    if (t.studentContextId !== studentId) return false;
-    const ids = [t.user1Id, t.user2Id];
-    return ids.includes(user?.id ?? 0) && ids.includes(otherUserId);
-  });
+  // Find the thread for this student context (one per coach+student pair)
+  const thread = threads.find((t) => t.studentContextId === studentId);
 
   return (
     <ChatThread
       threadId={thread?.id ?? null}
-      recipientId={otherUserId}
+      recipientId={recipientId}
       studentContextId={studentId}
     />
   );

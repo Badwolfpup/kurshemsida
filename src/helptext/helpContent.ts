@@ -292,6 +292,14 @@ export const helpContent: Record<string, HelpEntry> = {
     ],
   },
 
+  "attendance.meddelanden": {
+    title: "Deltagarprofil – Meddelanden",
+    content: [
+      "Här kan du skicka meddelanden till den valda deltagaren.",
+      "Konversationen visas i en chattvy. Skriv ett meddelande och klicka på skicka.",
+    ],
+  },
+
   // ── Coach Inställningar ───────────────────────────────────────────────────────
   "coach-installningar": {
     title: "Inställningar",

@@ -30,7 +30,8 @@
   - Coach: flat list of direct threads (admins/teachers + students)
   - Student: flat list of direct threads (admins/teachers + coach)
 - Components: `src/components/messaging/` — `ThreadList`, `ChatThread`, `StudentContextChat`
-- `StudentContextChat`: about-student threads shown in Deltagare/Mina deltagare views (not on Meddelanden page)
+- `StudentContextChat`: about-student threads shown in Deltagare/Mina deltagare views (not on Meddelanden page). Matches thread by `studentContextId` only (threads are shared across all admins/teachers).
+- Student-context thread visibility: admins/teachers see ALL student-context threads (not just their own). Backend `ApplyThreadVisibilityFilter` restricts coaches to their own students only.
 - Sidebar badge split: `useUnreadCounts()` derives from `useThreads()` data to split unread counts — `messagesCount` (direct) on "Meddelanden", `studentContextCount` on "Deltagare"/"Mina deltagare". Also exposes `unreadStudentIds: Set<number>` for per-participant red dots.
 - Shared `FeedbackForm` component for bug/idea submission in settings pages
 - `AdminBugReports` module in admin panel with Buggar/Idéer tabs
@@ -126,6 +127,13 @@ Skip service methods — they are pure HTTP wrappers with no side effects.
 - Loaded by `src/hooks/useChangelog.ts`, rendered by `src/components/ChangelogDialog.tsx`
 - Dialog renders two-level bullets: top-level = disc, children = circle (indented)
 - `/makepr` drafts changelog entries in **Swedish** as its first step
+
+## Help System
+- `HelpDialog` (`src/components/HelpDialog.tsx`): per-page popover with static help text + optional video thumbnail
+- `HelpVideoModal` (`src/components/HelpVideoModal.tsx`): fullscreen YouTube embed (youtube-nocookie.com, autoplay, no fullscreen button)
+- Video mappings: `src/helptext/helpVideos.ts` — maps helpKey → YouTube video ID
+- Help text: `src/helptext/helpContent.ts` — maps helpKey → title + content array
+- `NavChat` (`src/components/NavChat.tsx`): persistent AI chatbot in TopNav, uses `useHelpbot` hook, session-scoped message history, hidden on mobile
 
 ## Recurring Patterns
 - cloc command: `cloc . --exclude-dir=node_modules,dist,.git --exclude-ext=json,lock`

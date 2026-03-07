@@ -31,6 +31,7 @@ export function useThreadMessages(threadId: number | null, take: number) {
  * SIDE EFFECTS:
  *   - Creates Thread if first message between users (backend)
  *   - Creates Message record (backend)
+ *   - Updates Thread.UpdatedAt (backend)
  *   - Sends email to recipient if EmailNotifications = true (backend, EmailService)
  *   - Invalidates ["threads"] + ["threadMessages"] + ["unreadCount"] cache
  */

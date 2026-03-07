@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { KomIgangDialog } from '@/components/KomIgangDialog';
 import { NewsDialog } from '@/components/NewsDialog';
 import { ChangelogDialog } from '@/components/ChangelogDialog';
+import { NavChat } from '@/components/NavChat';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { useNavigate } from 'react-router-dom';
@@ -43,6 +44,8 @@ export function TopNav({ onMenuToggle }: TopNavProps) {
         </button>
         {/* <h2 className='topnav__title'>CUL Programmering</h2> */}
       </div>
+
+      {isLoggedIn && <NavChat />}
 
       <div className="topnav__actions">
         {isLoggedIn && <KomIgangDialog />}
