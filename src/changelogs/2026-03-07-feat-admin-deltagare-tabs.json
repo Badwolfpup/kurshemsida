@@ -1,0 +1,13 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Deltagare-vyn visar nu samma fliksystem som coacher (Närvaro, Schema, Meddelanden, Kontaktinfo, Lärarkontakt, Progression, Statistik)",
+      "Lärarkontakt-fliken visar bara den tilldelade läraren via kontakt-ID",
+      "Progression-fliken visar övningar och projekt med statusbadgar",
+      "Närvaro i Deltagare-vyn är nu skrivskyddad (redigering görs i Admin Panel)"
+    ],
+    "coach": [],
+    "student": []
+  }
+}
