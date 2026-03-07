@@ -20,17 +20,17 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
-import { useUnreadCount } from '@/hooks/useMessages';
+import { useUnreadCounts } from '@/hooks/useMessages';
 import './AppSidebar.css';
 
 interface NavItem {
   title: string;
   url: string;
   icon: any;
-  showBadge?: boolean;
+  badgeCount?: number;
 }
 
-function getMainNav(isAdmin: boolean, isCoach: boolean, unreadCount: number): NavItem[] {
+function getMainNav(isAdmin: boolean, isCoach: boolean, messagesCount: number, studentContextCount: number): NavItem[] {
   const items: NavItem[] = [{ title: 'Startsida', url: '/', icon: Home }];
 
   if (isAdmin) {
@@ -38,7 +38,7 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, unreadCount: number): Na
       { title: 'Admin Panel', url: '/admin', icon: ShieldCheck },
       { title: 'Övningar', url: '/ovningar', icon: Dumbbell },
       { title: 'Projekt', url: '/projekt', icon: FolderKanban },
-      { title: 'Deltagare', url: '/deltagare', icon: Users },
+      { title: 'Deltagare', url: '/deltagare', icon: Users, badgeCount: studentContextCount },
       {
         title: 'Kalender & Bokning',
         url: '/admin-schedule',
@@ -46,12 +46,12 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, unreadCount: number): Na
       },
       // { title: 'Profil', url: '/profil', icon: UserCircle },
       { title: 'Terminal', url: '/terminal', icon: TerminalIcon },
-      { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, showBadge: unreadCount > 0 }
+      { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, badgeCount: messagesCount }
     );
   } else if (isCoach) {
     items.push(
-      { title: 'Mina deltagare', url: '/mina-deltagare', icon: Users },
-      { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, showBadge: unreadCount > 0 },
+      { title: 'Mina deltagare', url: '/mina-deltagare', icon: Users, badgeCount: studentContextCount },
+      { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, badgeCount: messagesCount },
       {
         title: 'Kalender: Boka möte',
         url: '/coach-booking',
@@ -65,7 +65,7 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, unreadCount: number): Na
       { title: 'Projekt', url: '/projekt', icon: FolderKanban },
       { title: 'Övningar', url: '/ovningar', icon: Dumbbell },
       { title: 'Portfolio', url: '/portfolio', icon: Briefcase },
-      { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, showBadge: unreadCount > 0 },
+      { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, badgeCount: messagesCount },
       { title: 'Min kalender', url: '/student-calendar', icon: CalendarIcon },
       // { title: 'Profil', url: '/profil', icon: UserCircle },
       { title: 'Terminal', url: '/terminal', icon: TerminalIcon }
@@ -97,8 +97,7 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
   const navigate = useNavigate();
   const { signOut, isGuest } = useAuth();
   const { isAdmin, isCoach } = useUserRole();
-  const { data: unreadData } = useUnreadCount();
-  const unreadCount = unreadData?.count ?? 0;
+  const { messagesCount, studentContextCount } = useUnreadCounts();
 
   if (isGuest) return null;
 
@@ -107,7 +106,7 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
     navigate('/login');
   };
 
-  const mainNav = getMainNav(isAdmin, isCoach, unreadCount);
+  const mainNav = getMainNav(isAdmin, isCoach, messagesCount, studentContextCount);
   const bottomNav = getBottomNav(isAdmin, isCoach);
 
   const isActive = (path: string) =>
@@ -175,8 +174,8 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
               {(!collapsed || mobileOpen) && (
                 <>
                   <span>{item.title}</span>
-                  {item.showBadge && (
-                    <span className="sidebar__unread-badge">{unreadCount}</span>
+                  {!!item.badgeCount && (
+                    <span className="sidebar__unread-badge">{item.badgeCount}</span>
                   )}
                 </>
               )}

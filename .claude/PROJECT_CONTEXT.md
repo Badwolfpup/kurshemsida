@@ -31,6 +31,7 @@
   - Student: flat list of direct threads (admins/teachers + coach)
 - Components: `src/components/messaging/` — `ThreadList`, `ChatThread`, `StudentContextChat`
 - `StudentContextChat`: about-student threads shown in Deltagare/Mina deltagare views (not on Meddelanden page)
+- Sidebar badge split: `useUnreadCounts()` derives from `useThreads()` data to split unread counts — `messagesCount` (direct) on "Meddelanden", `studentContextCount` on "Deltagare"/"Mina deltagare". Also exposes `unreadStudentIds: Set<number>` for per-participant red dots.
 - Shared `FeedbackForm` component for bug/idea submission in settings pages
 - `AdminBugReports` module in admin panel with Buggar/Idéer tabs
 - Backend: `MessageEndpoints.cs` (threads, messages, view, unread-count), `BugReportEndpoints.cs`

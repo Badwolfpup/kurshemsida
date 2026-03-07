@@ -73,3 +73,20 @@ export function useUnreadCount() {
     refetchOnWindowFocus: true,
   });
 }
+
+/** SCENARIO: Derives split unread counts from threads — messages vs student-context */
+export function useUnreadCounts() {
+  const { data: threads = [] } = useThreads();
+  let messagesCount = 0;
+  let studentContextCount = 0;
+  const unreadStudentIds = new Set<number>();
+  for (const t of threads) {
+    if (!t.hasUnread) continue;
+    if (t.studentContextId === null) messagesCount++;
+    else {
+      studentContextCount++;
+      unreadStudentIds.add(t.studentContextId);
+    }
+  }
+  return { messagesCount, studentContextCount, unreadStudentIds };
+}

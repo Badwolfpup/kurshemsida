@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useState } from "react";
 import CoachAttendance from "@/components/admin/CoachAttendance";
 import { Button } from "@/components/ui/button";
+import { useUnreadCounts } from "@/hooks/useMessages";
 
 
 const CoachMyParticipants = () => {
@@ -14,6 +15,7 @@ const CoachMyParticipants = () => {
   const { data: users = [], isLoading } = useUsers();
   const [showAttendance, setShowAttendance] = useState<boolean>(false);
   const [selectedParticipant, setSelectedParticipant] = useState<number | null>(null);
+  const { unreadStudentIds } = useUnreadCounts();
 
   const participants = users.filter(
     (u) => u.authLevel === 4 && u.isActive && u.coachId === user?.id
@@ -72,7 +74,12 @@ const CoachMyParticipants = () => {
             )}
             {participants.map((p) => (
               <TableRow key={p.id} onClick={() => { setSelectedParticipant(p.id); setShowAttendance(true); }} className="cursor-pointer hover:bg-accent/50" >
-                <TableCell className="font-medium">{p.firstName[0]}.{p.lastName[0]}</TableCell>
+                <TableCell className="font-medium">
+                  {p.firstName[0]}.{p.lastName[0]}
+                  {unreadStudentIds.has(p.id) && (
+                    <span className="inline-block w-2 h-2 rounded-full bg-destructive ml-2" />
+                  )}
+                </TableCell>
                 {/* <TableCell><CircleUserRound className="inline h-8 w-8 ml-4" onClick={() => { setSelectedParticipant(p.id); setShowAttendance(true); }}/></TableCell>
                 <TableCell><Laptop className="inline h-8 w-8 ml-4" /></TableCell>
                 <TableCell><CalendarDays className="inline h-8 w-8 ml-4" /></TableCell> */}
