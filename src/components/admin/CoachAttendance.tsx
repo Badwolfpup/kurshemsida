@@ -5,6 +5,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, Circle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUsers, useUpdateUser } from "@/hooks/useUsers";
@@ -13,6 +16,40 @@ import { useNoClasses } from "@/hooks/useNoClass";
 import StudentContextChat from "@/components/messaging/StudentContextChat";
 import type UserType from "@/Types/User";
 import type AttendanceType from "@/Types/Attendance";
+
+const MOCK_PROJECTS: { name: string; status: "done" | "in-progress" | "not-started" }[][] = [
+  [
+    { name: "HTML Portfolio", status: "done" },
+    { name: "CSS Layouts", status: "in-progress" },
+    { name: "JavaScript Quiz", status: "not-started" },
+  ],
+  [
+    { name: "React Todo App", status: "in-progress" },
+    { name: "API Integration", status: "not-started" },
+  ],
+  [
+    { name: "Python Basics", status: "in-progress" },
+    { name: "Flask API", status: "not-started" },
+  ],
+];
+
+const MOCK_EXERCISES: { name: string; completed: boolean }[][] = [
+  [
+    { name: "HTML Grunderna", completed: true },
+    { name: "CSS Flexbox", completed: true },
+    { name: "JS Variabler", completed: false },
+    { name: "JS Funktioner", completed: false },
+  ],
+  [
+    { name: "React Basics", completed: true },
+    { name: "State Management", completed: false },
+    { name: "useEffect", completed: false },
+  ],
+  [
+    { name: "Python Variabler", completed: true },
+    { name: "Python Loopar", completed: false },
+  ],
+];
 
 interface CoachAttendanceProps {
   seluser: UserType;
@@ -28,7 +65,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
   const [date, setDate] = useState<Date>(new Date());
   const [selectedUser, setSelectedUser] = useState<UserType | null>(seluser || null);
   const [selectedUserId, setSelectedUserId] = useState<number>(seluser?.id || 0);
-  const [selectedCoachId, setSelectedCoachId] = useState<number>(0);
+  const [selectedCoachId, setSelectedCoachId] = useState<number>(seluser?.coachId ?? 0);
   const [activeTab, setActiveTab] = useState("narvaro");
 
   const { toast } = useToast();
@@ -40,7 +77,8 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
   const { data: week } = useGetWeek(date, 2);
 
   const admin = users.find((u) => u.authLevel === 1);
-  const hasChat = showChat && !!admin && !!selectedUser;
+  const chatPartnerId = userType === "Admin" ? selectedUser?.coachId : admin?.id;
+  const hasChat = showChat && !!chatPartnerId && !!selectedUser;
 
   const isLoading = isUsersLoading || isAttendanceLoading || isNoClassesLoading;
   const isError = isUsersError || isAttendanceError || isNoClassesError;
@@ -263,7 +301,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                   ))}
                 </SelectContent>
               </Select>}
-              {userType === "Admin" && (
+              {userType === "Admin" && seluser === null && (
                 <Select value={selectedCoachId.toString()} onValueChange={(value) => setSelectedCoachId(Number(value))}>
                   <SelectTrigger className="w-48"><SelectValue placeholder="Alla coacher" /></SelectTrigger>
                   <SelectContent>
@@ -285,7 +323,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                   <TabsTrigger value="schema">Schemalagda dagar</TabsTrigger>
                   {hasChat && <TabsTrigger value="meddelanden">Meddelanden</TabsTrigger>}
                   <TabsTrigger value="kontaktinfo">Kontaktinfo</TabsTrigger>
-                  <TabsTrigger value="larare">Lärare på kursen</TabsTrigger>
+                  <TabsTrigger value="larare">{userType === "Admin" ? "Lärarkontakt" : "Lärare på kursen"}</TabsTrigger>
                   <TabsTrigger value="progression">Progression</TabsTrigger>
                   <TabsTrigger value="statistik">Statistik</TabsTrigger>
                 </TabsList>
@@ -331,7 +369,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                             {item.startDate !== null && new Date(item.startDate) <= getDate(index + 2 - 7) && (
                               <Checkbox
                                 checked={attendance.filter((x) => x.userId === item.id).filter((dates) => dates.date.some((d) => compareDates(new Date(d), getDate(index + 1 - 7)))).length > 0}
-                                disabled={userType === "Coach"}
+                                disabled={userType === "Coach" || seluser !== null}
                                 onCheckedChange={() => {}}
                               />
                             )}
@@ -385,19 +423,40 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                 </Table>
               </TabsContent>
               <TabsContent value="larare">
-                <p className="text-sm text-muted-foreground mb-4">Grön färg är den lärare som ni primärt kontaktar angående elevuppföljning.</p>
-                <Table>
-                  <TableHeader><TableRow><TableHead>Namn</TableHead><TableHead>Telefonnummer</TableHead><TableHead>Email</TableHead></TableRow></TableHeader>
-                  <TableBody>
-                    {users?.filter((u) => u.authLevel <= 2 && u.isActive && u.firstName !== "Alexandra").map((contact) => (
-                      <TableRow key={contact.id}>
-                        <TableCell className={contact.id === selectedUser?.contactId ? "bg-green-100" : ""}>{contact.firstName} {contact.lastName}</TableCell>
-                        <TableCell className={contact.id === selectedUser?.contactId ? "bg-green-100" : ""}>{contact.telephone}</TableCell>
-                        <TableCell className={contact.id === selectedUser?.contactId ? "bg-green-100" : ""}>{contact.email}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                {userType === "Admin" ? (
+                  (() => {
+                    const contact = selectedUser?.contactId ? users.find((u) => u.id === selectedUser.contactId) : null;
+                    if (!contact) return <p className="text-sm text-muted-foreground italic">Ingen lärarkontakt angiven.</p>;
+                    return (
+                      <Table>
+                        <TableHeader><TableRow><TableHead>Namn</TableHead><TableHead>Telefonnummer</TableHead><TableHead>Email</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                          <TableRow>
+                            <TableCell>{contact.firstName} {contact.lastName}</TableCell>
+                            <TableCell>{contact.telephone}</TableCell>
+                            <TableCell>{contact.email}</TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    );
+                  })()
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground mb-4">Grön färg är den lärare som ni primärt kontaktar angående elevuppföljning.</p>
+                    <Table>
+                      <TableHeader><TableRow><TableHead>Namn</TableHead><TableHead>Telefonnummer</TableHead><TableHead>Email</TableHead></TableRow></TableHeader>
+                      <TableBody>
+                        {users?.filter((u) => u.authLevel <= 2 && u.isActive && u.firstName !== "Alexandra").map((contact) => (
+                          <TableRow key={contact.id}>
+                            <TableCell className={contact.id === selectedUser?.contactId ? "bg-green-100" : ""}>{contact.firstName} {contact.lastName}</TableCell>
+                            <TableCell className={contact.id === selectedUser?.contactId ? "bg-green-100" : ""}>{contact.telephone}</TableCell>
+                            <TableCell className={contact.id === selectedUser?.contactId ? "bg-green-100" : ""}>{contact.email}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </>
+                )}
               </TabsContent>
               <TabsContent value="statistik">
                 <p className="text-sm"><strong>Startdatum:</strong> {selectedUser?.startDate ? new Date(selectedUser.startDate).toLocaleDateString("sv-SE") : "Ej angivet"}</p>
@@ -449,7 +508,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
               </TabsContent>
               {hasChat && (
                 <TabsContent value="meddelanden" className="h-[calc(100vh-16rem)]">
-                  <StudentContextChat studentId={selectedUser.id} otherUserId={admin!.id} />
+                  <StudentContextChat studentId={selectedUser.id} otherUserId={chatPartnerId!} />
                 </TabsContent>
               )}
               <TabsContent value="kontaktinfo">
@@ -471,6 +530,51 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                 </Table>
               </TabsContent>
               <TabsContent value="progression">
+                {userType === "Admin" && selectedUser && (() => {
+                  const students = users.filter((u) => u.authLevel === 4);
+                  const studentIndex = students.findIndex((u) => u.id === selectedUser.id);
+                  const projects = MOCK_PROJECTS[(studentIndex >= 0 ? studentIndex : 0) % MOCK_PROJECTS.length];
+                  const exercises = MOCK_EXERCISES[(studentIndex >= 0 ? studentIndex : 0) % MOCK_EXERCISES.length];
+                  const exercisesDone = exercises.filter((e) => e.completed).length;
+                  return (
+                    <div className="space-y-5">
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-muted-foreground">Övningar</span>
+                          <span className="font-medium text-foreground">{exercisesDone}/{exercises.length}</span>
+                        </div>
+                        <Progress value={exercises.length ? (exercisesDone / exercises.length) * 100 : 0} className="h-2" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-2">Projekt</p>
+                        <div className="space-y-2">
+                          {projects.map((pr) => (
+                            <div key={pr.name} className="flex items-center gap-2 text-sm">
+                              {pr.status === "done" && <CheckCircle2 className="h-4 w-4 text-accent" />}
+                              {pr.status === "in-progress" && <Clock className="h-4 w-4 text-primary" />}
+                              {pr.status === "not-started" && <Circle className="h-4 w-4 text-muted-foreground" />}
+                              <span className="text-foreground">{pr.name}</span>
+                              <Badge variant="outline" className="ml-auto text-[10px]">
+                                {pr.status === "done" ? "Klar" : pr.status === "in-progress" ? "Pågår" : "Ej startad"}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-2">Övningar</p>
+                        <div className="space-y-1.5">
+                          {exercises.map((e) => (
+                            <div key={e.name} className="flex items-center gap-2 text-sm">
+                              {e.completed ? <CheckCircle2 className="h-4 w-4 text-accent" /> : <Circle className="h-4 w-4 text-muted-foreground" />}
+                              <span className={e.completed ? "text-foreground" : "text-muted-foreground"}>{e.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </TabsContent>
             </Tabs>
           )}

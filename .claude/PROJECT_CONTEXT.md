@@ -90,6 +90,15 @@ Skip service methods — they are pure HTTP wrappers with no side effects.
 - No HTTP endpoint integration tests — endpoint logic is not unit-tested
 - New endpoints only need tests if they extract pure logic into a static helper method
 
+## Participant Detail View (CoachAttendance)
+- `src/components/admin/CoachAttendance.tsx` is shared between admin and coach views
+- Admin: accessed from `Deltagare.tsx` with `seluser` + `showChat` props
+- Coach: accessed from `CoachMyParticipants.tsx` with `seluser` + `showChat` props
+- Tabs: Närvaro, Schemalagda dagar, Meddelanden, Kontaktinfo, Lärarkontakt/Lärare på kursen, Progression, Statistik
+- Role-based differences: Lärarkontakt (admin: single ContactId teacher), Lärare på kursen (coach: all teachers), Progression (admin: mock data, coach: empty), Meddelanden (admin: chats with coach, coach: chats with admin)
+- When `seluser` is provided: dropdowns are hidden, attendance checkboxes are read-only
+- `DeltagareDetail.tsx` was deleted — CoachAttendance replaces it
+
 ## Calendar System
 - Shared components in `src/components/calendar/`: `CalendarShell`, `FourDayView`, `BookingDetailsDialog`, `ConflictDialog`, `RecurringEventDialog`, `RecurringEventClickDialog`, `StudentBookingDialog`, `calendarUtils`
 - Admin-specific: `src/components/admin/AdminSchedule.tsx`, `AdminBookingDialog.tsx`
