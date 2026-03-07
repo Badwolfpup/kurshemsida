@@ -1,0 +1,8 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": ["Chatten i \"Mina deltagare\" har flyttats till en egen flik (\"Meddelanden\") för bättre integritetsskydd."],
+    "coach": ["Chatten med handledare har flyttats till en egen flik (\"Meddelanden\") i elevvyn, placerad mellan \"Schemalagda dagar\" och \"Kontaktinfo\"."],
+    "student": []
+  }
+}

@@ -74,9 +74,9 @@ export default function ChatThread({ threadId, recipientId, studentContextId }: 
   const displayMessages = [...messages].reverse();
 
   return (
-    <div className="bg-card rounded-2xl shadow-card border border-border flex flex-col">
+    <div className="bg-card rounded-2xl shadow-card border border-border flex flex-col h-full">
       {/* Messages area */}
-      <div className="p-4 space-y-3 min-h-[200px] max-h-[400px] overflow-y-auto">
+      <div className="p-4 space-y-3 min-h-[200px] flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
