@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import HelpDialog from "@/components/HelpDialog";
 import { useUsers } from "@/hooks/useUsers";
 import { DeltagareList } from "@/components/deltagare/DeltagareList";
-import { DeltagareDetail } from "@/components/deltagare/DeltagareDetail";
+import CoachAttendance from "@/components/admin/CoachAttendance";
 import type UserType from "@/Types/User";
 
 export type Participant = {
@@ -95,7 +95,7 @@ const Deltagare = () => {
     return students.map((u, i) => mapUserToParticipant(u, allUsers, i));
   }, [allUsers]);
 
-  const selected = participants.find((p) => p.id === selectedId);
+  const selectedUser = selectedId ? allUsers.find((u) => u.id === selectedId) : null;
 
   if (isLoading) {
     return (
@@ -105,21 +105,13 @@ const Deltagare = () => {
     );
   }
 
-  if (selected) {
+  if (selectedUser) {
     return (
       <div className="p-6 lg:p-10 max-w-6xl mx-auto">
-        <div className="flex items-center gap-3 mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSelectedId(null)}
-            className="gap-2 text-muted-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Alla deltagare
-          </Button>
-        </div>
-        <DeltagareDetail participant={selected} />
+        <Button variant="ghost" size="sm" onClick={() => setSelectedId(null)} className="gap-2 text-muted-foreground mb-6">
+          <ArrowLeft className="h-4 w-4" /> Alla deltagare
+        </Button>
+        <CoachAttendance seluser={selectedUser} showChat />
       </div>
     );
   }
