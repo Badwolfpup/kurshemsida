@@ -359,12 +359,12 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                       <TableCell>Förmiddag</TableCell>
                       {(["scheduledMonAm", "scheduledTueAm", "scheduledWedAm", "scheduledThuAm"] as const).map((field) => (
                         <TableCell key={field}>
-                          <Button variant={users.find((u) => u.id === selectedUserId)?.[field] ? "default" : "outline"} size="sm" onClick={() => {
+                          <Button variant={selectedUser?.[field] ? "default" : "outline"} size="sm" onClick={() => {
                             if (!selectedUser) return;
                             const updated = { ...selectedUser, [field]: !selectedUser[field] };
                             setSelectedUser(updated);
                             handleUpdateUser(updated, false);
-                          }}>{users.find((u) => u.id === selectedUserId)?.[field] ? "Ja" : "Nej"}</Button>
+                          }}>{selectedUser?.[field] ? "Ja" : "Nej"}</Button>
                         </TableCell>
                       ))}
                     </TableRow>
@@ -372,12 +372,12 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                       <TableCell>Eftermiddag</TableCell>
                       {(["scheduledMonPm", "scheduledTuePm", "scheduledWedPm", "scheduledThuPm"] as const).map((field) => (
                         <TableCell key={field}>
-                          <Button variant={users.find((u) => u.id === selectedUserId)?.[field] ? "default" : "outline"} size="sm" onClick={() => {
+                          <Button variant={selectedUser?.[field] ? "default" : "outline"} size="sm" onClick={() => {
                             if (!selectedUser) return;
                             const updated = { ...selectedUser, [field]: !selectedUser[field] };
                             setSelectedUser(updated);
                             handleUpdateUser(updated, false);
-                          }}>{users.find((u) => u.id === selectedUserId)?.[field] ? "Ja" : "Nej"}</Button>
+                          }}>{selectedUser?.[field] ? "Ja" : "Nej"}</Button>
                         </TableCell>
                       ))}
                     </TableRow>
