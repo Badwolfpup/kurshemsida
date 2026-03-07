@@ -10,14 +10,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUsers, useUpdateUser } from "@/hooks/useUsers";
 import { useAttendance, useGetWeek } from "@/hooks/useAttendance";
 import { useNoClasses } from "@/hooks/useNoClass";
+import StudentContextChat from "@/components/messaging/StudentContextChat";
 import type UserType from "@/Types/User";
 import type AttendanceType from "@/Types/Attendance";
 
 interface CoachAttendanceProps {
   seluser: UserType;
+  showChat?: boolean;
 }
 
-const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null }) => {
+const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showChat = false }) => {
   const { user } = useAuth();
   const userId = user?.id || 0;
   const authLevel = user?.authLevel || 5;
@@ -36,6 +38,9 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null }) => 
   const { data: noClasses = [] as Date[], isLoading: isNoClassesLoading, isError: isNoClassesError, error: noClassesError, refetch: refetchNoClasses, isRefetching: isNoClassesRefetching } = useNoClasses();
   const updateUserMutation = useUpdateUser();
   const { data: week } = useGetWeek(date, 2);
+
+  const admin = users.find((u) => u.authLevel === 1);
+  const hasChat = showChat && !!admin && !!selectedUser;
 
   const isLoading = isUsersLoading || isAttendanceLoading || isNoClassesLoading;
   const isError = isUsersError || isAttendanceError || isNoClassesError;
@@ -278,6 +283,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null }) => 
                 <TabsList>
                   <TabsTrigger value="narvaro">Närvaro</TabsTrigger>
                   <TabsTrigger value="schema">Schemalagda dagar</TabsTrigger>
+                  {hasChat && <TabsTrigger value="meddelanden">Meddelanden</TabsTrigger>}
                   <TabsTrigger value="kontaktinfo">Kontaktinfo</TabsTrigger>
                   <TabsTrigger value="larare">Lärare på kursen</TabsTrigger>
                   <TabsTrigger value="progression">Progression</TabsTrigger>
@@ -441,6 +447,11 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null }) => 
                   </>
                 )}
               </TabsContent>
+              {hasChat && (
+                <TabsContent value="meddelanden" className="h-[calc(100vh-16rem)]">
+                  <StudentContextChat studentId={selectedUser.id} otherUserId={admin!.id} />
+                </TabsContent>
+              )}
               <TabsContent value="kontaktinfo">
                 <Table>
                   <TableHeader>
