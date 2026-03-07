@@ -1,0 +1,14 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Olästa meddelanden om deltagare visas nu på \"Deltagare\" istället för \"Meddelanden\" i sidomenyn",
+      "Siffran i notifikationscirkeln är nu centrerad korrekt"
+    ],
+    "coach": [
+      "Olästa meddelanden om deltagare visas nu på \"Mina deltagare\" istället för \"Meddelanden\" i sidomenyn",
+      "Röd prick visas vid deltagarens namn i listan om det finns olästa meddelanden"
+    ],
+    "student": []
+  }
+}
