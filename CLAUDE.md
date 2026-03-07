@@ -1,7 +1,7 @@
 # kurshemsida — Project Rules
 
 ## Pull Requests & Changelog
-- Frontend PRs are created via `/makepr` — do not manually push or create PRs
+- **Never push directly to main** — all changes must go through a PR. Create a branch, push it, and use `/makepr` or `gh pr create`
 - Kursserver PRs are handled by the user — do not create PRs for that repo
 - After any implementation (even quick edits that don't go through `/makepr`), update `CHANGELOG.md` under `## [Unreleased]`, grouped by feature area
 
