@@ -289,11 +289,11 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h2 className="text-2xl font-bold">Elevsida</h2>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {seluser === null && <Select value={selectedUser?.id.toString() || "0"} onValueChange={(value) => { setSelectedUserId(Number(value)); setSelectedUser(users.find((u) => u.id === Number(value)) || null); }}>
-                <SelectTrigger className="w-48"><SelectValue placeholder="Alla deltagare" /></SelectTrigger>
+                <SelectTrigger className="w-44 sm:w-48"><SelectValue placeholder="Alla deltagare" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="0">Alla deltagare</SelectItem>
                   {users?.filter((u) => (u.authLevel === 4 && (userType === "Admin" && u.coachId === selectedCoachId)) || (u.authLevel === 4 && userType === "Coach" && u.coachId === userId)).map((item) => (
@@ -303,7 +303,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
               </Select>}
               {userType === "Admin" && seluser === null && (
                 <Select value={selectedCoachId.toString()} onValueChange={(value) => setSelectedCoachId(Number(value))}>
-                  <SelectTrigger className="w-48"><SelectValue placeholder="Alla coacher" /></SelectTrigger>
+                  <SelectTrigger className="w-44 sm:w-48"><SelectValue placeholder="Alla coacher" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="0">Alla coacher</SelectItem>
                     {users?.filter((u) => u.authLevel === 3).map((coach) => (
@@ -317,8 +317,8 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
 
           {selectedUser && selectedUser.id !== 0 && (
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <div className="flex items-center gap-2 mb-6">
-                <TabsList>
+              <div className="flex flex-wrap items-center gap-2 mb-6">
+                <TabsList className="h-auto flex-wrap">
                   <TabsTrigger value="narvaro">Närvaro</TabsTrigger>
                   <TabsTrigger value="schema">Schemalagda dagar</TabsTrigger>
                   {hasChat && <TabsTrigger value="meddelanden">Meddelanden</TabsTrigger>}
@@ -330,7 +330,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                 <HelpDialog helpKey={activeTab === "narvaro" && userType === "Coach" ? "attendance.narvaro.coach" : `attendance.${activeTab}`} />
               </div>
               <TabsContent value="narvaro">
-                <div className="flex items-center justify-center gap-4 mb-4">
+                <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mb-4 text-sm">
                   <div className="flex items-center gap-2"><div className="w-4 h-4 bg-blue-500 rounded-full"></div><span>Närvaro</span></div>
                   <div className="flex items-center gap-2"><div className="w-4 h-4 bg-white-300 rounded-full border border-blue-500"></div><span>Ej närvarande</span></div>
                   <div className="flex items-center gap-2"><div className="w-4 h-4 bg-red-500 rounded-full"></div><span>Inställd lektion</span></div>
@@ -338,10 +338,11 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
 
                 <div className="flex items-center justify-center gap-4 mb-4">
                   <Button variant="outline" onClick={() => changeWeek(false)}>&#8592;</Button>
-                  <span className="font-semibold">{week}</span>
+                  <span className="font-semibold text-sm sm:text-base">{week}</span>
                   <Button variant="outline" onClick={() => changeWeek(true)}>&#8594;</Button>
                 </div>
 
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -379,9 +380,11 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </TabsContent>
               <TabsContent value="schema">
                 <p className="text-sm text-muted-foreground mb-4">Du kan själv ändra deltagarens schema</p>
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -421,6 +424,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                     </TableRow>
                   </TableBody>
                 </Table>
+                </div>
               </TabsContent>
               <TabsContent value="larare">
                 {userType === "Admin" ? (
@@ -428,6 +432,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                     const contact = selectedUser?.contactId ? users.find((u) => u.id === selectedUser.contactId) : null;
                     if (!contact) return <p className="text-sm text-muted-foreground italic">Ingen lärarkontakt angiven.</p>;
                     return (
+                      <div className="overflow-x-auto">
                       <Table>
                         <TableHeader><TableRow><TableHead>Namn</TableHead><TableHead>Telefonnummer</TableHead><TableHead>Email</TableHead></TableRow></TableHeader>
                         <TableBody>
@@ -438,11 +443,13 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                           </TableRow>
                         </TableBody>
                       </Table>
+                      </div>
                     );
                   })()
                 ) : (
                   <>
                     <p className="text-sm text-muted-foreground mb-4">Grön färg är den lärare som ni primärt kontaktar angående elevuppföljning.</p>
+                    <div className="overflow-x-auto">
                     <Table>
                       <TableHeader><TableRow><TableHead>Namn</TableHead><TableHead>Telefonnummer</TableHead><TableHead>Email</TableHead></TableRow></TableHeader>
                       <TableBody>
@@ -455,6 +462,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                         ))}
                       </TableBody>
                     </Table>
+                    </div>
                   </>
                 )}
               </TabsContent>
@@ -468,6 +476,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                 })()}</p>
 
                 <h3 className="text-sm font-semibold mt-4 mb-2">Närvaro per månad</h3>
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader><TableRow><TableHead></TableHead><TableHead>{getMonthName(0)}</TableHead><TableHead>{getMonthName(-1)}</TableHead><TableHead>{getMonthName(-2)}</TableHead></TableRow></TableHeader>
                   <TableBody>
@@ -479,12 +488,14 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                     </TableRow>
                   </TableBody>
                 </Table>
+                </div>
 
                 {threeMonthStats && (
                   <>
                     <p className="text-sm mt-4"><strong>Totalt senaste 3 månader:</strong> {threeMonthStats.aggregate}</p>
 
                     <h3 className="text-sm font-semibold mt-4 mb-2">Frånvaro per veckodag</h3>
+                    <div className="overflow-x-auto">
                     <Table>
                       <TableHeader><TableRow><TableHead>Veckodag</TableHead><TableHead>Missat</TableHead><TableHead>Schemalagt</TableHead></TableRow></TableHeader>
                       <TableBody>
@@ -497,6 +508,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                         ))}
                       </TableBody>
                     </Table>
+                    </div>
 
                     <div className="mt-4 space-y-1">
                       <p className="text-sm"><strong>Längsta frånvarosvit:</strong> {threeMonthStats.longestAbsenceStreak} schemalagda dagar</p>
@@ -512,6 +524,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                 </TabsContent>
               )}
               <TabsContent value="kontaktinfo">
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -528,6 +541,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                     </TableRow>
                   </TableBody>
                 </Table>
+                </div>
               </TabsContent>
               <TabsContent value="progression">
                 {userType === "Admin" && selectedUser && (() => {

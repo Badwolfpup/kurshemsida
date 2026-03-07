@@ -62,25 +62,25 @@ export function DeltagareList({
               onClick={() => onSelect(p.id)}
               className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/50 transition-colors text-left"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-9 h-9 rounded-full gradient-hero flex items-center justify-center text-primary-foreground text-sm font-semibold">
+              <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                <div className="w-9 h-9 rounded-full gradient-hero flex items-center justify-center text-primary-foreground text-sm font-semibold shrink-0">
                   {p.firstName.charAt(0)}
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="font-medium text-foreground text-sm flex items-center gap-1.5">
-                    {p.firstName} {p.lastName}
+                    <span className="truncate">{p.firstName} {p.lastName}</span>
                     {unreadStudentIds.has(p.id) && (
                       <span className="w-2 h-2 rounded-full bg-destructive shrink-0" />
                     )}
                     {hasAbsenceAlert(p) && (
-                      <AlertTriangle className="inline h-3.5 w-3.5 text-destructive" />
+                      <AlertTriangle className="inline h-3.5 w-3.5 text-destructive shrink-0" />
                     )}
                   </p>
-                  <p className="text-xs text-muted-foreground">{p.email}</p>
+                  <p className="text-xs text-muted-foreground truncate">{p.email}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Badge variant="secondary" className="text-xs">
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
                   Spår {p.track}
                 </Badge>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
