@@ -50,6 +50,14 @@
 - `RecurringEvent`: Name, Weekday, StartTime, EndTime, Frequency (weekly/biweekly), StartDate, AdminId, CreatedAt
 - `RecurringEventException`: RecurringEventId, Date, IsDeleted, Name, StartTime, EndTime
 
+## AI Exercise & Project System
+- Students generate exercises/projects via AI (Grok), then submit feedback which saves to history
+- `ExerciseHistory`: UserId, Topic, Language, Difficulty, Title, Description, Example, Assumptions, FunctionSignature, Solution, Asserts (JSON), IsCompleted, feedback fields
+- `ProjectHistory`: UserId, TechStack, Difficulty, Title, Description, LearningGoals, UserStories, DesignSpecs, AssetsNeeded, StarterHtml, BonusChallenges, SolutionHtml/Css/Js, IsCompleted, feedback fields
+- Endpoints in `ExerciseEndpoints.cs`: GET `exercise-history`, GET `project-history`, POST `exercise-feedback`, POST `project-feedback`
+- Shared test runner: `src/lib/exerciseTestRunner.ts` — `parseAsserts()` and `runTests()` used by both AI-generera and Sparade views
+- Sparade tabs show student's own history (not shared catalogue) with filters matching generation options
+
 ## SCENARIO Comment Convention
 Add to mutation hooks (frontend) and endpoint registrations (backend) after implementing features. Used by `/static-trace` to verify code matches intent.
 

@@ -1,11 +1,56 @@
 import type ExerciseType from "../Types/ExerciseType";
 import type { AddExerciseDto, UpdateExerciseDto } from "../Types/Dto/ExerciseDto";
 
+export interface ExerciseHistoryItem {
+    id: number;
+    topic: string;
+    language: string;
+    difficulty: number;
+    title: string;
+    description: string;
+    example: string | null;
+    assumptions: string | null;
+    functionSignature: string | null;
+    solution: string | null;
+    asserts: string | null;
+    isCompleted: boolean;
+    createdAt: string;
+}
+
+export interface ProjectHistoryItem {
+    id: number;
+    techStack: string;
+    difficulty: number;
+    title: string;
+    description: string;
+    learningGoals: string | null;
+    userStories: string | null;
+    designSpecs: string | null;
+    assetsNeeded: string | null;
+    starterHtml: string | null;
+    bonusChallenges: string | null;
+    solutionHtml: string | null;
+    solutionCss: string | null;
+    solutionJs: string | null;
+    isCompleted: boolean;
+    createdAt: string;
+}
+
 export function computeLightbulbs(difficulty: number): boolean[] {
     return Array(5).fill(false).map((_, i) => i < difficulty);
 }
 
 export const exerciseService = {
+    async fetchExerciseHistory(): Promise<ExerciseHistoryItem[]> {
+        const response = await fetch('/api/exercise-history', { credentials: 'include' });
+        responseAction(response);
+        return await response.json() as ExerciseHistoryItem[];
+    },
+    async fetchProjectHistory(): Promise<ProjectHistoryItem[]> {
+        const response = await fetch('/api/project-history', { credentials: 'include' });
+        responseAction(response);
+        return await response.json() as ProjectHistoryItem[];
+    },
     async fetchExercises(): Promise<ExerciseType[]> {
 
         const response = await fetch('/api/fetch-exercises', {
