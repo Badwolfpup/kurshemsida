@@ -71,6 +71,9 @@ export const assertService = {
         difficulty: number;
         title: string;
         description: string;
+        example?: string;
+        assumptions?: string;
+        functionSignature?: string;
         solution?: string;
         asserts?: string;
         isCompleted: boolean;
@@ -91,6 +94,12 @@ export const assertService = {
         difficulty: number;
         title: string;
         description: string;
+        learningGoals?: string;
+        userStories?: string;
+        designSpecs?: string;
+        assetsNeeded?: string;
+        starterHtml?: string;
+        bonusChallenges?: string;
         solutionHtml?: string;
         solutionCss?: string;
         solutionJs?: string;
