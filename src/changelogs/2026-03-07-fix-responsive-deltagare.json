@@ -1,0 +1,15 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Deltagare-vyn och elevsidan (CoachAttendance) är nu responsiva och fungerar bättre på mobil och små skärmar",
+      "Tabbar radbryts istället för att klippas av på smal skärm",
+      "Tabeller scrollar horisontellt vid behov på små skärmar",
+      "Deltagarlistan trunkerar långa namn och e-postadresser"
+    ],
+    "coach": [
+      "Mina deltagare-vyn och elevsidan är nu responsiva och fungerar bättre på mobil"
+    ],
+    "student": []
+  }
+}
