@@ -22,12 +22,12 @@ const HelpDialog = ({ helpKey }: HelpDialogProps) => {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const helpbot = useHelpbot();
 
-  const entry = helpContent[helpKey];
-  if (!entry) return null;
-
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const entry = helpContent[helpKey];
+  if (!entry) return null;
 
   const handleSend = () => {
     const trimmed = input.trim();
