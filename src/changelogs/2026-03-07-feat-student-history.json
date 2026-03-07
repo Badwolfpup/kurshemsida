@@ -1,0 +1,16 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Fliken \"Sparade\" under Övningar och Projekt visar nu elevens egna AI-genererade historik istället för den delade katalogen",
+      "Övningshistoriken sparar nu alla detaljer (exempel, antaganden, funktionssignatur) för att matcha den genererade vyn",
+      "Projekthistoriken sparar nu alla detaljer (lärandemål, user stories, designspecifikationer, resurser, startkod, bonusutmaningar)"
+    ],
+    "coach": [],
+    "student": [
+      "Fliken \"Sparade\" under Övningar visar nu dina tidigare AI-genererade övningar med testfall som du kan köra igen, samt lösningen direkt tillgänglig",
+      "Fliken \"Sparade\" under Projekt visar nu dina tidigare AI-genererade projekt med live-förhandsgranskning och kodlösning",
+      "Dina tidigare sparade övningar och övningar har nollställts, då den tidigare historiken inte är kompatibel med det nya upplägget"
+    ]
+  }
+}
