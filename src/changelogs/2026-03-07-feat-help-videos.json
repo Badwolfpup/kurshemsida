@@ -1,0 +1,18 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "AI-chatboten har flyttats från hjälpfönstret till ett sökfält i navigeringsfältet, tillgängligt från alla sidor",
+      "Hjälpfönstret visar nu en hjälpvideo (för coachvyer) som kan spelas upp i en stor modal",
+      "Meddelanden i deltagarkontext (Mina deltagare) delas nu mellan alla lärare och administratörer"
+    ],
+    "coach": [
+      "AI-chatboten har flyttats till navigeringsfältet och är nu tillgänglig från alla sidor",
+      "Hjälpfönstret visar nu en kort hjälpvideo som kan spelas upp i helskärm",
+      "Meddelanden om deltagare delas nu med alla lärare/administratörer"
+    ],
+    "student": [
+      "AI-chatboten har flyttats till navigeringsfältet och är nu tillgänglig från alla sidor"
+    ]
+  }
+}
