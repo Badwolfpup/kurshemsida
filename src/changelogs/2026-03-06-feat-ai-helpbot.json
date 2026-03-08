@@ -1,5 +1,5 @@
 {
-  "displaydate": null,
+  "displaydate": "2026-03-08",
   "entries": {
     "admin": ["Hjälpdialogen har ersatts med en popover som inkluderar en AI-chattbot driven av Grok API", "Chattbotten svarar på frågor om webbplatsens funktioner på svenska"],
     "coach": ["Hjälpikonen öppnar nu en popover med inbyggd chattbot där du kan ställa frågor om sidan"],

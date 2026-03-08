@@ -1,8 +1,8 @@
 {
-  "displaydate": null,
+  "displaydate": "2026-03-08",
   "entries": {
     "admin": ["Fixat bugg där schemaknapparna i \"Schemalagda dagar\" inte uppdaterades visuellt vid klick."],
-    "coach": ["Schemaknapparna i \"Schemalagda dagar\" uppdateras nu direkt när du ändrar en deltagares schema."],
+    "coach": [],
     "student": []
   }
 }
