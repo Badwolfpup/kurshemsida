@@ -1,0 +1,65 @@
+{
+  "title": "Mina deltagare — Närvaro",
+  "role": "coach",
+  "startUrl": "http://localhost:5173/mina-deltagare",
+  "outputName": "coach-narvaro",
+  "steps": [
+    {
+      "id": 1,
+      "action": "screenshot_pause",
+      "narration": "Välkommen till Mina deltagare. Här ser du en lista över alla deltagare som är tilldelade till dig.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 2,
+      "action": "screenshot_pause",
+      "narration": "Varje deltagare visas med sina initialer. En röd prick betyder att det finns ett oläst meddelande om den deltagaren.",
+      "pauseMs": 3500
+    },
+    {
+      "id": 3,
+      "action": "click",
+      "selector": "tr.cursor-pointer",
+      "narration": "Klicka på en deltagare för att se deras detaljerade vy.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 4,
+      "action": "screenshot_pause",
+      "narration": "Nu ser du elevsidan med flera flikar. Vi börjar med fliken Närvaro som redan är vald.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 5,
+      "action": "screenshot_pause",
+      "narration": "Förklaringen ovanför tabellen visar vad färgerna betyder. Blått är närvaro, vitt är ej närvarande, och rött är en inställd lektion.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 6,
+      "action": "screenshot_pause",
+      "narration": "Tabellen visar två veckor i taget, med fyra dagar per vecka. Varje ruta visar om deltagaren var närvarande den dagen.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 7,
+      "action": "click",
+      "selector": "button:has-text('←')",
+      "narration": "Använd pilarna för att navigera mellan veckor.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 8,
+      "action": "screenshot_pause",
+      "narration": "Observera att närvaron är skrivskyddad för coacher. Det är administratören som registrerar närvaro.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 9,
+      "action": "click",
+      "selector": "button:has-text('Tillbaka')",
+      "narration": "Klicka på Tillbaka för att gå tillbaka till deltagarlistan.",
+      "pauseMs": 2000
+    }
+  ]
+}

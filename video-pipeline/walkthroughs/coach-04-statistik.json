@@ -1,0 +1,52 @@
+{
+  "title": "Mina deltagare — Statistik",
+  "role": "coach",
+  "startUrl": "http://localhost:5173/mina-deltagare",
+  "outputName": "coach-statistik",
+  "steps": [
+    {
+      "id": 1,
+      "action": "click",
+      "selector": "tr.cursor-pointer",
+      "narration": "Klicka på en deltagare för att öppna deras elevsida.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 2,
+      "action": "click",
+      "selector": "button[role='tab']:has-text('Statistik')",
+      "narration": "Klicka på fliken Statistik.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 3,
+      "action": "screenshot_pause",
+      "narration": "Överst ser du deltagarens startdatum och datum för senaste närvaro.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 4,
+      "action": "screenshot_pause",
+      "narration": "Tabellen Närvaro per månad visar hur många dagar deltagaren varit närvarande jämfört med sitt schema, för de senaste tre månaderna.",
+      "pauseMs": 4500
+    },
+    {
+      "id": 5,
+      "action": "scroll",
+      "narration": "Scrolla ner för mer detaljerad statistik.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 6,
+      "action": "screenshot_pause",
+      "narration": "Här ser du den totala närvaron under de senaste tre månaderna, och en tabell som visar frånvaro uppdelad per veckodag.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 7,
+      "action": "screenshot_pause",
+      "narration": "Längst ner visas tre viktiga mätvärden: längsta frånvarosvit, nuvarande närvarosvit, och längsta närvarosvit. Dessa hjälper dig att se mönster i deltagarens närvaro.",
+      "pauseMs": 5000
+    }
+  ]
+}

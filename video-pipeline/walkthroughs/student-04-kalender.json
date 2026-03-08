@@ -1,0 +1,70 @@
+{
+  "title": "Min kalender",
+  "role": "student",
+  "startUrl": "http://localhost:5173/student-calendar",
+  "outputName": "student-kalender",
+  "steps": [
+    {
+      "id": 1,
+      "action": "screenshot_pause",
+      "narration": "Välkommen till din kalender. Här ser du dina bokningar och kan boka handledning med din lärare.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 2,
+      "action": "screenshot_pause",
+      "narration": "Kalendern visar fyra dagar i taget. Du navigerar mellan veckor med pilarna.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 3,
+      "action": "screenshot_pause",
+      "narration": "Färgerna visar bokningens status. Du kan se förfrågningar, godkända möten, ombokningar och nekade möten i förklaringen ovanför kalendern.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 4,
+      "action": "click",
+      "selector": "button:has-text('Boka handledning')",
+      "narration": "Klicka på Boka handledning för att boka ett möte med din lärare.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 5,
+      "action": "screenshot_pause",
+      "narration": "I dialogrutan väljer du vilken lärare du vill boka tid hos, datum och tid, samt skriver ett meddelande om vad du behöver hjälp med.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 6,
+      "action": "screenshot_pause",
+      "narration": "Du kan bara välja tider som läraren har markerat som tillgängliga.",
+      "pauseMs": 2500
+    },
+    {
+      "id": 7,
+      "action": "click",
+      "selector": "button:has-text('Avbryt')",
+      "narration": "Vi stänger dialogen för nu.",
+      "pauseMs": 1500
+    },
+    {
+      "id": 8,
+      "action": "screenshot_pause",
+      "narration": "Om du har en väntande förfrågan från din lärare kan du klicka på den i kalendern.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 9,
+      "action": "screenshot_pause",
+      "narration": "I detaljvyn kan du godkänna eller neka mötet. Om mötet redan är godkänt kan du avboka det.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 10,
+      "action": "screenshot_pause",
+      "narration": "Återkommande händelser som gruppaktiviteter visas också i kalendern men kan inte ändras.",
+      "pauseMs": 3000
+    }
+  ]
+}

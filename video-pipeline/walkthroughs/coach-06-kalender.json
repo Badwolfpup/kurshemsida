@@ -1,0 +1,78 @@
+{
+  "title": "Kalender & Bokning",
+  "role": "coach",
+  "startUrl": "http://localhost:5173/coach-booking",
+  "outputName": "coach-kalender",
+  "steps": [
+    {
+      "id": 1,
+      "action": "screenshot_pause",
+      "narration": "Välkommen till kalendern. Här ser du tillgängliga tider och kan boka möten med administratörer.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 2,
+      "action": "screenshot_pause",
+      "narration": "Ovanför kalendern ser du flikar med namnen på tillgängliga handledare. Klicka på en flik för att se just den handledarens tillgänglighet.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 3,
+      "action": "screenshot_pause",
+      "narration": "Kalendern visar fyra dagar i taget. Blå block är tillgängliga tider. Röda block är upptagna tider.",
+      "pauseMs": 3500
+    },
+    {
+      "id": 4,
+      "action": "screenshot_pause",
+      "narration": "Dina egna bokningar visas med statusfärger. Du kan se om de väntar på svar, är godkända, ombokade eller nekade.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 5,
+      "action": "screenshot_pause",
+      "narration": "Du bokar ett möte genom att klicka på en blå tillgänglig tid i kalendern. En dialogruta öppnas där du väljer mötestyp, start- och sluttid.",
+      "pauseMs": 4500
+    },
+    {
+      "id": 6,
+      "action": "screenshot_pause",
+      "narration": "I dialogrutan väljer du mötestyp. Det finns intromöte och uppföljning. Vid uppföljning väljer du också vilken elev det gäller.",
+      "pauseMs": 4500
+    },
+    {
+      "id": 7,
+      "action": "click",
+      "selector": "button:has-text('Föreslå möte')",
+      "narration": "Du kan också klicka på Föreslå möte om du vill föreslå en tid som inte finns som tillgänglig i kalendern.",
+      "pauseMs": 2500
+    },
+    {
+      "id": 8,
+      "action": "wait_for",
+      "selector": "[role='dialog']",
+      "waitMs": 5000,
+      "narration": "En dialogruta öppnas.",
+      "pauseMs": 1500
+    },
+    {
+      "id": 9,
+      "action": "screenshot_pause",
+      "narration": "Här väljer du handledare, mötestyp, dag och tid. Administratören får en förfrågan som de kan godkänna eller neka.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 10,
+      "action": "click",
+      "selector": "[role='dialog'] button:has-text('Avbryt')",
+      "narration": "Vi stänger dialogen.",
+      "pauseMs": 1500
+    },
+    {
+      "id": 11,
+      "action": "screenshot_pause",
+      "narration": "Du kan klicka på en befintlig bokning i kalendern för att se detaljer och eventuellt avboka.",
+      "pauseMs": 3000
+    }
+  ]
+}

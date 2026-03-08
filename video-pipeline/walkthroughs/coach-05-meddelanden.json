@@ -1,0 +1,53 @@
+{
+  "title": "Meddelanden",
+  "role": "coach",
+  "startUrl": "http://localhost:5173/meddelanden",
+  "outputName": "coach-meddelanden",
+  "steps": [
+    {
+      "id": 1,
+      "action": "screenshot_pause",
+      "narration": "Välkommen till meddelandesidan. Här kan du kommunicera med administratörer, lärare och dina tilldelade deltagare.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 2,
+      "action": "screenshot_pause",
+      "narration": "Till vänster ser du alla dina konversationer. Olästa meddelanden markeras så att du snabbt ser vad som är nytt.",
+      "pauseMs": 3500
+    },
+    {
+      "id": 3,
+      "action": "click",
+      "selector": "div.space-y-2 button.rounded-xl",
+      "narration": "Klicka på en konversation för att öppna den.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 4,
+      "action": "screenshot_pause",
+      "narration": "Till höger visas meddelandehistoriken. Du kan scrolla uppåt för att se äldre meddelanden.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 5,
+      "action": "fill",
+      "selector": "textarea",
+      "value": "Hej! Hur går det med uppgiften?",
+      "narration": "Skriv ditt meddelande i textfältet längst ner och klicka på skicka.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 6,
+      "action": "screenshot_pause",
+      "narration": "Mottagaren får en e-postnotifikation om de har aktiverat det i sina inställningar.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 7,
+      "action": "screenshot_pause",
+      "narration": "Kom ihåg att aldrig skriva känsliga uppgifter i meddelanden.",
+      "pauseMs": 2500
+    }
+  ]
+}

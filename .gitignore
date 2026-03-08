@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules
 dist
+video-pipeline/output
 dist-ssr
 *.local
 *.tsbuildinfo

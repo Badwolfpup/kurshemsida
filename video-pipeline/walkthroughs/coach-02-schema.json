@@ -1,0 +1,47 @@
+{
+  "title": "Mina deltagare — Schemalagda dagar",
+  "role": "coach",
+  "startUrl": "http://localhost:5173/mina-deltagare",
+  "outputName": "coach-schema",
+  "steps": [
+    {
+      "id": 1,
+      "action": "click",
+      "selector": "tr.cursor-pointer",
+      "narration": "Klicka på en deltagare för att öppna deras elevsida.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 2,
+      "action": "click",
+      "selector": "button[role='tab']:has-text('Schemalagda dagar')",
+      "narration": "Klicka på fliken Schemalagda dagar.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 3,
+      "action": "screenshot_pause",
+      "narration": "Här ser du deltagarens schema. Tabellen visar vilka dagar och pass deltagaren är schemalagd för, från måndag till torsdag.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 4,
+      "action": "screenshot_pause",
+      "narration": "Varje dag har två pass: förmiddag och eftermiddag. Ja betyder att deltagaren är schemalagd, Nej betyder att de inte är det.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 5,
+      "action": "click",
+      "selector": "button:has-text('Nej')",
+      "narration": "Du kan ändra schemat genom att klicka på knapparna. Klicka på Nej för att lägga till ett pass, eller Ja för att ta bort det.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 6,
+      "action": "screenshot_pause",
+      "narration": "Ändringarna sparas automatiskt och en bekräftelse visas längst ner på skärmen.",
+      "pauseMs": 3000
+    }
+  ]
+}

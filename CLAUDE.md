@@ -9,7 +9,7 @@
 ## Pull Requests & Changelog
 - **Never push directly to main** — all changes must go through a PR. Create a branch, push it, and use `/makepr` or `gh pr create`
 - Kursserver PRs are handled by the user — do not create PRs for that repo
-- After any implementation (even quick edits that don't go through `/makepr`), update `CHANGELOG.md` under `## [Unreleased]`, grouped by feature area
+- After any implementation, changelog entries are created as JSON files in `src/changelogs/` during the `/makepr` flow — no manual changelog updates needed
 
 ## SCENARIO Comments & Static Trace
 - After implementing a feature, add SCENARIO comments to every hook and endpoint that was added or modified. See comment convention in `.claude/PROJECT_CONTEXT.md`.

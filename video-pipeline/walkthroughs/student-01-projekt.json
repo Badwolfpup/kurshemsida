@@ -1,0 +1,99 @@
+{
+  "title": "Projekt — AI-generera",
+  "role": "student",
+  "startUrl": "http://localhost:5173/projekt",
+  "outputName": "student-projekt",
+  "steps": [
+    {
+      "id": 1,
+      "action": "screenshot_pause",
+      "narration": "Välkommen till projektsidan. Här kan du generera AI-skapade webbprojekt och se dina sparade projekt.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 2,
+      "action": "screenshot_pause",
+      "narration": "Du börjar på fliken AI-generera. Här väljer du vilken typ av projekt du vill skapa.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 3,
+      "action": "select",
+      "selector": "button[role='combobox']:near(:text('Projekttyp'))",
+      "option": "[role='option']:has-text('HTML + CSS + JS')",
+      "narration": "Välj projekttyp i rullgardinsmenyn. Du kan välja mellan HTML, HTML plus CSS, eller HTML plus CSS plus JavaScript.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 4,
+      "action": "select",
+      "selector": "button[role='combobox']:near(:text('Svårighetsgrad'))",
+      "option": "[role='option']:has-text('3 - Medel')",
+      "narration": "Välj svårighetsgrad. Skalan går från ett till fem, där ett är mycket lätt och fem är mycket svår.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 5,
+      "action": "click",
+      "selector": "button:has-text('Generera')",
+      "narration": "Klicka på Generera för att skapa ditt projekt. Det tar ungefär tjugo till trettio sekunder.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 6,
+      "action": "screenshot_pause",
+      "narration": "Medan projektet genereras ser du en laddningsindikator med en nedräkning. Låt oss under tiden titta på ett sparat projekt.",
+      "pauseMs": 5000
+    },
+    {
+      "id": 7,
+      "action": "click",
+      "selector": "button[role='tab']:has-text('Sparade')",
+      "narration": "Under fliken Sparade hittar du alla dina tidigare genererade projekt.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 8,
+      "action": "screenshot_pause",
+      "narration": "Du kan filtrera dina sparade projekt efter typ, svårighetsgrad och söka på titel.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 9,
+      "action": "click",
+      "selector": ".space-y-3 button.w-full",
+      "narration": "Klicka på ett projekt för att expandera det. Du ser hela beskrivningen, lärandemål, user stories, designspecifikationer och bonusutmaningar.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 10,
+      "action": "screenshot_pause",
+      "narration": "Det expanderade projektet visar all information inklusive en live-förhandsvisning och lösningskoden.",
+      "pauseMs": 5000
+    },
+    {
+      "id": 11,
+      "action": "scroll",
+      "narration": "Scrolla ner för att se förhandsvisningen av projektet.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 12,
+      "action": "screenshot_pause",
+      "narration": "Här ser du en live-förhandsvisning av det färdiga projektet i en inbäddad ram.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 13,
+      "action": "scroll",
+      "narration": "Scrolla vidare för att se lösningskoden.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 14,
+      "action": "screenshot_pause",
+      "narration": "Under förhandsvisningen kan du visa lösningskoden. Klicka på HTML, CSS eller JavaScript för att växla mellan kodfilerna.",
+      "pauseMs": 4000
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "title": "Meddelanden",
+  "role": "student",
+  "startUrl": "http://localhost:5173/meddelanden",
+  "outputName": "student-meddelanden",
+  "steps": [
+    {
+      "id": 1,
+      "action": "screenshot_pause",
+      "narration": "Välkommen till meddelandesidan. Här kan du skicka meddelanden till din lärare och coach.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 2,
+      "action": "screenshot_pause",
+      "narration": "Till vänster ser du en lista med dina konversationer. Klicka på en person för att öppna chatten.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 3,
+      "action": "screenshot_pause",
+      "narration": "Om någon har skickat ett oläst meddelande visas en markering vid deras namn.",
+      "pauseMs": 2500
+    },
+    {
+      "id": 4,
+      "action": "click",
+      "selector": "div.space-y-2 button.rounded-xl",
+      "narration": "Klicka på en konversation för att se meddelandehistoriken.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 5,
+      "action": "screenshot_pause",
+      "narration": "Till höger visas alla meddelanden i konversationen. Dina meddelanden visas till höger och den andra personens till vänster.",
+      "pauseMs": 3500
+    },
+    {
+      "id": 6,
+      "action": "fill",
+      "selector": "textarea",
+      "value": "Hej! Jag har en fråga om uppgiften.",
+      "narration": "Skriv ditt meddelande i textfältet längst ner.",
+      "pauseMs": 2500
+    },
+    {
+      "id": 7,
+      "action": "screenshot_pause",
+      "narration": "Klicka på skicka-knappen för att skicka meddelandet. Mottagaren får en notifikation.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 8,
+      "action": "screenshot_pause",
+      "narration": "Viktigt! Skriv aldrig känsliga uppgifter som personnummer eller lösenord i meddelanden.",
+      "pauseMs": 3000
+    }
+  ]
+}

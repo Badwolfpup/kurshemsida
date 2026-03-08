@@ -1,0 +1,38 @@
+{
+  "title": "Portfolio",
+  "role": "student",
+  "startUrl": "http://localhost:5173/portfolio",
+  "outputName": "student-portfolio",
+  "steps": [
+    {
+      "id": 1,
+      "action": "screenshot_pause",
+      "narration": "Välkommen till din portfolio. Här ser du en sammanfattning av dina övningar och projekt.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 2,
+      "action": "screenshot_pause",
+      "narration": "Överst ser du tre statistikkort. Det första visar det totala antalet tillgängliga uppgifter. De andra två visar hur många övningar respektive projekt du har.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 3,
+      "action": "scroll",
+      "narration": "Under statistiken visas dina projekt med titel, beskrivning, typ och svårighetsgrad.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 4,
+      "action": "scroll",
+      "narration": "Längre ner ser du dina övningar, sorterade efter programmeringsspråk med färgkodade markeringar.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 5,
+      "action": "screenshot_pause",
+      "narration": "Portfolion uppdateras automatiskt när du slutför nya övningar eller projekt. Du behöver inte göra något manuellt.",
+      "pauseMs": 3000
+    }
+  ]
+}
