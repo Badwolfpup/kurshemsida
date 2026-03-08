@@ -1,0 +1,99 @@
+{
+  "title": "Övningar — AI-generera",
+  "role": "student",
+  "startUrl": "http://localhost:5173/ovningar",
+  "outputName": "student-ovningar",
+  "steps": [
+    {
+      "id": 1,
+      "action": "screenshot_pause",
+      "narration": "Välkommen till övningssidan. Här kan du generera kodövningar med hjälp av AI och öva på olika programmeringskoncept.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 2,
+      "action": "screenshot_pause",
+      "narration": "Under fliken AI-generera väljer du ämne, programmeringsspråk och svårighetsgrad.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 3,
+      "action": "select",
+      "selector": "button[role='combobox']:near(:text('Ämne'))",
+      "option": "[role='option']:has-text('Loops')",
+      "narration": "Välj ämne i rullgardinsmenyn. Du kan välja bland annat variabler, strängar, loopar, funktioner och arrayer.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 4,
+      "action": "select",
+      "selector": "button[role='combobox']:near(:text('Svårighetsgrad'))",
+      "option": "[role='option']:has-text('2 - Lätt')",
+      "narration": "Välj svårighetsgrad. Börja med en lägre nivå om du är ny inom ämnet.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 5,
+      "action": "click",
+      "selector": "button:has-text('Generera')",
+      "narration": "Klicka på Generera för att skapa din övning. Det tar ungefär tjugo till trettio sekunder.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 6,
+      "action": "screenshot_pause",
+      "narration": "Medan övningen genereras ser du en laddningsindikator. Låt oss under tiden titta på sparade övningar.",
+      "pauseMs": 5000
+    },
+    {
+      "id": 7,
+      "action": "click",
+      "selector": "button[role='tab']:has-text('Sparade')",
+      "narration": "Under fliken Sparade hittar du alla dina tidigare genererade övningar.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 8,
+      "action": "screenshot_pause",
+      "narration": "Du kan filtrera dina sparade övningar efter ämne, språk, svårighetsgrad och söka på titel.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 9,
+      "action": "click",
+      "selector": ".space-y-3 button.w-full",
+      "narration": "Klicka på en övning för att expandera den. Du ser hela beskrivningen, exempel, antaganden och funktionssignatur.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 10,
+      "action": "screenshot_pause",
+      "narration": "I det expanderade läget ser du all information om övningen inklusive beskrivning och exempelkod.",
+      "pauseMs": 5000
+    },
+    {
+      "id": 11,
+      "action": "scroll",
+      "narration": "Scrolla ner för att se testfallen och lösningen.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 12,
+      "action": "screenshot_pause",
+      "narration": "Här ser du testfallen som visar vad din kod förväntas returnera för olika indata, samt lösningskoden.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 13,
+      "action": "scroll",
+      "narration": "Scrolla vidare för att se hela lösningen.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 14,
+      "action": "screenshot_pause",
+      "narration": "Till skillnad från fliken AI-generera kan du här se lösningen direkt utan att vänta.",
+      "pauseMs": 3500
+    }
+  ]
+}

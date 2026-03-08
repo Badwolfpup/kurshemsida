@@ -1,0 +1,77 @@
+{
+  "title": "Inställningar",
+  "role": "student",
+  "startUrl": "http://localhost:5173/preferenser",
+  "outputName": "student-installningar",
+  "steps": [
+    {
+      "id": 1,
+      "action": "screenshot_pause",
+      "narration": "Välkommen till inställningssidan. Här kan du ändra din profil, tema och notifikationer.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 2,
+      "action": "screenshot_pause",
+      "narration": "Överst ser du din profil med namn, e-post och telefonnummer.",
+      "pauseMs": 2500
+    },
+    {
+      "id": 3,
+      "action": "click",
+      "selector": "button:has-text('Ändra')",
+      "narration": "Klicka på Ändra för att redigera din profil.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 4,
+      "action": "screenshot_pause",
+      "narration": "Du kan ändra din e-postadress och ditt telefonnummer. Förnamn och efternamn kan inte ändras här.",
+      "pauseMs": 3500
+    },
+    {
+      "id": 5,
+      "action": "click",
+      "selector": "button:has-text('Avbryt')",
+      "narration": "Klicka Spara för att spara dina ändringar, eller Avbryt för att ångra.",
+      "pauseMs": 2500
+    },
+    {
+      "id": 6,
+      "action": "scroll",
+      "narration": "Under profilen hittar du temaväljaren.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 7,
+      "action": "click",
+      "selector": "button:has-text('Mörkt')",
+      "narration": "Klicka på Mörkt för att byta till mörkt tema, eller Ljust för att gå tillbaka.",
+      "pauseMs": 2500
+    },
+    {
+      "id": 8,
+      "action": "scroll",
+      "narration": "Nästa avsnitt handlar om notifikationer.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 9,
+      "action": "screenshot_pause",
+      "narration": "Här kan du slå på eller av e-postnotifikationer. Om de är aktiverade får du e-post vid bokningsändringar och nya meddelanden.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 10,
+      "action": "scroll",
+      "narration": "Under notifikationer ser du information om din tilldelade coach med namn och kontaktuppgifter.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 11,
+      "action": "scroll",
+      "narration": "Längst ner finns ett formulär där du kan rapportera buggar eller skicka in idéer och förbättringsförslag.",
+      "pauseMs": 3000
+    }
+  ]
+}

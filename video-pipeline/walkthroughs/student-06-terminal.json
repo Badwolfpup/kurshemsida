@@ -1,0 +1,72 @@
+{
+  "title": "Terminal",
+  "role": "student",
+  "startUrl": "http://localhost:5173/terminal",
+  "outputName": "student-terminal",
+  "steps": [
+    {
+      "id": 1,
+      "action": "screenshot_pause",
+      "narration": "Välkommen till terminalen. Här lär du dig grunderna i att använda terminalen genom guidade lektioner.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 2,
+      "action": "screenshot_pause",
+      "narration": "Till vänster ser du tre lektioner. Den första handlar om att navigera i filsystemet, den andra om att hantera mappar och filer, och den tredje är fri utforskning.",
+      "pauseMs": 5000
+    },
+    {
+      "id": 3,
+      "action": "screenshot_pause",
+      "narration": "Den aktiva lektionen visar en instruktion i en markerad ruta. Följ instruktionen och skriv kommandot i terminalen till höger.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 4,
+      "action": "fill",
+      "selector": "input",
+      "value": "pwd",
+      "narration": "Skriv kommandot i terminalen. Till exempel, skriv p-w-d för att se var du befinner dig i filsystemet.",
+      "pauseMs": 2500
+    },
+    {
+      "id": 5,
+      "action": "press",
+      "selector": "input",
+      "key": "Enter",
+      "narration": "Tryck enter för att köra kommandot.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 6,
+      "action": "screenshot_pause",
+      "narration": "Resultatet visas i terminalfönstret. Grön text betyder att kommandot lyckades. Röd text betyder fel.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 7,
+      "action": "screenshot_pause",
+      "narration": "När du klarar ett steg går lektionen vidare till nästa instruktion automatiskt.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 8,
+      "action": "screenshot_pause",
+      "narration": "Du kan använda kommandon som l-s för att lista filer, c-d för att byta mapp, mkdir för att skapa mappar, och touch för att skapa filer.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 9,
+      "action": "screenshot_pause",
+      "narration": "Skriv help i terminalen om du behöver se alla tillgängliga kommandon.",
+      "pauseMs": 2500
+    },
+    {
+      "id": 10,
+      "action": "screenshot_pause",
+      "narration": "När alla steg i en lektion är klara låses nästa lektion upp. Fortsätt i din egen takt.",
+      "pauseMs": 3000
+    }
+  ]
+}

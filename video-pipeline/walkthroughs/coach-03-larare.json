@@ -1,0 +1,34 @@
+{
+  "title": "Mina deltagare — Lärare på kursen",
+  "role": "coach",
+  "startUrl": "http://localhost:5173/mina-deltagare",
+  "outputName": "coach-larare",
+  "steps": [
+    {
+      "id": 1,
+      "action": "click",
+      "selector": "tr.cursor-pointer",
+      "narration": "Klicka på en deltagare för att öppna deras elevsida.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 2,
+      "action": "click",
+      "selector": "button[role='tab']:has-text('Lärare')",
+      "narration": "Klicka på fliken Lärare på kursen.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 3,
+      "action": "screenshot_pause",
+      "narration": "Här ser du kontaktuppgifterna till alla lärare som är kopplade till kursen. Tabellen visar namn, telefonnummer och e-postadress.",
+      "pauseMs": 4000
+    },
+    {
+      "id": 4,
+      "action": "screenshot_pause",
+      "narration": "Raden med grön bakgrund visar den lärare som är deltagarens primära kontaktperson. Det är den läraren du i första hand kontaktar angående elevuppföljning.",
+      "pauseMs": 5000
+    }
+  ]
+}

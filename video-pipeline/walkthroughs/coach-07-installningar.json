@@ -1,0 +1,59 @@
+{
+  "title": "Inställningar",
+  "role": "coach",
+  "startUrl": "http://localhost:5173/coach-installningar",
+  "outputName": "coach-installningar",
+  "steps": [
+    {
+      "id": 1,
+      "action": "screenshot_pause",
+      "narration": "Välkommen till inställningssidan. Här hanterar du din profil och dina preferenser.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 2,
+      "action": "screenshot_pause",
+      "narration": "Överst ser du din profil med namn och e-postadress.",
+      "pauseMs": 2500
+    },
+    {
+      "id": 3,
+      "action": "click",
+      "selector": "button:has-text('Ändra')",
+      "narration": "Klicka på Ändra för att redigera din profil. Du kan ändra ditt telefonnummer.",
+      "pauseMs": 2500
+    },
+    {
+      "id": 4,
+      "action": "screenshot_pause",
+      "narration": "Förnamn, efternamn och e-post kan inte ändras här. Kontakta administratören om dessa behöver uppdateras.",
+      "pauseMs": 3500
+    },
+    {
+      "id": 5,
+      "action": "click",
+      "selector": "button:has-text('Avbryt')",
+      "narration": "Klicka Spara för att spara ändringar, eller Avbryt för att ångra.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 6,
+      "action": "scroll",
+      "narration": "Under profilen kan du byta mellan ljust och mörkt tema.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 7,
+      "action": "click",
+      "selector": "button:has-text('Mörkt')",
+      "narration": "Klicka på Mörkt för att aktivera mörkt tema. Temat ändras omedelbart.",
+      "pauseMs": 2500
+    },
+    {
+      "id": 8,
+      "action": "scroll",
+      "narration": "Längst ner finns ett formulär där du kan rapportera buggar eller skicka in förbättringsförslag.",
+      "pauseMs": 3000
+    }
+  ]
+}

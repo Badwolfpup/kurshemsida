@@ -1,0 +1,60 @@
+{
+  "title": "Mina deltagare — Meddelanden",
+  "role": "coach",
+  "startUrl": "http://localhost:5173/mina-deltagare",
+  "outputName": "coach-deltagare-meddelanden",
+  "steps": [
+    {
+      "id": 1,
+      "action": "screenshot_pause",
+      "narration": "Välkommen till Mina deltagare. Vi ska titta på fliken Meddelanden som finns på varje elevsida.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 2,
+      "action": "click",
+      "selector": "tr.cursor-pointer",
+      "narration": "Klicka på en deltagare för att öppna deras elevsida.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 3,
+      "action": "click",
+      "selector": "button[role='tab']:has-text('Meddelanden')",
+      "narration": "Klicka på fliken Meddelanden.",
+      "pauseMs": 2000
+    },
+    {
+      "id": 4,
+      "action": "screenshot_pause",
+      "narration": "Här ser du meddelandehistoriken kopplad till just den här deltagaren. Det är ett separat chattfönster från den vanliga meddelandesidan.",
+      "pauseMs": 4500
+    },
+    {
+      "id": 5,
+      "action": "screenshot_pause",
+      "narration": "Meddelanden som skickas här är kopplade till eleven och visas i kontexten av deras elevsida. Det gör det enkelt att följa upp saker som rör just den eleven.",
+      "pauseMs": 5000
+    },
+    {
+      "id": 6,
+      "action": "fill",
+      "selector": "textarea",
+      "value": "Hej! Hur går det med studierna?",
+      "narration": "Skriv ditt meddelande i textfältet längst ner.",
+      "pauseMs": 3000
+    },
+    {
+      "id": 7,
+      "action": "screenshot_pause",
+      "narration": "Klicka på skicka för att skicka meddelandet. Mottagaren ser meddelandet både här och på sin meddelandesida.",
+      "pauseMs": 3500
+    },
+    {
+      "id": 8,
+      "action": "screenshot_pause",
+      "narration": "Tips: Använd den här chatten för elevspecifika ärenden och den vanliga meddelandesidan för generella frågor.",
+      "pauseMs": 3500
+    }
+  ]
+}
