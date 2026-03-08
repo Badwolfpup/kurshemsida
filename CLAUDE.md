@@ -1,5 +1,11 @@
 # kurshemsida — Project Rules
 
+## Architecture Reference
+- `.claude/PROJECT_CONTEXT.md` — full architecture, tech stack, patterns, domain models
+- `.claude/PAGE_MAP.md` — per-page, per-role functionality breakdown
+- `.claude/INTENT.md` — organizational purpose, who we serve, guiding principles for design decisions
+- After completing implementation that changes architecture, endpoints, models, routes, or page behavior, check if these files need updating.
+
 ## Pull Requests & Changelog
 - **Never push directly to main** — all changes must go through a PR. Create a branch, push it, and use `/makepr` or `gh pr create`
 - Kursserver PRs are handled by the user — do not create PRs for that repo
