@@ -17,9 +17,10 @@ export function HelpVideoModal({ videoId, open, onOpenChange }: HelpVideoModalPr
           {open && (
             <iframe
               className="absolute inset-0 w-full h-full"
-              src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&showinfo=0&fs=0`}
+              src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&showinfo=0&fs=0&disablekb=0`}
               allow="autoplay; encrypted-media"
               referrerPolicy="strict-origin-when-cross-origin"
+              sandbox="allow-scripts allow-same-origin"
               title="Hjälpvideo"
             />
           )}
