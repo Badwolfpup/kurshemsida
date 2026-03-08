@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import DOMPurify from "dompurify";
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,13 +7,6 @@ import {
 } from "@/components/ui/dialog";
 import facilitiesImg from "@/assets/facilities.jpg";
 import "./CardDialog.css";
-
-interface Post {
-  id: number;
-  html: string;
-  author: string;
-  publishedAt: string;
-}
 
 const teachers = [
   {
@@ -41,83 +33,88 @@ const teachers = [
 ];
 
 function OmKursenContent() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("/api/fetch-posts", { credentials: "include" });
-        if (res.ok) {
-          const data: Post[] = await res.json();
-          data.sort(
-            (a, b) =>
-              new Date(b.publishedAt).getTime() -
-              new Date(a.publishedAt).getTime()
-          );
-          setPosts(data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch posts:", err);
-      }
-      setLoading(false);
-    })();
-  }, []);
-
   return (
     <div className="cd-section">
       <p className="cd-intro">
-        Håll dig uppdaterad om kommande evenemang, aktiviteter och viktiga
-        datum!
+        Hos oss erbjuder vi en unik och inkluderande programmeringsmiljö där du
+        kan utvecklas i din egen takt, på dina egna villkor. Vi tror på att alla
+        kan lära sig programmera – det handlar bara om att hitta rätt stöd och
+        miljö.
       </p>
 
-      {loading ? (
-        <p className="cd-loading">Laddar...</p>
-      ) : posts.length > 0 ? (
-        <div className="cd-posts">
-          {posts.map((post) => (
-            <div key={post.id} className="cd-post-card">
-              <h4>{post.author}</h4>
-              <p className="cd-post-date">
-                {new Date(post.publishedAt).toLocaleDateString("sv-SE")}
-              </p>
-              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.html) }} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="cd-empty">
-          <span className="cd-empty-icon">📅</span>
-          <h4>Inga kommande händelser</h4>
-          <p>
-            Det finns inga planerade evenemang just nu. Kom tillbaka snart för
-            uppdateringar!
-          </p>
-        </div>
-      )}
+      <div className="cd-block">
+        <h3>Spår 1: Avancerad Utveckling</h3>
+        <p className="cd-intro">För dig som vill ta nästa steg i karriären</p>
+        <p>
+          Har du redan lärt dig grunderna i programmering och känner att du är
+          redo att ta nästa steg? Vårt avancerade spår är utformat för dig som
+          vill förbereda dig för professionell utveckling.
+        </p>
+        <h4>Vad du får:</h4>
+        <ul className="cd-list">
+          <li>Mentorskap från erfarna utvecklare</li>
+          <li>Praktiska projekt som speglar verkliga arbetsuppgifter</li>
+          <li>Vägledning mot mentorskap eller praktikplats hos etablerade företag</li>
+          <li>Möjlighet att bygga en professionell portfolio</li>
+          <li>Nätverk med branschkontakter</li>
+        </ul>
+        <p>
+          <strong>Målet:</strong> Att förbereda dig för en karriär inom
+          mjukvaruutveckling genom praktisk erfarenhet och professionella
+          kontakter.
+        </p>
+      </div>
 
       <div className="cd-block">
-        <h3>Tidigare Företagsbesök &amp; Gästföreläsningar</h3>
-        <p className="cd-intro">
-          Vi bjuder regelbundet in mjukvaruföretag för att ge dig insikt i hur
-          det är att arbeta som professionell programmerare.
+        <h3>Spår 2: Upptäck Programmering</h3>
+        <p className="cd-intro">För dig som vill utforska kodningens värld</p>
+        <p>
+          Är du nyfiken på programmering men osäker på om det är något för dig?
+          Vårt upptäcksspår ger dig möjlighet att prova på kodning i en trygg
+          och stödjande miljö – helt utan förkunskaper.
         </p>
-        <div className="cd-companies">
-          {["AppTech", "Hiab", "Xlent"].map((c) => (
-            <div key={c} className="cd-company">
-              <span className="cd-company-icon">🏢</span>
-              <span>{c}</span>
-            </div>
-          ))}
-        </div>
-        <h4>Vad ger företagsbesöken?</h4>
+        <h4>Detta erbjuder vi dig:</h4>
         <ul className="cd-list">
-          <li>Insikt i verkliga arbetsuppgifter för programmerare</li>
-          <li>Förståelse för företagskultur och arbetsmetoder</li>
-          <li>Möjlighet att ställa frågor direkt till yrkesverksamma</li>
-          <li>Nätverkande och möjliga framtida jobbkontakter</li>
-          <li>Inspiration för din egen karriärväg</li>
+          <li><strong>Ingen press:</strong> Lär dig i din egen takt, utan krav på daglig närvaro</li>
+          <li><strong>Lugn miljö:</strong> En stödjande atmosfär där misstag är en del av lärandet</li>
+          <li><strong>Individuell anpassning:</strong> Vi gör alla möjliga anpassningar för dina specifika behov</li>
+          <li><strong>Inga förkunskaper krävs:</strong> Du börjar från grunden, oavsett bakgrund</li>
+          <li><strong>Utrustning ingår:</strong> Vi har datorer du kan låna under hela kursen</li>
+          <li><strong>Flexibel närvaro:</strong> Kom när det passar dig, utan stress eller förväntningar</li>
         </ul>
+        <h4>Vår målgrupp</h4>
+        <p>
+          Vi vänder oss särskilt till dig som har upplevt att den traditionella
+          skolvägen inte fungerat för dig. Kanske har du diagnostiserats med
+          något som gjort det svårt att lyckas i konventionella utbildningar,
+          eller så känner du helt enkelt att du behöver en annan typ av
+          lärmiljö.
+        </p>
+        <p>
+          Här får du chansen att upptäcka programmering i en miljö som är byggd
+          för just dig – där din individuella situation respekteras och där vi
+          arbetar tillsammans för att hitta rätt sätt för dig att lära.
+        </p>
+        <p>
+          <strong>Målet:</strong> Att ge dig möjlighet att upptäcka om
+          programmering är något du vill fortsätta med, utan press eller
+          förväntningar.
+        </p>
+      </div>
+
+      <div className="cd-block">
+        <h3>Varför välja CUL Programmering?</h3>
+        <ul className="cd-list">
+          <li><strong>Flexibilitet:</strong> Anpassa dina studier efter ditt liv, inte tvärtom</li>
+          <li><strong>Stöd:</strong> Erfarna mentorer som bryr sig om din utveckling</li>
+          <li><strong>Inkludering:</strong> Alla är välkomna, oavsett bakgrund eller förutsättningar</li>
+          <li><strong>Praktiskt:</strong> Verkliga projekt och hands-on erfarenhet</li>
+        </ul>
+        <p>
+          Redo att ta första steget? Oavsett om du vill bygga en karriär inom
+          utveckling eller bara är nyfiken på vad kodning innebär, har vi en
+          plats för dig!
+        </p>
       </div>
     </div>
   );
@@ -187,6 +184,30 @@ function AktiviteterContent() {
       <div className="cd-note">
         <h4>Viktigt att veta</h4>
         <p>Alla aktiviteter är frivilliga och anpassas efter deltagarnas behov.</p>
+      </div>
+
+      <div className="cd-block">
+        <h3>Tidigare Företagsbesök &amp; Gästföreläsningar</h3>
+        <p className="cd-intro">
+          Vi bjuder regelbundet in mjukvaruföretag för att ge dig insikt i hur
+          det är att arbeta som professionell programmerare.
+        </p>
+        <div className="cd-companies">
+          {["AppTech", "Hiab", "Xlent"].map((c) => (
+            <div key={c} className="cd-company">
+              <span className="cd-company-icon">🏢</span>
+              <span>{c}</span>
+            </div>
+          ))}
+        </div>
+        <h4>Vad ger företagsbesöken?</h4>
+        <ul className="cd-list">
+          <li>Insikt i verkliga arbetsuppgifter för programmerare</li>
+          <li>Förståelse för företagskultur och arbetsmetoder</li>
+          <li>Möjlighet att ställa frågor direkt till yrkesverksamma</li>
+          <li>Nätverkande och möjliga framtida jobbkontakter</li>
+          <li>Inspiration för din egen karriärväg</li>
+        </ul>
       </div>
     </div>
   );
