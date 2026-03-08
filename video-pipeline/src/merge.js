@@ -1,5 +1,5 @@
-import { execSync } from "child_process";
-import { writeFileSync, unlinkSync, existsSync } from "fs";
+import { execFileSync } from "child_process";
+import { existsSync } from "fs";
 import path from "path";
 import { FFMPEG } from "./config.js";
 
@@ -25,7 +25,7 @@ export async function mergeVideoAudio(walkthrough, durations) {
     const pauseMs = step.pauseMs || 0;
 
     const audioFile = path.resolve(`output/audio/${outputName}-step-${step.id}.mp3`);
-    inputs.push(`-i "${audioFile}"`);
+    inputs.push("-i", audioFile);
 
     // Apply delay to position this clip at the right time
     // Input 0 is the video file, so audio inputs start at index 1
@@ -43,20 +43,19 @@ export async function mergeVideoAudio(walkthrough, durations) {
     `${mixInputs}amix=inputs=${steps.length}:duration=longest[aout]`,
   ].join(";");
 
-  // Build ffmpeg command
-  const cmd = [
-    `"${FFMPEG}"`,
-    `-i "${videoPath}"`,
+  // Build ffmpeg args
+  const args = [
+    "-i", videoPath,
     ...inputs,
-    `-filter_complex "${filterComplex}"`,
-    `-map 0:v -map "[aout]"`,
-    `-c:v libx264 -c:a aac -shortest`,
-    `-y "${finalPath}"`,
-  ].join(" ");
+    "-filter_complex", filterComplex,
+    "-map", "0:v", "-map", "[aout]",
+    "-c:v", "libx264", "-c:a", "aac", "-shortest",
+    "-y", finalPath,
+  ];
 
   console.log(`  [merge] Running FFmpeg...`);
   try {
-    execSync(cmd, { stdio: "pipe", timeout: 120000 });
+    execFileSync(FFMPEG, args, { stdio: "pipe", timeout: 120000 });
   } catch (e) {
     console.error(`  [merge] FFmpeg failed. Stderr:`, e.stderr?.toString());
     throw e;

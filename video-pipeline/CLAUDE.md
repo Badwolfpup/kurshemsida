@@ -44,9 +44,10 @@ node pipeline.js walkthroughs/foo.json --skip-tts --skip-record
 | `evaluate` | `script`, `narration`, `pauseMs` | Runs arbitrary JS in page context |
 
 ## Login Credentials (dev mode)
-- `student` -> `test.elev@gmail.com`
-- `coach` -> `coachen@hudiksvall.se`
-- `teacher` -> `teacher@hudiksvall.se`
+Configurable via env vars (with dev defaults as fallback):
+- `VP_STUDENT_EMAIL` (default: `test.elev@gmail.com`)
+- `VP_COACH_EMAIL` (default: `coachen@hudiksvall.se`)
+- `VP_TEACHER_EMAIL` (default: `teacher@hudiksvall.se`)
 
 Passcode is auto-filled in dev mode. The recorder handles login automatically via a separate browser context (no login in the recorded video).
 
@@ -78,7 +79,7 @@ Passcode is auto-filled in dev mode. The recorder handles login automatically vi
 ### Audio File Caching
 - TTS skips regeneration if the .mp3 file already exists
 - To re-record narration for specific steps, delete the corresponding `output/audio/{outputName}-step-{id}.mp3` files
-- To re-run specific walkthroughs, see `run-fixes3.js` as a template for batch re-runs with audio cleanup
+- To re-run specific walkthroughs, delete the relevant audio files and run `node pipeline.js walkthroughs/<file>.json`
 
 ### General Tips
 - `pauseMs` should be at least as long as the narration audio; the recorder uses `Math.max(pauseMs, audioDuration)`

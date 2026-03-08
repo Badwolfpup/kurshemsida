@@ -3,9 +3,9 @@ import { readFileSync, renameSync } from "fs";
 import path from "path";
 
 const LOGINS = {
-  student: "test.elev@gmail.com",
-  coach: "coachen@hudiksvall.se",
-  teacher: "teacher@hudiksvall.se",
+  student: process.env.VP_STUDENT_EMAIL || "test.elev@gmail.com",
+  coach: process.env.VP_COACH_EMAIL || "coachen@hudiksvall.se",
+  teacher: process.env.VP_TEACHER_EMAIL || "teacher@hudiksvall.se",
 };
 
 const VIEWPORT = { width: 1920, height: 1080 };

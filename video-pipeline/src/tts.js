@@ -1,4 +1,4 @@
-import { execSync, execFileSync } from "child_process";
+import { execFileSync } from "child_process";
 import { existsSync, writeFileSync } from "fs";
 import path from "path";
 import { FFPROBE } from "./config.js";
@@ -27,10 +27,12 @@ export async function generateAudio(walkthrough) {
     }
 
     // Get duration via ffprobe
-    const raw = execSync(
-      `"${FFPROBE}" -v error -show_entries format=duration -of csv=p=0 "${audioPath}"`,
-      { encoding: "utf-8" }
-    ).trim();
+    const raw = execFileSync(FFPROBE, [
+      "-v", "error",
+      "-show_entries", "format=duration",
+      "-of", "csv=p=0",
+      audioPath,
+    ], { encoding: "utf-8" }).trim();
     const durationMs = Math.round(parseFloat(raw) * 1000);
     durations.push({ id: step.id, durationMs });
     console.log(`  [tts] Step ${step.id}: ${durationMs}ms`);
