@@ -1,5 +1,5 @@
 {
-  "displaydate": null,
+  "displaydate": "2026-03-08",
   "entries": {
     "admin": ["Ändringsloggen sparas nu i localStorage och visar en indikatorprick för nya ändringar (coacher/deltagare)."],
     "coach": [],
