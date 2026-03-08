@@ -1,0 +1,14 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Hjälpvideor har lagts till för alla studentsidor (Terminal, Projekt, Övningar, Portfolio, Meddelanden, Kalender, Inställningar)",
+      "Hjälpvideor kan inte längre öppnas i ett nytt YouTube-fönster"
+    ],
+    "coach": [],
+    "student": [
+      "Hjälpvideor finns nu på alla sidor — klicka på frågetecken-ikonen för att se en kort video om sidans funktioner",
+      "Videor spelas upp direkt i appen utan att lämna sidan"
+    ]
+  }
+}
