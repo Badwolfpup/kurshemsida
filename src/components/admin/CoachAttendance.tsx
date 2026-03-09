@@ -322,7 +322,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                 <TabsList className="h-auto flex-wrap">
                   <TabsTrigger value="narvaro">Närvaro</TabsTrigger>
                   <TabsTrigger value="schema">Schemalagda dagar</TabsTrigger>
-                  {hasChat && <TabsTrigger value="meddelanden">Meddelanden</TabsTrigger>}
+                  {/* {hasChat && <TabsTrigger value="meddelanden">Meddelanden</TabsTrigger>} */}{/* GDPR review — temporarily suspended */}
                   <TabsTrigger value="kontaktinfo">Kontaktinfo</TabsTrigger>
                   <TabsTrigger value="larare">{userType === "Admin" ? "Lärarkontakt" : "Lärare på kursen"}</TabsTrigger>
                   <TabsTrigger value="progression">Progression</TabsTrigger>
@@ -519,11 +519,12 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                   </>
                 )}
               </TabsContent>
+              {/* GDPR review — temporarily suspended
               {hasChat && (
                 <TabsContent value="meddelanden" className="h-[calc(100vh-16rem)]">
                   <StudentContextChat studentId={selectedUser.id} recipientId={chatPartnerId!} />
                 </TabsContent>
-              )}
+              )} */}
               <TabsContent value="kontaktinfo">
                 <div className="overflow-x-auto">
                 <Table>
