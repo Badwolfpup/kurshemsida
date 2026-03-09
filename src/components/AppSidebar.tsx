@@ -46,12 +46,12 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, messagesCount: number, s
       },
       // { title: 'Profil', url: '/profil', icon: UserCircle },
       { title: 'Terminal', url: '/terminal', icon: TerminalIcon },
-      { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, badgeCount: messagesCount }
+      // { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, badgeCount: messagesCount } // GDPR review — temporarily suspended
     );
   } else if (isCoach) {
     items.push(
       { title: 'Mina deltagare', url: '/mina-deltagare', icon: Users, badgeCount: studentContextCount },
-      { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, badgeCount: messagesCount },
+      // { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, badgeCount: messagesCount }, // GDPR review — temporarily suspended
       {
         title: 'Kalender: Boka möte',
         url: '/coach-booking',
@@ -65,7 +65,7 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, messagesCount: number, s
       { title: 'Projekt', url: '/projekt', icon: FolderKanban },
       { title: 'Övningar', url: '/ovningar', icon: Dumbbell },
       { title: 'Portfolio', url: '/portfolio', icon: Briefcase },
-      { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, badgeCount: messagesCount },
+      // { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, badgeCount: messagesCount }, // GDPR review — temporarily suspended
       { title: 'Min kalender', url: '/student-calendar', icon: CalendarIcon },
       // { title: 'Profil', url: '/profil', icon: UserCircle },
       { title: 'Terminal', url: '/terminal', icon: TerminalIcon }
