@@ -6,6 +6,11 @@
 - `.claude/INTENT.md` — organizational purpose, who we serve, guiding principles for design decisions
 - After completing implementation that changes architecture, endpoints, models, routes, or page behavior, check if these files need updating.
 
+## Roles
+- **Teacher** and **Admin** are the same role with the same UI — the only difference is that Admins can add new teachers. Treat them as interchangeable unless the task explicitly distinguishes them.
+- **Coach** is a separate role with its own views and permissions.
+- **Student** is a separate role with its own views and permissions.
+
 ## Pull Requests & Changelog
 - **Never push directly to main** — all changes must go through a PR. Create a branch, push it, and use `/makepr` or `gh pr create`
 - Kursserver PRs are handled by the user — do not create PRs for that repo
