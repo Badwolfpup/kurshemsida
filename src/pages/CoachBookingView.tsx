@@ -86,6 +86,17 @@ function CoachBookingView() {
     allUsers.filter((u) => u.authLevel <= 2 && u.isActive && u.firstName !== 'Alexandra'),
     [allUsers]
   );
+
+  // Hardcoded preset intro slots: Victoria Tuesday 10-11, Adam Thursday 11-12
+  // dayOfWeek uses JS Date.getDay() values: 0=Sun, 2=Tue, 4=Thu
+  const INTRO_PRESETS = useMemo(() => {
+    const victoria = admins.find((a) => a.firstName === 'Victoria');
+    const adam = admins.find((a) => a.firstName === 'Adam');
+    return [
+      ...(victoria ? [{ adminId: victoria.id, dayOfWeek: 2, startHour: 10, endHour: 11 }] : []),
+      ...(adam     ? [{ adminId: adam.id,     dayOfWeek: 4, startHour: 11, endHour: 12 }] : []),
+    ];
+  }, [admins]);
   const myStudents = useMemo(() =>
     allUsers.filter((u) => u.authLevel === 4 && u.isActive && u.coachId === coachId),
     [allUsers, coachId]
@@ -185,6 +196,16 @@ function CoachBookingView() {
 
     return result;
   }, [filteredAvailabilities, myBookings, allBookings, selectedAdminId, coachId, adminColorMap, nameMap, SEVEN_DAYS_AGO, recurringInstances]);
+
+  // Returns true if the availability slot is a hardcoded preset intro window
+  const isPresetIntroSlot = (avail: Availability): boolean => {
+    const start = new Date(avail.startTime);
+    const dayOfWeek = start.getDay();
+    const startHour = start.getHours();
+    return INTRO_PRESETS.some(
+      (p) => p.adminId === avail.adminId && p.dayOfWeek === dayOfWeek && p.startHour === startHour
+    );
+  };
 
   // Open booking dialog from free slot click
   const openBookingDialog = (avail: Availability, clickedTime: Date) => {
@@ -395,7 +416,10 @@ function CoachBookingView() {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="intro">Intromöte</SelectItem>
-                  <SelectItem value="followup">Uppföljning</SelectItem>
+                  {/* Hide "Uppföljning" for preset intro slots (Victoria Tue 10-11, Adam Thu 11-12) */}
+                  {!(bookDialogAvail && isPresetIntroSlot(bookDialogAvail)) && (
+                    <SelectItem value="followup">Uppföljning</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
