@@ -27,6 +27,7 @@ interface RecurringEventDialogProps {
     frequency: string;
     startDate: string;
     adminId?: number;
+    classroom?: number;
   }) => Promise<void>;
 }
 
@@ -39,6 +40,7 @@ export default function RecurringEventDialog({ open, onOpenChange, admins, curre
   const [endHour, setEndHour] = useState(10);
   const [endMinute, setEndMinute] = useState(0);
   const [frequency, setFrequency] = useState('weekly');
+  const [classroom, setClassroom] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const handleClose = () => {
@@ -46,6 +48,7 @@ export default function RecurringEventDialog({ open, onOpenChange, admins, curre
     setName('');
     setWeekday('1');
     setFrequency('weekly');
+    setClassroom('');
     setSelectedAdminId(currentAdminId?.toString() || '');
   };
 
@@ -61,6 +64,7 @@ export default function RecurringEventDialog({ open, onOpenChange, admins, curre
         frequency,
         startDate: new Date().toISOString(),
         adminId: selectedAdminId ? Number(selectedAdminId) : undefined,
+        classroom: classroom ? Number(classroom) : undefined,
       });
       handleClose();
     } finally {
@@ -152,6 +156,17 @@ export default function RecurringEventDialog({ open, onOpenChange, admins, curre
               <ToggleGroupItem value="weekly">Varje vecka</ToggleGroupItem>
               <ToggleGroupItem value="biweekly">Varannan vecka</ToggleGroupItem>
             </ToggleGroup>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Sal (valfritt)</Label>
+            <Input
+              type="number"
+              min={1}
+              value={classroom}
+              onChange={(e) => setClassroom(e.target.value)}
+              placeholder="T.ex. 3"
+            />
           </div>
         </div>
 

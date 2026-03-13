@@ -23,6 +23,7 @@ export interface CreateRecurringEventData {
   frequency: string;
   startDate: string;
   adminId?: number;
+  classroom?: number;
 }
 
 export interface UpdateRecurringEventData {
@@ -31,6 +32,7 @@ export interface UpdateRecurringEventData {
   startTime?: string;
   endTime?: string;
   frequency?: string;
+  classroom?: number;
 }
 
 export interface RecurringEventExceptionData {

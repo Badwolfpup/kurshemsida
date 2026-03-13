@@ -10,6 +10,19 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { CalendarEvent } from '@/Types/CalendarTypes';
 
+function RecurringEventBlock({ event, nameMap }: { event: CalendarEvent; nameMap?: Map<number, string> }) {
+  const { title, resource } = event;
+  const teacherName = resource.adminId != null ? nameMap?.get(resource.adminId) : undefined;
+  const classroom = resource.classroom;
+  return (
+    <div style={{ lineHeight: '1.2', fontSize: '0.78rem' }}>
+      <div style={{ fontWeight: 600 }}>{title}</div>
+      {teacherName && <div style={{ opacity: 0.85 }}>{teacherName}</div>}
+      {classroom != null && <div style={{ opacity: 0.85 }}>Sal {classroom}</div>}
+    </div>
+  );
+}
+
 interface CalendarShellProps {
   title: string;
   subtitle?: string;
@@ -25,6 +38,7 @@ interface CalendarShellProps {
   legend?: React.ReactNode;
   helpButton?: React.ReactNode;
   children?: React.ReactNode;
+  nameMap?: Map<number, string>;
 }
 
 export default function CalendarShell({
@@ -42,6 +56,7 @@ export default function CalendarShell({
   legend,
   helpButton,
   children,
+  nameMap,
 }: CalendarShellProps) {
   const today = useMemo(() => startOfDay(new Date()), []);
   const noClassSet = useMemo(
@@ -145,6 +160,12 @@ export default function CalendarShell({
                 dayFormat: (date: Date) => `${DAY_NAMES[getDay(date)] || ''} ${format(date, 'd/M')}`,
               }}
               messages={{ today: 'Idag', next: 'Nästa', previous: 'Föregående', month: 'Månad', week: 'Vecka', day: 'Dag' }}
+              components={{
+                event: (props: { event: CalendarEvent }) =>
+                  props.event.resource.type === 'recurring'
+                    ? <RecurringEventBlock event={props.event} nameMap={nameMap} />
+                    : <span>{props.event.title}</span>,
+              }}
             />
           </div>
         </section>

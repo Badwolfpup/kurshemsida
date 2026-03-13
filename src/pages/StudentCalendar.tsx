@@ -97,7 +97,7 @@ export default function StudentCalendar() {
         start: new Date(inst.start),
         end: new Date(inst.end),
         allDay: false,
-        resource: { type: 'recurring', recurringEventId: inst.eventId, recurringEventName: inst.name, color: RECURRING_EVENT_COLOR, isOwn: false },
+        resource: { type: 'recurring', recurringEventId: inst.eventId, recurringEventName: inst.name, color: RECURRING_EVENT_COLOR, isOwn: false, adminId: inst.adminId, classroom: inst.classroom },
       });
     }
 
@@ -196,6 +196,7 @@ export default function StudentCalendar() {
         onDateChange={setCurrentDate}
         onSelectEvent={handleSelectEvent}
         noClassDates={noClassDateObjects}
+        nameMap={nameMap}
         helpButton={<HelpDialog helpKey="student-calendar" />}
         rightActions={
           <Button onClick={() => setShowBookingDialog(true)} className="ml-4">

@@ -157,7 +157,7 @@ function AdminSchedule() {
         start: new Date(inst.start),
         end: new Date(inst.end),
         allDay: false,
-        resource: { type: 'recurring', recurringEventId: inst.eventId, recurringEventName: inst.name, color: RECURRING_EVENT_COLOR, isOwn: true },
+        resource: { type: 'recurring', recurringEventId: inst.eventId, recurringEventName: inst.name, color: RECURRING_EVENT_COLOR, isOwn: true, adminId: inst.adminId, classroom: inst.classroom },
       });
     }
 
@@ -339,6 +339,7 @@ function AdminSchedule() {
         onSelectEvent={handleSelectEvent}
         selectable
         noClassDates={noClassDateObjects}
+        nameMap={nameMap}
         helpButton={<HelpDialog helpKey="admin-schedule" />}
         leftActions={
           <Button onClick={() => setShowRecurringDialog(true)}>

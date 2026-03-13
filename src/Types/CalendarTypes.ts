@@ -18,6 +18,7 @@ export interface CalendarEventResource {
   isOwn?: boolean;
   recurringEventId?: number;
   recurringEventName?: string;
+  classroom?: number;
 }
 
 export interface CalendarEvent {
@@ -38,4 +39,5 @@ export interface RecurringEventInstance {
   adminId: number;
   frequency: string;
   isException: boolean;
+  classroom?: number;
 }
