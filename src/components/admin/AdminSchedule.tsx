@@ -11,7 +11,7 @@ import { getFreeSegments, getAdminColorMap, RECURRING_EVENT_COLOR, STATUS_COLORS
 import { useAuth } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
-import { useBookings, useAvailabilities, useCreateBooking, useUpdateBookingStatus, useCancelBooking, useRescheduleBooking, useAddAvailability, useUpdateAvailability, useDeleteAvailability } from '@/hooks/useBookings';
+import { useBookings, useAvailabilities, useCreateBooking, useUpdateBookingStatus, useCancelBooking, useRescheduleBooking, useTransferBooking, useAddAvailability, useUpdateAvailability, useDeleteAvailability } from '@/hooks/useBookings';
 import { useRecurringEvents, useCreateRecurringEvent, useUpdateRecurringEvent, useDeleteRecurringEvent, useSetRecurringEventException } from '@/hooks/useRecurringEvents';
 import { useNoClasses } from '@/hooks/useNoClass';
 import { Button } from '@/components/ui/button';
@@ -48,6 +48,7 @@ function AdminSchedule() {
   const updateStatus = useUpdateBookingStatus();
   const cancelBookingMut = useCancelBooking();
   const rescheduleMut = useRescheduleBooking();
+  const transferMut = useTransferBooking();
   const addAvailMut = useAddAvailability();
   const updateAvailMut = useUpdateAvailability();
   const deleteAvailMut = useDeleteAvailability();
@@ -87,6 +88,7 @@ function AdminSchedule() {
   const coaches = useMemo(() => allUsers.filter((u) => u.authLevel === 3 && u.isActive), [allUsers]);
   const students = useMemo(() => allUsers.filter((u) => u.authLevel === 4 && u.isActive), [allUsers]);
   const adminColorMap = useMemo(() => getAdminColorMap(allAdmins), [allAdmins]);
+  const otherTeachers = useMemo(() => allAdmins.filter((a) => a.firstName !== 'Alexandra'), [allAdmins]);
   const nameMap = useMemo(() => {
     const map = new Map<number, string>();
     allUsers.forEach((u) => map.set(u.id, `${u.firstName} ${u.lastName}`));
@@ -361,6 +363,7 @@ function AdminSchedule() {
         role="admin"
         nameMap={nameMap}
         availabilities={availabilities}
+        teachers={otherTeachers}
         onAccept={async (id, reason) => {
           await updateStatus.mutateAsync({ id, status: 'accepted', reason });
           toast({ title: 'Godkänd' });
@@ -376,6 +379,10 @@ function AdminSchedule() {
         onReschedule={async (id, startTime, endTime, reason) => {
           await rescheduleMut.mutateAsync({ id, startTime, endTime, reason, rescheduledBy: 'admin' });
           toast({ title: 'Ombokning skickad' });
+        }}
+        onTransfer={async (id, targetAdminId) => {
+          await transferMut.mutateAsync({ id, targetAdminId });
+          toast({ title: 'Mötet har överförts' });
         }}
       />
 

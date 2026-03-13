@@ -122,6 +122,21 @@ export async function rescheduleBookingNew(id: number, startTime: string, endTim
   return res.json();
 }
 
+/** Transfer booking to another teacher via PUT /api/bookings/{id}/transfer */
+export async function transferBooking(id: number, targetAdminId: number, reason?: string): Promise<Booking> {
+  const res = await fetch(`${NEW_API}/bookings/${id}/transfer`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ targetAdminId, reason: reason ?? '' }),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Transfer failed (${res.status})`);
+  }
+  return res.json();
+}
+
 /** Add availability via new POST /api/availability */
 export async function addAvailabilityNew(data: { adminId: number; startTime: Date | string; endTime: Date | string }): Promise<Availability> {
   const res = await fetch(`${NEW_API}/availability`, {
