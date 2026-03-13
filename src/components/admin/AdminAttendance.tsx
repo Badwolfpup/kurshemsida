@@ -147,7 +147,7 @@ export default function AdminAttendance() {
                     </div>
                   </TableCell>
                   {dates.map((d) => {
-                    if (student.startDate && new Date(student.startDate) > d) {
+                    if (student.startDate && dateKey(new Date(student.startDate)) > dateKey(d)) {
                       return <TableCell key={dateKey(d)} className="px-2" />;
                     }
                     return (
