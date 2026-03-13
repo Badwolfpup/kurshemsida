@@ -6,10 +6,11 @@ import type { SendMessageDto } from "@/Types/MessageType";
 export function useThreads() {
   return useQuery({
     queryKey: ["threads"],
-    queryFn: messageService.getThreads,
-    staleTime: 10_000,
-    refetchInterval: 10_000,
-    refetchOnWindowFocus: true,
+    queryFn: () => Promise.resolve([]), // SUSPENDED: messaging paused for GDPR review
+    // queryFn: messageService.getThreads,
+    // staleTime: 10_000,
+    // refetchInterval: 10_000,
+    // refetchOnWindowFocus: true,
   });
 }
 
@@ -69,9 +70,10 @@ export function useMarkThreadViewed() {
 export function useUnreadCount() {
   return useQuery({
     queryKey: ["unreadCount"],
-    queryFn: messageService.getUnreadCount,
-    staleTime: 30_000,
-    refetchOnWindowFocus: true,
+    queryFn: () => Promise.resolve(0), // SUSPENDED: messaging paused for GDPR review
+    // queryFn: messageService.getUnreadCount,
+    // staleTime: 30_000,
+    // refetchOnWindowFocus: true,
   });
 }
 
