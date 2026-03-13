@@ -86,6 +86,17 @@ function CoachBookingView() {
     allUsers.filter((u) => u.authLevel <= 2 && u.isActive && u.firstName !== 'Alexandra'),
     [allUsers]
   );
+
+  // Hardcoded preset intro slots: Victoria Tuesday 10-11, Adam Thursday 11-12
+  // dayOfWeek uses JS Date.getDay() values: 0=Sun, 2=Tue, 4=Thu
+  const INTRO_PRESETS = useMemo(() => {
+    const victoria = admins.find((a) => a.firstName === 'Victoria');
+    const adam = admins.find((a) => a.firstName === 'Adam');
+    return [
+      ...(victoria ? [{ adminId: victoria.id, dayOfWeek: 2, startHour: 10, endHour: 11 }] : []),
+      ...(adam     ? [{ adminId: adam.id,     dayOfWeek: 4, startHour: 11, endHour: 12 }] : []),
+    ];
+  }, [admins]);
   const myStudents = useMemo(() =>
     allUsers.filter((u) => u.authLevel === 4 && u.isActive && u.coachId === coachId),
     [allUsers, coachId]
@@ -122,26 +133,101 @@ function CoachBookingView() {
     [availabilities, selectedAdminIds]
   );
 
+  // Returns true if a specific time falls within a preset intro window for the given admin
+  const isTimeInPresetIntro = (adminId: number, date: Date, hour: number): boolean => {
+    const dayOfWeek = date.getDay();
+    return INTRO_PRESETS.some(
+      (p) => p.adminId === adminId && p.dayOfWeek === dayOfWeek && hour >= p.startHour && hour < p.endHour
+    );
+  };
+
+  // Returns true if a free segment overlaps any preset intro window
+  const segmentOverlapsPresetIntro = (adminId: number, start: Date, end: Date): boolean => {
+    const dayOfWeek = start.getDay();
+    const segStartHour = start.getHours() + start.getMinutes() / 60;
+    const segEndHour = end.getHours() + end.getMinutes() / 60;
+    return INTRO_PRESETS.some(
+      (p) => p.adminId === adminId && p.dayOfWeek === dayOfWeek && segStartHour < p.endHour && segEndHour > p.startHour
+    );
+  };
+
   // Build events
   const events = useMemo((): CalendarEvent[] => {
     const result: CalendarEvent[] = [];
 
-    // Free segments
+    // Free segments — split at preset intro boundaries so the label only covers preset rows
     for (const avail of filteredAvailabilities) {
       const color = adminColorMap.get(avail.adminId) || '#2563eb';
       const freeSegs = getFreeSegments(avail, allBookings);
       for (let i = 0; i < freeSegs.length; i++) {
         const seg = freeSegs[i];
-        // Filter to work hours
         if (seg.start.getHours() >= 15 || seg.end.getHours() < 8) continue;
+
+        // Find matching preset for this admin + day
+        const dayOfWeek = seg.start.getDay();
+        const preset = INTRO_PRESETS.find(
+          (p) => p.adminId === avail.adminId && p.dayOfWeek === dayOfWeek
+        );
+
+        if (!preset) {
+          // No preset on this day — render as-is
+          result.push({
+            id: `free-${avail.id}-${i}`,
+            title: 'Tillgänglig',
+            start: seg.start, end: seg.end, allDay: false,
+            resource: { type: 'availability', availabilityId: avail.id, availability: avail, adminId: avail.adminId, color, isOwn: true },
+          });
+          continue;
+        }
+
+        // Split segment into: before preset, preset, after preset
+        const presetStart = new Date(seg.start); presetStart.setHours(preset.startHour, 0, 0, 0);
+        const presetEnd = new Date(seg.start); presetEnd.setHours(preset.endHour, 0, 0, 0);
+        const segStartMs = seg.start.getTime();
+        const segEndMs = seg.end.getTime();
+        const pStartMs = presetStart.getTime();
+        const pEndMs = presetEnd.getTime();
+
+        // No overlap — segment is entirely outside preset window
+        if (segEndMs <= pStartMs || segStartMs >= pEndMs) {
+          result.push({
+            id: `free-${avail.id}-${i}`,
+            title: 'Tillgänglig',
+            start: seg.start, end: seg.end, allDay: false,
+            resource: { type: 'availability', availabilityId: avail.id, availability: avail, adminId: avail.adminId, color, isOwn: true },
+          });
+          continue;
+        }
+
+        // Part before preset
+        if (segStartMs < pStartMs) {
+          result.push({
+            id: `free-${avail.id}-${i}-pre`,
+            title: 'Tillgänglig',
+            start: seg.start, end: presetStart, allDay: false,
+            resource: { type: 'availability', availabilityId: avail.id, availability: avail, adminId: avail.adminId, color, isOwn: true },
+          });
+        }
+
+        // Preset overlap part
+        const overlapStart = segStartMs > pStartMs ? seg.start : presetStart;
+        const overlapEnd = segEndMs < pEndMs ? seg.end : presetEnd;
         result.push({
-          id: `free-${avail.id}-${i}`,
-          title: 'Tillgänglig',
-          start: seg.start,
-          end: seg.end,
-          allDay: false,
-          resource: { type: 'availability', availabilityId: avail.id, availability: avail, adminId: avail.adminId, color, isOwn: true },
+          id: `free-${avail.id}-${i}-intro`,
+          title: 'Bara för intromöte',
+          start: overlapStart, end: overlapEnd, allDay: false,
+          resource: { type: 'availability', availabilityId: avail.id, availability: avail, adminId: avail.adminId, color: color + '80', isOwn: true },
         });
+
+        // Part after preset
+        if (segEndMs > pEndMs) {
+          result.push({
+            id: `free-${avail.id}-${i}-post`,
+            title: 'Tillgänglig',
+            start: presetEnd, end: seg.end, allDay: false,
+            resource: { type: 'availability', availabilityId: avail.id, availability: avail, adminId: avail.adminId, color, isOwn: true },
+          });
+        }
       }
     }
 
@@ -191,6 +277,16 @@ function CoachBookingView() {
   }, [filteredAvailabilities, myBookings, allBookings, selectedAdminIds, coachId, adminColorMap, nameMap, SEVEN_DAYS_AGO, recurringInstances]);
 
   // Open booking dialog from free slot click
+  // Auto-switch to 'intro' when selected start time enters a preset window
+  React.useEffect(() => {
+    if (bookDialogAvail && bookDialogStart) {
+      const inPreset = isTimeInPresetIntro(bookDialogAvail.adminId, bookDialogStart, bookStartHour);
+      if (inPreset && bookMeetingType === 'followup') {
+        setBookMeetingType('intro');
+      }
+    }
+  }, [bookStartHour, bookDialogAvail, bookDialogStart, bookMeetingType, INTRO_PRESETS]);
+
   const openBookingDialog = (avail: Availability, clickedTime: Date) => {
     setBookDialogAvail(avail);
     setBookDialogStart(clickedTime);
@@ -395,7 +491,14 @@ function CoachBookingView() {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="intro">Intromöte</SelectItem>
-                  <SelectItem value="followup">Uppföljning</SelectItem>
+                  {/* Hide "Uppföljning" when selected start time falls within a preset intro window */}
+                  {!(bookDialogAvail && bookDialogStart && isTimeInPresetIntro(
+                    bookDialogAvail.adminId,
+                    bookDialogStart,
+                    bookStartHour
+                  )) && (
+                    <SelectItem value="followup">Uppföljning</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
