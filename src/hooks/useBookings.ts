@@ -6,6 +6,7 @@ import {
   updateBookingStatusNew,
   cancelBookingNew,
   rescheduleBookingNew,
+  transferBooking,
   addAvailabilityNew,
   updateAvailabilityNew,
   deleteAvailabilityNew,
@@ -107,6 +108,26 @@ export function useRescheduleBooking() {
     mutationFn: ({ id, startTime, endTime, reason, rescheduledBy }: {
       id: number; startTime: string; endTime: string; reason?: string; rescheduledBy?: string;
     }) => rescheduleBookingNew(id, startTime, endTime, reason, rescheduledBy),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['bookings'] });
+    },
+  });
+}
+
+/**
+ * SCENARIO: Transfer a booking to another teacher — admin/teacher only
+ * CALLS: PUT /api/bookings/{id}/transfer (BookingEndpoints.cs)
+ * SIDE EFFECTS:
+ *   - Updates booking.AdminId to targetAdminId (backend)
+ *   - If booking was pending, sets status to "accepted" (backend)
+ *   - Sends transfer notification email via BookingNotifier.NotifyTransferred (backend, EmailService)
+ *   - Invalidates ["bookings"] cache
+ */
+export function useTransferBooking() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, targetAdminId, reason }: { id: number; targetAdminId: number; reason?: string }) =>
+      transferBooking(id, targetAdminId, reason),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['bookings'] });
     },
