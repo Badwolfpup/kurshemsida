@@ -15,7 +15,7 @@ interface RecurringEventClickDialogProps {
   instance: RecurringEventInstance | null;
   canEdit: boolean;
   adminName?: string;
-  onEditThis?: (data: { name?: string; startTime?: string; endTime?: string; isDeleted?: boolean }) => Promise<void>;
+  onEditThis?: (data: { name?: string; startTime?: string; endTime?: string; isDeleted?: boolean; classroom?: number }) => Promise<void>;
   onEditAll?: (data: { name?: string; startTime?: string; endTime?: string; frequency?: string; classroom?: number }) => Promise<void>;
   onDeleteThis?: () => Promise<void>;
   onDeleteAll?: () => Promise<void>;
@@ -72,6 +72,7 @@ export default function RecurringEventClickDialog({
           name: name !== instance.name ? name : undefined,
           startTime: padTime(startHour, startMinute),
           endTime: padTime(endHour, endMinute),
+          classroom: classroom ? Number(classroom) : undefined,
         });
       } else {
         await onEditAll({
@@ -176,26 +177,24 @@ export default function RecurringEventClickDialog({
               </div>
             </div>
             {scope === 'all' && (
-              <>
-                <div className="space-y-2">
-                  <Label>Frekvens</Label>
-                  <ToggleGroup type="single" value={frequency} onValueChange={(v) => { if (v) setFrequency(v); }}>
-                    <ToggleGroupItem value="weekly">Varje vecka</ToggleGroupItem>
-                    <ToggleGroupItem value="biweekly">Varannan vecka</ToggleGroupItem>
-                  </ToggleGroup>
-                </div>
-                <div className="space-y-2">
-                  <Label>Sal (valfritt)</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={classroom}
-                    onChange={(e) => setClassroom(e.target.value)}
-                    placeholder="T.ex. 3"
-                  />
-                </div>
-              </>
+              <div className="space-y-2">
+                <Label>Frekvens</Label>
+                <ToggleGroup type="single" value={frequency} onValueChange={(v) => { if (v) setFrequency(v); }}>
+                  <ToggleGroupItem value="weekly">Varje vecka</ToggleGroupItem>
+                  <ToggleGroupItem value="biweekly">Varannan vecka</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
             )}
+            <div className="space-y-2">
+              <Label>Sal (valfritt)</Label>
+              <Input
+                type="number"
+                min={1}
+                value={classroom}
+                onChange={(e) => setClassroom(e.target.value)}
+                placeholder="T.ex. 3"
+              />
+            </div>
           </div>
         )}
 

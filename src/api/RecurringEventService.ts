@@ -40,6 +40,7 @@ export interface RecurringEventExceptionData {
   name?: string;
   startTime?: string;
   endTime?: string;
+  classroom?: number;
 }
 
 export async function getRecurringEventInstances(from: Date, to: Date): Promise<RecurringEventInstance[]> {
