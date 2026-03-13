@@ -129,6 +129,24 @@ function CoachBookingView() {
     [availabilities, selectedAdminId]
   );
 
+  // Returns true if a specific time falls within a preset intro window for the given admin
+  const isTimeInPresetIntro = (adminId: number, date: Date, hour: number): boolean => {
+    const dayOfWeek = date.getDay();
+    return INTRO_PRESETS.some(
+      (p) => p.adminId === adminId && p.dayOfWeek === dayOfWeek && hour >= p.startHour && hour < p.endHour
+    );
+  };
+
+  // Returns true if a free segment overlaps any preset intro window
+  const segmentOverlapsPresetIntro = (adminId: number, start: Date, end: Date): boolean => {
+    const dayOfWeek = start.getDay();
+    const segStartHour = start.getHours() + start.getMinutes() / 60;
+    const segEndHour = end.getHours() + end.getMinutes() / 60;
+    return INTRO_PRESETS.some(
+      (p) => p.adminId === adminId && p.dayOfWeek === dayOfWeek && segStartHour < p.endHour && segEndHour > p.startHour
+    );
+  };
+
   // Build events
   const events = useMemo((): CalendarEvent[] => {
     const result: CalendarEvent[] = [];
@@ -197,24 +215,6 @@ function CoachBookingView() {
 
     return result;
   }, [filteredAvailabilities, myBookings, allBookings, selectedAdminId, coachId, adminColorMap, nameMap, SEVEN_DAYS_AGO, recurringInstances]);
-
-  // Returns true if a specific time falls within a preset intro window for the given admin
-  const isTimeInPresetIntro = (adminId: number, date: Date, hour: number): boolean => {
-    const dayOfWeek = date.getDay();
-    return INTRO_PRESETS.some(
-      (p) => p.adminId === adminId && p.dayOfWeek === dayOfWeek && hour >= p.startHour && hour < p.endHour
-    );
-  };
-
-  // Returns true if a free segment overlaps any preset intro window
-  const segmentOverlapsPresetIntro = (adminId: number, start: Date, end: Date): boolean => {
-    const dayOfWeek = start.getDay();
-    const segStartHour = start.getHours() + start.getMinutes() / 60;
-    const segEndHour = end.getHours() + end.getMinutes() / 60;
-    return INTRO_PRESETS.some(
-      (p) => p.adminId === adminId && p.dayOfWeek === dayOfWeek && segStartHour < p.endHour && segEndHour > p.startHour
-    );
-  };
 
   // Open booking dialog from free slot click
   // Auto-switch to 'intro' when selected start time enters a preset window
