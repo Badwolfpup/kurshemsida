@@ -261,10 +261,8 @@ function CoachBookingView() {
       }
     }
 
-    // Recurring events (read-only) — only show events for the selected teacher
-    const filteredRecurring = selectedAdminId
-      ? recurringInstances.filter((inst) => inst.adminId === selectedAdminId)
-      : recurringInstances;
+    // Recurring events (read-only) — always show regardless of teacher toggle
+    const filteredRecurring = recurringInstances;
     for (const inst of filteredRecurring) {
       result.push({
         id: `recurring-${inst.eventId}-${inst.date}`,
