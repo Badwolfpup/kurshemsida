@@ -212,7 +212,7 @@ function CoachBookingView() {
           id: `free-${avail.id}-${i}-intro`,
           title: 'Bara för intromöte',
           start: overlapStart, end: overlapEnd, allDay: false,
-          resource: { type: 'availability', availabilityId: avail.id, availability: avail, adminId: avail.adminId, color, isOwn: true },
+          resource: { type: 'availability', availabilityId: avail.id, availability: avail, adminId: avail.adminId, color: color + '80', isOwn: true },
         });
 
         // Part after preset
