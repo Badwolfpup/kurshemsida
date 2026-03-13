@@ -94,6 +94,12 @@ export default function AdminAttendance() {
     return a.firstName.localeCompare(b.firstName);
   }), [students, attendanceData]);
 
+  const lastDateKey = dates.length > 0 ? dateKey(dates[dates.length - 1]) : '';
+  const visibleStudents = sortedStudents.filter((s) => {
+    if (!s.startDate) return true;
+    return dateKey(new Date(s.startDate)) <= lastDateKey;
+  });
+
   const alertStudents = students.filter((s) => hasAbsenceAlert(s.id));
 
   if (usersLoading || attendanceLoading) return <div className="flex justify-center items-center h-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
@@ -138,7 +144,7 @@ export default function AdminAttendance() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedStudents.map((student) => (
+              {visibleStudents.map((student) => (
                 <TableRow key={student.id} className={hasAbsenceAlert(student.id) ? "bg-destructive/5" : ""}>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -146,11 +152,16 @@ export default function AdminAttendance() {
                       {hasAbsenceAlert(student.id) && <AlertTriangle className="h-3 w-3 text-destructive" />}
                     </div>
                   </TableCell>
-                  {dates.map((d) => (
-                    <TableCell key={dateKey(d)} className="px-2 cursor-pointer" onClick={() => toggleAttendance(student.id, d)}>
-                      <div className="flex justify-center pointer-events-none"><Checkbox destructive={isNoClass(d)} checked={isNoClass(d) || hasAttended(student.id, d)} tabIndex={-1} /></div>
-                    </TableCell>
-                  ))}
+                  {dates.map((d) => {
+                    if (student.startDate && dateKey(new Date(student.startDate)) > dateKey(d)) {
+                      return <TableCell key={dateKey(d)} className="px-2" />;
+                    }
+                    return (
+                      <TableCell key={dateKey(d)} className="px-2 cursor-pointer" onClick={() => toggleAttendance(student.id, d)}>
+                        <div className="flex justify-center pointer-events-none"><Checkbox destructive={isNoClass(d)} checked={isNoClass(d) || hasAttended(student.id, d)} tabIndex={-1} /></div>
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))}
             </TableBody>
