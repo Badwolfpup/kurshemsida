@@ -291,7 +291,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
       ) : (
         <>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h2 className="text-2xl font-bold">{(authLevel === 1 || authLevel === 2) && selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName}` : "Elevsida"}</h2>
+            <h2 className="text-2xl font-bold">{selectedUser ? (authLevel === 1 || authLevel === 2) ? `${selectedUser.firstName} ${selectedUser.lastName}` : `${selectedUser.firstName.charAt(0)}.${selectedUser.lastName.charAt(0)}` : "Elevsida"}</h2>
             <div className="flex flex-wrap gap-2">
               {seluser === null && <Select value={selectedUser?.id.toString() || "0"} onValueChange={(value) => { setSelectedUserId(Number(value)); setSelectedUser(users.find((u) => u.id === Number(value)) || null); }}>
                 <SelectTrigger className="w-44 sm:w-48"><SelectValue placeholder="Alla deltagare" /></SelectTrigger>
