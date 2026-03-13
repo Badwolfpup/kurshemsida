@@ -148,12 +148,19 @@ export default function BookingDetailsDialog({
     setConfirmTransfer({ targetId: transferTargetId, targetName: `${teacher.firstName} ${teacher.lastName}` });
   };
 
+  const [transferError, setTransferError] = useState('');
+
   const handleConfirmTransfer = async () => {
     if (!booking || !onTransfer || !confirmTransfer) return;
-    // If booking is pending, accept + transfer; if accepted, just transfer
-    await onTransfer(booking.id, confirmTransfer.targetId);
-    setConfirmTransfer(null);
-    handleClose();
+    setTransferError('');
+    try {
+      await onTransfer(booking.id, confirmTransfer.targetId);
+      setConfirmTransfer(null);
+      handleClose();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Överföring misslyckades';
+      setTransferError(msg.includes('already has a booking') ? 'Läraren har redan ett möte vid den tiden.' : msg);
+    }
   };
 
   const meetingTypeLabel = (type: string) => {
@@ -349,12 +356,13 @@ export default function BookingDetailsDialog({
       </Dialog>
 
       {/* Confirmation dialog for transfer */}
-      <AlertDialog open={!!confirmTransfer} onOpenChange={(o) => { if (!o) setConfirmTransfer(null); }}>
+      <AlertDialog open={!!confirmTransfer} onOpenChange={(o) => { if (!o) { setConfirmTransfer(null); setTransferError(''); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Bekräfta överföring</AlertDialogTitle>
             <AlertDialogDescription>
               Är du säker att du vill överföra det här mötet till {confirmTransfer?.targetName}?
+              {transferError && <p className="text-destructive mt-2 font-medium">{transferError}</p>}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
