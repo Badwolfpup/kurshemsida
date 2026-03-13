@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Plus } from 'lucide-react';
 import HelpDialog from '@/components/HelpDialog';
 import type { CalendarEvent } from '@/Types/CalendarTypes';
@@ -30,7 +30,7 @@ function CoachBookingView() {
   const coachId = user?.id || 0;
 
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedAdminId, setSelectedAdminId] = useState<number | null>(null);
+  const [selectedAdminIds, setSelectedAdminIds] = useState<string[]>([]);
 
   // Data
   const { data: allBookings = [] } = useBookings();
@@ -102,20 +102,24 @@ function CoachBookingView() {
     [noClassDates]
   );
 
-  // Auto-select first admin
+  // Auto-select all admins on first load only
+  const hasInitialized = React.useRef(false);
   React.useEffect(() => {
-    if (admins.length > 0 && !selectedAdminId) setSelectedAdminId(admins[0].id);
-  }, [admins, selectedAdminId]);
+    if (admins.length > 0 && !hasInitialized.current) {
+      hasInitialized.current = true;
+      setSelectedAdminIds(admins.map((a) => a.id.toString()));
+    }
+  }, [admins]);
 
   const today = useMemo(() => startOfDay(new Date()), []);
   const SEVEN_DAYS_AGO = useMemo(() => { const d = new Date(); d.setDate(d.getDate() - 7); return d; }, []);
 
   const myBookings = useMemo(() => allBookings.filter((b) => b.coachId === coachId), [allBookings, coachId]);
 
-  // Filter availabilities to selected admin
+  // Filter availabilities to selected admins
   const filteredAvailabilities = useMemo(() =>
-    selectedAdminId ? availabilities.filter((a) => a.adminId === selectedAdminId) : [],
-    [availabilities, selectedAdminId]
+    availabilities.filter((a) => selectedAdminIds.includes(a.adminId.toString())),
+    [availabilities, selectedAdminIds]
   );
 
   // Build events
@@ -156,9 +160,9 @@ function CoachBookingView() {
       });
     }
 
-    // Other coaches' bookings on this admin
-    if (selectedAdminId) {
-      const otherBookings = allBookings.filter((b) => b.adminId === selectedAdminId && b.coachId !== coachId && b.status !== 'declined');
+    // Other coaches' bookings on selected admins
+    if (selectedAdminIds.length > 0) {
+      const otherBookings = allBookings.filter((b) => selectedAdminIds.includes(b.adminId.toString()) && b.coachId !== coachId && b.status !== 'declined');
       for (const b of otherBookings) {
         result.push({
           id: `other-${b.id}`,
@@ -184,7 +188,7 @@ function CoachBookingView() {
     }
 
     return result;
-  }, [filteredAvailabilities, myBookings, allBookings, selectedAdminId, coachId, adminColorMap, nameMap, SEVEN_DAYS_AGO, recurringInstances]);
+  }, [filteredAvailabilities, myBookings, allBookings, selectedAdminIds, coachId, adminColorMap, nameMap, SEVEN_DAYS_AGO, recurringInstances]);
 
   // Open booking dialog from free slot click
   const openBookingDialog = (avail: Availability, clickedTime: Date) => {
@@ -306,22 +310,18 @@ function CoachBookingView() {
     setSuggestNote('');
   };
 
-  // Admin tabs
+  // Admin toggle (multi-select)
   const adminTabs = (
-    <div className="mb-4">
-      <Tabs value={selectedAdminId?.toString() || ''} onValueChange={(v) => setSelectedAdminId(Number(v))}>
-        <TabsList>
-          {admins.map((admin) => {
-            const color = adminColorMap.get(admin.id) || '#6b7280';
-            return (
-              <TabsTrigger key={admin.id} value={admin.id.toString()}>
-                <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: color }} />
-                {admin.firstName} {admin.lastName}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-      </Tabs>
+    <div className="flex flex-wrap gap-2 mb-4 text-sm items-center">
+      <span className="text-muted-foreground font-medium mr-2">Visa tillgänglighet:</span>
+      <ToggleGroup type="multiple" value={selectedAdminIds} onValueChange={setSelectedAdminIds}>
+        {admins.map((admin) => (
+          <ToggleGroupItem key={admin.id} value={admin.id.toString()} className="text-xs">
+            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: adminColorMap.get(admin.id) || '#6b7280' }} />
+            {admin.firstName} {admin.lastName}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
     </div>
   );
 
