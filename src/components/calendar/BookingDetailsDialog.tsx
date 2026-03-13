@@ -159,7 +159,11 @@ export default function BookingDetailsDialog({
       handleClose();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Överföring misslyckades';
-      setTransferError(msg.includes('already has a booking') ? 'Läraren har redan ett möte vid den tiden.' : msg);
+      setTransferError(
+        msg.includes('already has a booking') ? 'Läraren har redan ett möte vid den tiden.'
+        : msg.includes('preset intro') ? 'Läraren har en förinställd introtid då — bara intromöten tillåtna.'
+        : msg
+      );
     }
   };
 
