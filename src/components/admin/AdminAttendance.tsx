@@ -146,11 +146,16 @@ export default function AdminAttendance() {
                       {hasAbsenceAlert(student.id) && <AlertTriangle className="h-3 w-3 text-destructive" />}
                     </div>
                   </TableCell>
-                  {dates.map((d) => (
-                    <TableCell key={dateKey(d)} className="px-2 cursor-pointer" onClick={() => toggleAttendance(student.id, d)}>
-                      <div className="flex justify-center pointer-events-none"><Checkbox destructive={isNoClass(d)} checked={isNoClass(d) || hasAttended(student.id, d)} tabIndex={-1} /></div>
-                    </TableCell>
-                  ))}
+                  {dates.map((d) => {
+                    if (student.startDate && new Date(student.startDate) > d) {
+                      return <TableCell key={dateKey(d)} className="px-2" />;
+                    }
+                    return (
+                      <TableCell key={dateKey(d)} className="px-2 cursor-pointer" onClick={() => toggleAttendance(student.id, d)}>
+                        <div className="flex justify-center pointer-events-none"><Checkbox destructive={isNoClass(d)} checked={isNoClass(d) || hasAttended(student.id, d)} tabIndex={-1} /></div>
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))}
             </TableBody>
