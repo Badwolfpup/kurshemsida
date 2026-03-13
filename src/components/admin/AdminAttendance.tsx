@@ -94,6 +94,12 @@ export default function AdminAttendance() {
     return a.firstName.localeCompare(b.firstName);
   }), [students, attendanceData]);
 
+  const lastDateKey = dates.length > 0 ? dateKey(dates[dates.length - 1]) : '';
+  const visibleStudents = sortedStudents.filter((s) => {
+    if (!s.startDate) return true;
+    return dateKey(new Date(s.startDate)) <= lastDateKey;
+  });
+
   const alertStudents = students.filter((s) => hasAbsenceAlert(s.id));
 
   if (usersLoading || attendanceLoading) return <div className="flex justify-center items-center h-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
@@ -138,7 +144,7 @@ export default function AdminAttendance() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedStudents.map((student) => (
+              {visibleStudents.map((student) => (
                 <TableRow key={student.id} className={hasAbsenceAlert(student.id) ? "bg-destructive/5" : ""}>
                   <TableCell>
                     <div className="flex items-center gap-2">
