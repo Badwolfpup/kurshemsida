@@ -141,9 +141,10 @@ function CoachBookingView() {
         const seg = freeSegs[i];
         // Filter to work hours
         if (seg.start.getHours() >= 15 || seg.end.getHours() < 8) continue;
+        const isIntroSegment = segmentOverlapsPresetIntro(avail.adminId, seg.start, seg.end);
         result.push({
           id: `free-${avail.id}-${i}`,
-          title: 'Tillgänglig',
+          title: isIntroSegment ? 'Tillgänglig – Bara för intromöte' : 'Tillgänglig',
           start: seg.start,
           end: seg.end,
           allDay: false,
@@ -197,17 +198,35 @@ function CoachBookingView() {
     return result;
   }, [filteredAvailabilities, myBookings, allBookings, selectedAdminId, coachId, adminColorMap, nameMap, SEVEN_DAYS_AGO, recurringInstances]);
 
-  // Returns true if the availability slot is a hardcoded preset intro window
-  const isPresetIntroSlot = (avail: Availability): boolean => {
-    const start = new Date(avail.startTime);
-    const dayOfWeek = start.getDay();
-    const startHour = start.getHours();
+  // Returns true if a specific time falls within a preset intro window for the given admin
+  const isTimeInPresetIntro = (adminId: number, date: Date, hour: number): boolean => {
+    const dayOfWeek = date.getDay();
     return INTRO_PRESETS.some(
-      (p) => p.adminId === avail.adminId && p.dayOfWeek === dayOfWeek && p.startHour === startHour
+      (p) => p.adminId === adminId && p.dayOfWeek === dayOfWeek && hour >= p.startHour && hour < p.endHour
+    );
+  };
+
+  // Returns true if a free segment overlaps any preset intro window
+  const segmentOverlapsPresetIntro = (adminId: number, start: Date, end: Date): boolean => {
+    const dayOfWeek = start.getDay();
+    const segStartHour = start.getHours() + start.getMinutes() / 60;
+    const segEndHour = end.getHours() + end.getMinutes() / 60;
+    return INTRO_PRESETS.some(
+      (p) => p.adminId === adminId && p.dayOfWeek === dayOfWeek && segStartHour < p.endHour && segEndHour > p.startHour
     );
   };
 
   // Open booking dialog from free slot click
+  // Auto-switch to 'intro' when selected start time enters a preset window
+  React.useEffect(() => {
+    if (bookDialogAvail && bookDialogStart) {
+      const inPreset = isTimeInPresetIntro(bookDialogAvail.adminId, bookDialogStart, bookStartHour);
+      if (inPreset && bookMeetingType === 'followup') {
+        setBookMeetingType('intro');
+      }
+    }
+  }, [bookStartHour, bookDialogAvail, bookDialogStart, bookMeetingType, INTRO_PRESETS]);
+
   const openBookingDialog = (avail: Availability, clickedTime: Date) => {
     setBookDialogAvail(avail);
     setBookDialogStart(clickedTime);
@@ -416,8 +435,12 @@ function CoachBookingView() {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="intro">Intromöte</SelectItem>
-                  {/* Hide "Uppföljning" for preset intro slots (Victoria Tue 10-11, Adam Thu 11-12) */}
-                  {!(bookDialogAvail && isPresetIntroSlot(bookDialogAvail)) && (
+                  {/* Hide "Uppföljning" when selected start time falls within a preset intro window */}
+                  {!(bookDialogAvail && bookDialogStart && isTimeInPresetIntro(
+                    bookDialogAvail.adminId,
+                    bookDialogStart,
+                    bookStartHour
+                  )) && (
                     <SelectItem value="followup">Uppföljning</SelectItem>
                   )}
                 </SelectContent>
