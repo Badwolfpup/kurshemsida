@@ -261,15 +261,18 @@ function CoachBookingView() {
       }
     }
 
-    // Recurring events (read-only)
-    for (const inst of recurringInstances) {
+    // Recurring events (read-only) — only show events for the selected teacher
+    const filteredRecurring = selectedAdminId
+      ? recurringInstances.filter((inst) => inst.adminId === selectedAdminId)
+      : recurringInstances;
+    for (const inst of filteredRecurring) {
       result.push({
         id: `recurring-${inst.eventId}-${inst.date}`,
         title: inst.name,
         start: new Date(inst.start),
         end: new Date(inst.end),
         allDay: false,
-        resource: { type: 'recurring', recurringEventId: inst.eventId, color: RECURRING_EVENT_COLOR, isOwn: false },
+        resource: { type: 'recurring', recurringEventId: inst.eventId, color: RECURRING_EVENT_COLOR, isOwn: false, adminId: inst.adminId, classroom: inst.classroom },
       });
     }
 
@@ -442,6 +445,7 @@ function CoachBookingView() {
         onDateChange={setCurrentDate}
         onSelectEvent={handleSelectEvent}
         noClassDates={noClassDateObjects}
+        nameMap={nameMap}
         helpButton={<HelpDialog helpKey="coach-booking" />}
         rightActions={
           <Button onClick={() => setShowSuggestDialog(true)} className="ml-4">

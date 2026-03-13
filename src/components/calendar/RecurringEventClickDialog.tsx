@@ -15,8 +15,8 @@ interface RecurringEventClickDialogProps {
   instance: RecurringEventInstance | null;
   canEdit: boolean;
   adminName?: string;
-  onEditThis?: (data: { name?: string; startTime?: string; endTime?: string; isDeleted?: boolean }) => Promise<void>;
-  onEditAll?: (data: { name?: string; startTime?: string; endTime?: string; frequency?: string }) => Promise<void>;
+  onEditThis?: (data: { name?: string; startTime?: string; endTime?: string; isDeleted?: boolean; classroom?: number }) => Promise<void>;
+  onEditAll?: (data: { name?: string; startTime?: string; endTime?: string; frequency?: string; classroom?: number }) => Promise<void>;
   onDeleteThis?: () => Promise<void>;
   onDeleteAll?: () => Promise<void>;
 }
@@ -40,6 +40,7 @@ export default function RecurringEventClickDialog({
   const [endHour, setEndHour] = useState(10);
   const [endMinute, setEndMinute] = useState(0);
   const [frequency, setFrequency] = useState('weekly');
+  const [classroom, setClassroom] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const handleClose = () => {
@@ -58,6 +59,7 @@ export default function RecurringEventClickDialog({
     setEndHour(end.getHours());
     setEndMinute(end.getMinutes());
     setFrequency(instance.frequency);
+    setClassroom(instance.classroom?.toString() || '');
     setMode('edit');
   };
 
@@ -70,6 +72,7 @@ export default function RecurringEventClickDialog({
           name: name !== instance.name ? name : undefined,
           startTime: padTime(startHour, startMinute),
           endTime: padTime(endHour, endMinute),
+          classroom: classroom ? Number(classroom) : undefined,
         });
       } else {
         await onEditAll({
@@ -77,6 +80,7 @@ export default function RecurringEventClickDialog({
           startTime: padTime(startHour, startMinute),
           endTime: padTime(endHour, endMinute),
           frequency,
+          classroom: classroom ? Number(classroom) : undefined,
         });
       }
       handleClose();
@@ -112,6 +116,7 @@ export default function RecurringEventClickDialog({
               <p>{format(new Date(instance.start), 'yyyy-MM-dd HH:mm')} – {format(new Date(instance.end), 'HH:mm')}
               {' '}({instance.frequency === 'weekly' ? 'Varje vecka' : 'Varannan vecka'})</p>
               {adminName && <p><strong>Lärare:</strong> {adminName}</p>}
+              {instance.classroom && <p><strong>Sal:</strong> {instance.classroom}</p>}
             </div>
           </DialogDescription>
         </DialogHeader>
@@ -180,6 +185,16 @@ export default function RecurringEventClickDialog({
                 </ToggleGroup>
               </div>
             )}
+            <div className="space-y-2">
+              <Label>Sal (valfritt)</Label>
+              <Input
+                type="number"
+                min={1}
+                value={classroom}
+                onChange={(e) => setClassroom(e.target.value)}
+                placeholder="T.ex. 3"
+              />
+            </div>
           </div>
         )}
 
