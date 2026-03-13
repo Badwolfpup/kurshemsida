@@ -62,12 +62,19 @@ function UserTable({
   emptyLabel,
   onEdit,
   onToggle,
+  showInactive = false,
+  onDelete,
 }: {
   rows: UserType[];
   emptyLabel: string;
   onEdit: (u: UserType) => void;
   onToggle: (id: number, active: boolean) => void;
+  showInactive?: boolean;
+  onDelete?: (id: number) => void;
 }) {
+  const filtered = rows.filter((u) =>
+    showInactive ? !u.isActive : u.isActive
+  );
   return (
     <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
       <Table>
@@ -80,7 +87,7 @@ function UserTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.length === 0 && (
+          {filtered.length === 0 && (
             <TableRow>
               <TableCell
                 colSpan={4}
@@ -90,7 +97,7 @@ function UserTable({
               </TableCell>
             </TableRow>
           )}
-          {rows.map((u) => (
+          {filtered.map((u) => (
             <TableRow key={u.id}>
               <TableCell className="font-medium">
                 {u.firstName} {u.lastName}
@@ -100,9 +107,19 @@ function UserTable({
               </TableCell>
               <TableCell>{u.telephone || '—'}</TableCell>
               <TableCell className="text-right space-x-1">
-                <Button variant="ghost" size="icon" onClick={() => onEdit(u)}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
+                {showInactive && onDelete ? (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onDelete(u.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button variant="ghost" size="icon" onClick={() => onEdit(u)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -157,6 +174,41 @@ export default function AdminUsers() {
   const filtered = deltagare.filter((p) =>
     showInactive ? !p.isActive : p.isActive
   );
+
+  const activeTabUsers = useMemo(() => {
+    switch (activeTab) {
+      case 'admin':
+        return users.filter((u) => u.authLevel === ADMIN_AUTH_LEVEL);
+      case 'larare':
+        return users.filter((u) => u.authLevel === TEACHER_AUTH_LEVEL);
+      case 'coach':
+        return coaches;
+      case 'deltagare':
+        return deltagare;
+    }
+  }, [activeTab, users, coaches, deltagare]);
+
+  const badgeCount = useMemo(
+    () =>
+      activeTabUsers.filter((u) =>
+        showInactive ? !u.isActive : u.isActive
+      ).length,
+    [activeTabUsers, showInactive]
+  );
+
+  const badgeLabel = useMemo(() => {
+    const status = showInactive ? 'inaktiva' : 'aktiva';
+    switch (activeTab) {
+      case 'admin':
+        return `${badgeCount} ${status} admins`;
+      case 'larare':
+        return `${badgeCount} ${status} lärare`;
+      case 'coach':
+        return `${badgeCount} ${status} coacher`;
+      case 'deltagare':
+        return `${badgeCount} ${status} deltagare`;
+    }
+  }, [activeTab, badgeCount, showInactive]);
 
   const openAdd = () => {
     setEditId(null);
@@ -325,9 +377,7 @@ export default function AdminUsers() {
           )}
           {showInactive ? 'Visa aktiva' : 'Se inaktiva'}
         </Button>
-        <Badge variant="secondary">
-          {filtered.length} {showInactive ? 'inaktiva' : 'aktiva'} deltagare
-        </Badge>
+        <Badge variant="secondary">{badgeLabel}</Badge>
       </div>
 
       <Tabs
@@ -352,6 +402,8 @@ export default function AdminUsers() {
               emptyLabel="Inga admins."
               onEdit={openEdit}
               onToggle={toggleActive}
+              showInactive={showInactive}
+              onDelete={(id) => deleteUserMutation.mutate({ id })}
             />
           </TabsContent>
         )}
@@ -363,6 +415,8 @@ export default function AdminUsers() {
             emptyLabel="Inga lärare."
             onEdit={openEdit}
             onToggle={toggleActive}
+            showInactive={showInactive}
+            onDelete={(id) => deleteUserMutation.mutate({ id })}
           />
         </TabsContent>
 
@@ -373,6 +427,8 @@ export default function AdminUsers() {
             emptyLabel="Inga coacher."
             onEdit={openEdit}
             onToggle={toggleActive}
+            showInactive={showInactive}
+            onDelete={(id) => deleteUserMutation.mutate({ id })}
           />
         </TabsContent>
 
