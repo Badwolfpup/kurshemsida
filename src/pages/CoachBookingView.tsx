@@ -102,12 +102,14 @@ function CoachBookingView() {
     [noClassDates]
   );
 
-  // Auto-select all admins on load
+  // Auto-select all admins on first load only
+  const hasInitialized = React.useRef(false);
   React.useEffect(() => {
-    if (admins.length > 0 && selectedAdminIds.length === 0) {
+    if (admins.length > 0 && !hasInitialized.current) {
+      hasInitialized.current = true;
       setSelectedAdminIds(admins.map((a) => a.id.toString()));
     }
-  }, [admins, selectedAdminIds]);
+  }, [admins]);
 
   const today = useMemo(() => startOfDay(new Date()), []);
   const SEVEN_DAYS_AGO = useMemo(() => { const d = new Date(); d.setDate(d.getDate() - 7); return d; }, []);
