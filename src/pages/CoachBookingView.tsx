@@ -151,23 +151,79 @@ function CoachBookingView() {
   const events = useMemo((): CalendarEvent[] => {
     const result: CalendarEvent[] = [];
 
-    // Free segments
+    // Free segments — split at preset intro boundaries so the label only covers preset rows
     for (const avail of filteredAvailabilities) {
       const color = adminColorMap.get(avail.adminId) || '#2563eb';
       const freeSegs = getFreeSegments(avail, allBookings);
       for (let i = 0; i < freeSegs.length; i++) {
         const seg = freeSegs[i];
-        // Filter to work hours
         if (seg.start.getHours() >= 15 || seg.end.getHours() < 8) continue;
-        const isIntroSegment = segmentOverlapsPresetIntro(avail.adminId, seg.start, seg.end);
+
+        // Find matching preset for this admin + day
+        const dayOfWeek = seg.start.getDay();
+        const preset = INTRO_PRESETS.find(
+          (p) => p.adminId === avail.adminId && p.dayOfWeek === dayOfWeek
+        );
+
+        if (!preset) {
+          // No preset on this day — render as-is
+          result.push({
+            id: `free-${avail.id}-${i}`,
+            title: 'Tillgänglig',
+            start: seg.start, end: seg.end, allDay: false,
+            resource: { type: 'availability', availabilityId: avail.id, availability: avail, adminId: avail.adminId, color, isOwn: true },
+          });
+          continue;
+        }
+
+        // Split segment into: before preset, preset, after preset
+        const presetStart = new Date(seg.start); presetStart.setHours(preset.startHour, 0, 0, 0);
+        const presetEnd = new Date(seg.start); presetEnd.setHours(preset.endHour, 0, 0, 0);
+        const segStartMs = seg.start.getTime();
+        const segEndMs = seg.end.getTime();
+        const pStartMs = presetStart.getTime();
+        const pEndMs = presetEnd.getTime();
+
+        // No overlap — segment is entirely outside preset window
+        if (segEndMs <= pStartMs || segStartMs >= pEndMs) {
+          result.push({
+            id: `free-${avail.id}-${i}`,
+            title: 'Tillgänglig',
+            start: seg.start, end: seg.end, allDay: false,
+            resource: { type: 'availability', availabilityId: avail.id, availability: avail, adminId: avail.adminId, color, isOwn: true },
+          });
+          continue;
+        }
+
+        // Part before preset
+        if (segStartMs < pStartMs) {
+          result.push({
+            id: `free-${avail.id}-${i}-pre`,
+            title: 'Tillgänglig',
+            start: seg.start, end: presetStart, allDay: false,
+            resource: { type: 'availability', availabilityId: avail.id, availability: avail, adminId: avail.adminId, color, isOwn: true },
+          });
+        }
+
+        // Preset overlap part
+        const overlapStart = segStartMs > pStartMs ? seg.start : presetStart;
+        const overlapEnd = segEndMs < pEndMs ? seg.end : presetEnd;
         result.push({
-          id: `free-${avail.id}-${i}`,
-          title: isIntroSegment ? 'Tillgänglig – Bara för intromöte' : 'Tillgänglig',
-          start: seg.start,
-          end: seg.end,
-          allDay: false,
+          id: `free-${avail.id}-${i}-intro`,
+          title: 'Bara för intromöte',
+          start: overlapStart, end: overlapEnd, allDay: false,
           resource: { type: 'availability', availabilityId: avail.id, availability: avail, adminId: avail.adminId, color, isOwn: true },
         });
+
+        // Part after preset
+        if (segEndMs > pEndMs) {
+          result.push({
+            id: `free-${avail.id}-${i}-post`,
+            title: 'Tillgänglig',
+            start: presetEnd, end: seg.end, allDay: false,
+            resource: { type: 'availability', availabilityId: avail.id, availability: avail, adminId: avail.adminId, color, isOwn: true },
+          });
+        }
       }
     }
 
