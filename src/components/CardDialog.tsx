@@ -43,30 +43,7 @@ function OmKursenContent() {
       </p>
 
       <div className="cd-block">
-        <h3>Spår 1: Avancerad Utveckling</h3>
-        <p className="cd-intro">För dig som vill ta nästa steg i karriären</p>
-        <p>
-          Har du redan lärt dig grunderna i programmering och känner att du är
-          redo att ta nästa steg? Vårt avancerade spår är utformat för dig som
-          vill förbereda dig för professionell utveckling.
-        </p>
-        <h4>Vad du får:</h4>
-        <ul className="cd-list">
-          <li>Mentorskap från erfarna utvecklare</li>
-          <li>Praktiska projekt som speglar verkliga arbetsuppgifter</li>
-          <li>Vägledning mot mentorskap eller praktikplats hos etablerade företag</li>
-          <li>Möjlighet att bygga en professionell portfolio</li>
-          <li>Nätverk med branschkontakter</li>
-        </ul>
-        <p>
-          <strong>Målet:</strong> Att förbereda dig för en karriär inom
-          mjukvaruutveckling genom praktisk erfarenhet och professionella
-          kontakter.
-        </p>
-      </div>
-
-      <div className="cd-block">
-        <h3>Spår 2: Upptäck Programmering</h3>
+        <h3>Spår 1: Upptäck Programmering</h3>
         <p className="cd-intro">För dig som vill utforska kodningens värld</p>
         <p>
           Är du nyfiken på programmering men osäker på om det är något för dig?
@@ -99,6 +76,29 @@ function OmKursenContent() {
           <strong>Målet:</strong> Att ge dig möjlighet att upptäcka om
           programmering är något du vill fortsätta med, utan press eller
           förväntningar.
+        </p>
+      </div>
+
+      <div className="cd-block">
+        <h3>Spår 2: Avancerad Utveckling</h3>
+        <p className="cd-intro">För dig som vill ta nästa steg i karriären</p>
+        <p>
+          Har du redan lärt dig grunderna i programmering och känner att du är
+          redo att ta nästa steg? Vårt avancerade spår är utformat för dig som
+          vill förbereda dig för professionell utveckling.
+        </p>
+        <h4>Vad du får:</h4>
+        <ul className="cd-list">
+          <li>Mentorskap från erfarna utvecklare</li>
+          <li>Praktiska projekt som speglar verkliga arbetsuppgifter</li>
+          <li>Vägledning mot mentorskap eller praktikplats hos etablerade företag</li>
+          <li>Möjlighet att bygga en professionell portfolio</li>
+          <li>Nätverk med branschkontakter</li>
+        </ul>
+        <p>
+          <strong>Målet:</strong> Att förbereda dig för en karriär inom
+          mjukvaruutveckling genom praktisk erfarenhet och professionella
+          kontakter.
         </p>
       </div>
 
