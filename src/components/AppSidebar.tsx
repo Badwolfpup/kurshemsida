@@ -60,17 +60,17 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, messagesCount: number, s
       { title: 'Kontakt', url: '/kontakt', icon: Contact }
       // { title: 'Profil', url: '/profil', icon: UserCircle }
     );
-  } else {
-    items.push(
-      { title: 'Projekt', url: '/projekt', icon: FolderKanban },
-      { title: 'Övningar', url: '/ovningar', icon: Dumbbell },
-      { title: 'Portfolio', url: '/portfolio', icon: Briefcase },
-      // { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, badgeCount: messagesCount }, // GDPR review — temporarily suspended
-      { title: 'Min kalender', url: '/student-calendar', icon: CalendarIcon },
-      // { title: 'Profil', url: '/profil', icon: UserCircle },
-      { title: 'Terminal', url: '/terminal', icon: TerminalIcon }
-    );
   }
+  // Student nav — temporarily disabled (students cannot log in)
+  // else {
+  //   items.push(
+  //     { title: 'Projekt', url: '/projekt', icon: FolderKanban },
+  //     { title: 'Övningar', url: '/ovningar', icon: Dumbbell },
+  //     { title: 'Portfolio', url: '/portfolio', icon: Briefcase },
+  //     { title: 'Min kalender', url: '/student-calendar', icon: CalendarIcon },
+  //     { title: 'Terminal', url: '/terminal', icon: TerminalIcon }
+  //   );
+  // }
 
   return items;
 }

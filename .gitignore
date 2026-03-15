@@ -29,3 +29,6 @@ dist-ssr
 *.sw?
 
 CHANGELOG.md
+.gitnexus
+AGENTS.md
+.claude/skills/gitnexus/
