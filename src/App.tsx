@@ -75,14 +75,17 @@ function AppRoutes() {
     <AppLayout>
       <Routes>
         <Route path="/" element={<Index />} />
-        <Route path="/projekt" element={<Projekt />} />
-        <Route path="/ovningar" element={<Ovningar />} />
-        <Route path="/portfolio" element={<Portfolio />} />
-        <Route path="/meddelanden" element={<MeddelandenPage />} />
+        {/* Student routes — temporarily disabled (students cannot log in) */}
+        {/* <Route path="/projekt" element={<Projekt />} /> */}
+        {/* <Route path="/ovningar" element={<Ovningar />} /> */}
+        {/* <Route path="/portfolio" element={<Portfolio />} /> */}
+        {/* <Route path="/meddelanden" element={<MeddelandenPage />} /> */}
+        {/* <Route path="/preferenser" element={<Preferenser />} /> */}
+        {/* <Route path="/terminal" element={<Terminal />} /> */}
+        {/* <Route path="/student-calendar" element={<ProtectedRoute allow="student"><StudentCalendar /></ProtectedRoute>} /> */}
+
         <Route path="/deltagare" element={<Deltagare />} />
-        <Route path="/preferenser" element={<Preferenser />} />
         <Route path="/admin" element={<ProtectedRoute allow="admin"><Admin /></ProtectedRoute>} />
-        <Route path="/terminal" element={<Terminal />} />
         <Route path="/admin-schedule" element={<ProtectedRoute allow="admin"><AdminSchedule /></ProtectedRoute>} />
         {/* Coach routes */}
         <Route path="/mina-deltagare" element={<CoachMyParticipants />} />
@@ -91,7 +94,6 @@ function AppRoutes() {
         <Route path="/profil" element={<Preferenser />} />
         <Route path="/coach-projekt" element={<CoachProjects />} />
         <Route path="/coach-booking" element={<CoachBookingView />} />
-        <Route path="/student-calendar" element={<ProtectedRoute allow="student"><StudentCalendar /></ProtectedRoute>} />
         <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

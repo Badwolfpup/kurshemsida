@@ -32,7 +32,12 @@ export const authService = {
       });
       if (!response.ok) {
         const errorText = await response.text();
-        return { ok: false, error: errorText || "Ogiltig e-postadress." };
+        try {
+          const errorData = JSON.parse(errorText);
+          return { ok: false, error: errorData.detail || errorData.title || "Ogiltig e-postadress." };
+        } catch {
+          return { ok: false, error: errorText || "Ogiltig e-postadress." };
+        }
       }
       const data = await response.json();
       return { ok: true, data };
