@@ -13,13 +13,13 @@
     {
       "id": 2,
       "action": "screenshot_pause",
-      "narration": "Ovanför kalendern ser du flikar med namnen på tillgängliga handledare. Klicka på en flik för att se just den handledarens tillgänglighet.",
+      "narration": "Ovanför kalendern ser du en lista med alla lärare. Alla visas som standard. Du kan klicka på ett namn för att dölja eller visa den lärarens tillgänglighet.",
       "pauseMs": 4000
     },
     {
       "id": 3,
       "action": "screenshot_pause",
-      "narration": "Kalendern visar fyra dagar i taget. Blå block är tillgängliga tider. Röda block är upptagna tider.",
+      "narration": "Kalendern visar fyra dagar i taget. Blå block är tillgängliga tider. Ljusare block markerade 'Bara för intromöte' är reserverade — du kan bara boka intromöten på dessa tider.",
       "pauseMs": 3500
     },
     {
@@ -31,7 +31,7 @@
     {
       "id": 5,
       "action": "screenshot_pause",
-      "narration": "Du bokar ett möte genom att klicka på en blå tillgänglig tid i kalendern. En dialogruta öppnas där du väljer mötestyp, start- och sluttid.",
+      "narration": "Du bokar ett möte genom att klicka på en tillgänglig tid. En dialogruta öppnas där du väljer mötestyp, start- och sluttid. På tider markerade 'Bara för intromöte' kan du bara välja intromöte.",
       "pauseMs": 4500
     },
     {

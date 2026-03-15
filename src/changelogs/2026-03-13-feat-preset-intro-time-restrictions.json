@@ -1,0 +1,8 @@
+{
+  "displaydate": "2026-03-16",
+  "entries": {
+    "admin": ["Fasta intromötestider visas nu i coachkalendern som reserverade block (\"Bara för intromöte\") — coacher kan bara boka intromöten på dessa tider"],
+    "coach": ["Vissa tider i kalendern är nu markerade \"Bara för intromöte\" — du kan bara boka intromöten på dessa tider, andra mötestyper blockeras"],
+    "student": []
+  }
+}

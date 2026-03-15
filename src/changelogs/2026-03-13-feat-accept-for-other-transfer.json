@@ -1,0 +1,8 @@
+{
+  "displaydate": "2026-03-16",
+  "entries": {
+    "admin": ["Ny funktion: du kan tacka ja till ett möte och samtidigt överföra det till en annan lärare", "Godkända bokningar kan nu överföras till en annan handledare — konfliktkontroll förhindrar dubbelbokning"],
+    "coach": ["Lärare kan nu överlåta möten till andra lärare, du får ett mejl när det sker"],
+    "student": []
+  }
+}
