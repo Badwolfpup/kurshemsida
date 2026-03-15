@@ -69,8 +69,13 @@ export const helpContent: Record<string, HelpEntry> = {
       "• Tillgängliga tider visas i blått – coacher och elever kan boka dem för möten.",
       "• Bokade möten visas med information om vem som har bokat och status.",
       "• Du kan godkänna, neka eller avboka möten direkt från kalendern.",
-      "• Återkommande event – skapa schemalagda event (t.ex. coachträff) som upprepas varje vecka eller varannan vecka. Välj ansvarig lärare i dropdown.",
-      "• Visa bokningar – använd toggeln för att visa/dölja bokningar och tillgänglighet från andra admins/lärare.",
+      "• Du kan tacka ja till ett möte och samtidigt överföra det till en annan lärare.",
+      "• Överför bokning – en godkänd bokning kan överföras till en annan lärare. Coachen får ett mejl om bytet.",
+      "• Föreslå möte – du kan föreslå ett möte med en coach eller elev. Motparten får ett mejl och kan godkänna eller neka.",
+      "• Fasta intromötestider – vissa tider är reserverade för intromöten och visas med ljusare färg i coachkalendern. Coacher kan bara boka intromöten på dessa tider.",
+      "• Återkommande event – skapa schemalagda event (t.ex. coachträff) som upprepas varje vecka eller varannan vecka. Välj ansvarig lärare och klassrum.",
+      "• NoClass-dagar visas med röd bakgrund i kalendern — inga lektioner dessa dagar.",
+      "• Visa kalendrar: Klicka på lärarens namn för att toggla av/på.",
     ],
   },
 
@@ -173,10 +178,14 @@ export const helpContent: Record<string, HelpEntry> = {
   "coach-booking": {
     title: "Boka möte",
     content: [
-      "Här kan du boka ett möte med en administratör eller lärare.",
-      "Välj en person i tabben ovanför kalendern och klicka på en grön tillgänglig tid för att boka. Du kan också lägga till en anteckning när du bokar.",
+      "Här kan du boka ett möte med en lärare.",
+      "Alla lärares tillgänglighet visas som standard. Använd flervalslistan ovanför kalendern för att filtrera vilka lärare som visas.",
+      "Klicka på en tillgänglig tid för att boka. Du kan också lägga till en anteckning när du bokar.",
+      "• \"Bara för intromöte\" – vissa tider (ljusare färg) är reserverade för intromöten. Du kan bara välja intromöte på dessa tider.",
       "Dina bokningar visas i kalendern. Du kan avboka eller begära ombokning direkt från kalendern.",
-      "• Återkommande event (t.ex. coachträffar) visas som lila block i kalendern.",
+      "• Föreslå möte – du kan föreslå ett möte med en lärare, även utanför deras tillgängliga tider. Läraren får ett mejl och måste godkänna mötet.",
+      "• Återkommande event (t.ex. coachträffar) visas som lila block med klassrumsnamn.",
+      "• NoClass-dagar visas med röd bakgrund — inga lektioner dessa dagar.",
     ],
   },
 

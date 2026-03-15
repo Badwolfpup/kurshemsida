@@ -4,7 +4,7 @@ export const helpVideos: Record<string, string> = {
   "attendance.schema": "-pAIXDeZGxY",
   "attendance.narvaro.coach": "lrJGO4JachM",
   "attendance.larare": "lJ8GFYbq3_I",
-  "coach-booking": "hYTsNYWFJ7s",
+  "coach-booking": "uWXOXiCMR0U",
   "coach-installningar": "ucH6_N6Aipw",
   "attendance.meddelanden": "z5_XBIOOVfA",
 
