@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+
 import { ALL_TIME_OPTIONS } from '@/components/calendar/calendarUtils';
 import { fourDayRange } from '@/components/calendar/FourDayView';
 import { DAY_NAMES } from '@/components/calendar/calendarUtils';
@@ -37,7 +37,6 @@ export default function AdminBookingDialog({
   students,
   onSubmit,
 }: AdminBookingDialogProps) {
-  const [targetType, setTargetType] = useState<'coach' | 'student'>('coach');
   const [coachId, setCoachId] = useState<number | null>(null);
   const [studentId, setStudentId] = useState<number | null>(null);
   const [meetingType, setMeetingType] = useState<string>('followup');
@@ -54,15 +53,14 @@ export default function AdminBookingDialog({
 
   // Students filtered by selected coach
   const filteredStudents = useMemo(() => {
-    if (targetType === 'coach' && coachId) {
+    if (coachId) {
       return students.filter((s) => s.coachId === coachId);
     }
     return students;
-  }, [targetType, coachId, students]);
+  }, [coachId, students]);
 
   const handleClose = () => {
     onOpenChange(false);
-    setTargetType('coach');
     setCoachId(null);
     setStudentId(null);
     setMeetingType('followup');
@@ -73,8 +71,7 @@ export default function AdminBookingDialog({
 
   const handleSubmit = async () => {
     if (!day) return;
-    if (targetType === 'coach' && !coachId) return;
-    if (targetType === 'student' && !studentId) return;
+    if (!coachId) return;
     if (meetingType === 'other' && !note.trim()) {
       setShowNoteError(true);
       return;
@@ -89,9 +86,9 @@ export default function AdminBookingDialog({
     setSubmitting(true);
     try {
       await onSubmit({
-        coachId: targetType === 'coach' ? coachId! : undefined,
-        studentId: targetType === 'student' ? studentId! : (targetType === 'coach' ? studentId ?? undefined : undefined),
-        meetingType: targetType === 'student' ? 'session' : meetingType,
+        coachId: coachId!,
+        studentId: studentId ?? undefined,
+        meetingType,
         note,
         startTime: format(startTime, "yyyy-MM-dd'T'HH:mm:ss"),
         endTime: format(endTime, "yyyy-MM-dd'T'HH:mm:ss"),
@@ -112,72 +109,39 @@ export default function AdminBookingDialog({
 
         <div className="space-y-4 py-2">
           <div className="space-y-2">
-            <Label>Boka med</Label>
-            <ToggleGroup type="single" value={targetType} onValueChange={(v) => {
-              if (v) {
-                setTargetType(v as 'coach' | 'student');
-                setCoachId(null);
-                setStudentId(null);
-                setMeetingType(v === 'student' ? 'session' : 'followup');
-              }
-            }}>
-              <ToggleGroupItem value="coach">Coach</ToggleGroupItem>
-              <ToggleGroupItem value="student">Elev</ToggleGroupItem>
-            </ToggleGroup>
+            <Label>Coach</Label>
+            <Select value={coachId?.toString() || ''} onValueChange={(v) => { setCoachId(Number(v)); setStudentId(null); }}>
+              <SelectTrigger><SelectValue placeholder="Välj coach..." /></SelectTrigger>
+              <SelectContent>
+                {coaches.map((c) => (
+                  <SelectItem key={c.id} value={c.id.toString()}>{c.firstName} {c.lastName}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          {targetType === 'coach' && (
-            <>
-              <div className="space-y-2">
-                <Label>Coach</Label>
-                <Select value={coachId?.toString() || ''} onValueChange={(v) => { setCoachId(Number(v)); setStudentId(null); }}>
-                  <SelectTrigger><SelectValue placeholder="Välj coach..." /></SelectTrigger>
-                  <SelectContent>
-                    {coaches.map((c) => (
-                      <SelectItem key={c.id} value={c.id.toString()}>{c.firstName} {c.lastName}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="space-y-2">
+            <Label>Elev {meetingType === 'followup' ? '(krävs)' : '(valfritt)'}</Label>
+            <Select value={studentId?.toString() || ''} onValueChange={(v) => setStudentId(v ? Number(v) : null)}>
+              <SelectTrigger><SelectValue placeholder="Välj elev..." /></SelectTrigger>
+              <SelectContent>
+                {filteredStudents.map((s) => (
+                  <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-              <div className="space-y-2">
-                <Label>Elev {meetingType === 'followup' ? '(krävs)' : '(valfritt)'}</Label>
-                <Select value={studentId?.toString() || ''} onValueChange={(v) => setStudentId(v ? Number(v) : null)}>
-                  <SelectTrigger><SelectValue placeholder="Välj elev..." /></SelectTrigger>
-                  <SelectContent>
-                    {filteredStudents.map((s) => (
-                      <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Mötestyp</Label>
-                <Select value={meetingType} onValueChange={setMeetingType}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="followup">Uppföljning</SelectItem>
-                    <SelectItem value="other">Annat</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </>
-          )}
-
-          {targetType === 'student' && (
-            <div className="space-y-2">
-              <Label>Elev</Label>
-              <Select value={studentId?.toString() || ''} onValueChange={(v) => setStudentId(Number(v))}>
-                <SelectTrigger><SelectValue placeholder="Välj elev..." /></SelectTrigger>
-                <SelectContent>
-                  {students.map((s) => (
-                    <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label>Mötestyp</Label>
+            <Select value={meetingType} onValueChange={setMeetingType}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="followup">Uppföljning</SelectItem>
+                <SelectItem value="other">Annat</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="space-y-2">
             <Label>Dag</Label>
