@@ -3,7 +3,7 @@
 ## Project Overview
 - School management platform: frontend (React/TypeScript) + backend (ASP.NET Core C#)
 - Two repos: `kurshemsida` (frontend) and `Kursserver` (backend)
-- Roles: Admin, Teacher, Coach, Student
+- Roles: Admin, Teacher, Coach, Student (students temporarily disabled — cannot log in, see MEMORY.md)
 - ~14k lines of TypeScript across 137 files (as of 2026-02-23)
 
 ## Tech Stack
