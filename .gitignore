@@ -32,3 +32,5 @@ dist-ssr
 .gitnexus
 AGENTS.md
 .claude/skills/gitnexus/
+Claude-Sessions/
+video-pipeline/Claude-Sessions/
