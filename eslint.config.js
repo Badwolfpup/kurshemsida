@@ -4,11 +4,13 @@ import tseslint from 'typescript-eslint';
 import pluginReact from 'eslint-plugin-react';
 import pluginPrettier from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
+import reactHooks from 'eslint-plugin-react-hooks';
 import { defineConfig } from 'eslint/config';
 
 export default defineConfig([
-  tseslint.configs.recommended,
+  tseslint.configs.strictTypeChecked,
   pluginReact.configs.flat.recommended,
+  reactHooks.configs['recommended-latest'],
 
   {
     files: ['**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
@@ -19,6 +21,10 @@ export default defineConfig([
     extends: ['js/recommended', prettierConfig],
     languageOptions: {
       globals: globals.browser,
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     rules: {
       'prettier/prettier': '',
