@@ -1,0 +1,12 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Striktare TypeScript- och ESLint-regler aktiverade för att fånga buggar tidigare.",
+      "MSW (Mock Service Worker) installerat som grund för framtida integrationstester.",
+      "Vitest konfigurerat med snabbare felrapportering (bail)."
+    ],
+    "coach": [],
+    "student": []
+  }
+}
