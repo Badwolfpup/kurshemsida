@@ -1,0 +1,12 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Ny sida \"Deltagarschema\" i sidomenyn — visar en översikt över hur många deltagare som är schemalagda per dag och block (förmiddag/eftermiddag).",
+      "Under varje dag (måndag–torsdag) visas en lista med schemalagda deltagare, sorterade efter heldags-, förmiddags- och eftermiddagsdeltagare.",
+      "Deltagare utan schema visas som \"Ej schemalagda\" i översikten."
+    ],
+    "coach": [],
+    "student": []
+  }
+}

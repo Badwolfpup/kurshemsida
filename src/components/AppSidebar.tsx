@@ -43,6 +43,7 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, messagesCount: number, s
       // { title: 'Övningar', url: '/ovningar', icon: Dumbbell }, // Students temporarily disabled
       // { title: 'Projekt', url: '/projekt', icon: FolderKanban }, // Students temporarily disabled
       { title: 'Deltagare', url: '/deltagare', icon: Users, badgeCount: studentContextCount },
+      { title: 'Deltagarschema', url: '/deltagarschema', icon: CalendarCheck },
       {
         title: 'Kalender & Bokning',
         url: '/admin-schedule',
