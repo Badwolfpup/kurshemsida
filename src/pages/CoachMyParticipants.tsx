@@ -4,10 +4,11 @@ import { useUsers } from "@/hooks/useUsers";
 import HelpDialog from "@/components/HelpDialog";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import CoachAttendance from "@/components/admin/CoachAttendance";
 import { Button } from "@/components/ui/button";
 import { useUnreadCounts } from "@/hooks/useMessages";
+import { useAttendance } from "@/hooks/useAttendance";
 
 
 const CoachMyParticipants = () => {
@@ -20,6 +21,26 @@ const CoachMyParticipants = () => {
   const participants = users.filter(
     (u) => u.authLevel === 4 && u.isActive && u.coachId === user?.id
   );
+
+  const { data: attendanceData = [] } = useAttendance(new Date(), 4);
+
+  const fourWeeksAgo = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 28);
+    return d;
+  }, []);
+
+  const attendedIds = useMemo(() => {
+    const ids = new Set<number>();
+    for (const record of attendanceData) {
+      const hasRecent = record.date.some((d) => new Date(d) >= fourWeeksAgo);
+      if (hasRecent) ids.add(record.userId);
+    }
+    return ids;
+  }, [attendanceData, fourWeeksAgo]);
+
+  const activeParticipants = participants.filter((p) => attendedIds.has(p.id));
+  const absentParticipants = participants.filter((p) => !attendedIds.has(p.id));
 
 
 
@@ -54,41 +75,64 @@ const CoachMyParticipants = () => {
         <HelpDialog helpKey="mina-deltagare" />
       </div>
 
-      <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Namn</TableHead>
-              {/* <TableHead >Kontaktinfo</TableHead>
-              <TableHead>Progression</TableHead>
-              <TableHead>Närvaro</TableHead> */}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {participants.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                  Inga deltagare tilldelade ännu.
-                </TableCell>
-              </TableRow>
-            )}
-            {participants.map((p) => (
-              <TableRow key={p.id} onClick={() => { setSelectedParticipant(p.id); setShowAttendance(true); }} className="cursor-pointer hover:bg-accent/50" >
-                <TableCell className="font-medium">
-                  {p.firstName[0]}.{p.lastName[0]}
-                  {unreadStudentIds.has(p.id) && (
-                    <span className="inline-block w-2 h-2 rounded-full bg-destructive ml-2" />
-                  )}
-                </TableCell>
-                {/* <TableCell><CircleUserRound className="inline h-8 w-8 ml-4" onClick={() => { setSelectedParticipant(p.id); setShowAttendance(true); }}/></TableCell>
-                <TableCell><Laptop className="inline h-8 w-8 ml-4" /></TableCell>
-                <TableCell><CalendarDays className="inline h-8 w-8 ml-4" /></TableCell> */}
+      {participants.length === 0 ? (
+        <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
+          <p className="text-center text-muted-foreground py-8">Inga deltagare tilldelade ännu.</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Namn</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {activeParticipants.map((p) => (
+                  <TableRow key={p.id} onClick={() => { setSelectedParticipant(p.id); setShowAttendance(true); }} className="cursor-pointer hover:bg-accent/50">
+                    <TableCell className="font-medium">
+                      {p.firstName[0]}.{p.lastName[0]}
+                      {unreadStudentIds.has(p.id) && (
+                        <span className="inline-block w-2 h-2 rounded-full bg-destructive ml-2" />
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {activeParticipants.length === 0 && (
+                  <TableRow>
+                    <TableCell className="text-center text-muted-foreground py-4">Inga aktiva deltagare.</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+          {absentParticipants.length > 0 && (
+            <div>
+              <h2 className="font-display font-semibold text-muted-foreground mb-3">
+                Ej närvarande senaste 4 veckorna ({absentParticipants.length})
+              </h2>
+              <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden opacity-60">
+                <Table>
+                  <TableBody>
+                    {absentParticipants.map((p) => (
+                      <TableRow key={p.id} onClick={() => { setSelectedParticipant(p.id); setShowAttendance(true); }} className="cursor-pointer hover:bg-accent/50">
+                        <TableCell className="font-medium">
+                          {p.firstName[0]}.{p.lastName[0]}
+                          {unreadStudentIds.has(p.id) && (
+                            <span className="inline-block w-2 h-2 rounded-full bg-destructive ml-2" />
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
