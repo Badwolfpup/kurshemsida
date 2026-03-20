@@ -11,7 +11,8 @@ Complete reference of every page, tab, and role-specific behavior in the app.
 
 ## Sidebar Navigation by Role
 
-**Admin/Teacher:** Startsida, Admin Panel, Ovningar, Projekt, Deltagare (unread badge), Kalender & Bokning, Terminal, Meddelanden (unread badge), [bottom] Profil, Logout
+**Admin/Teacher:** Startsida, Hantera användare, Närvaro, Deltagare (unread badge), Kalender & Bokning, [bottom] Buggar & Idéer, Profil, Logout
+<!-- Disabled: Admin Panel (retired), Övningar, Projekt, Terminal, Meddelanden — students temporarily disabled -->
 
 **Coach:** Startsida, Mina deltagare (unread badge), Meddelanden (unread badge), Kalender: Boka mote, Kontakt, [bottom] Profil, Logout
 
@@ -113,29 +114,49 @@ Complete reference of every page, tab, and role-specific behavior in the app.
 **Component:** `pages/Deltagare.tsx`
 **Hooks:** `useUsers`, `useUnreadCounts`
 
-- Table of all student participants
-- Columns: name (initials), unread message indicator (red dot)
+- Coach filter dropdown (top-right): filter participants by coach, shows active coaches only
+- Table of all student participants (filtered by selected coach, or all)
+- Columns: name, unread message indicator (red dot), track badge
 - Click row → `CoachAttendance` detail view with attendance chart + chat (`showChat=true`)
 - Back button to return to list
 
 ---
 
-## /admin — Admin Panel
+## /hantera-anvandare — Hantera användare
 
 **Roles:** Admin/Teacher only (ProtectedRoute allow="admin")
-**Component:** `pages/Admin.tsx`
+**Component:** `pages/HanteraAnvandare.tsx` → `AdminUsers`
 
-Menu-based navigation to sub-pages:
+- User CRUD table — add, edit, delete, toggle active, assign coach
 
-| Menu Item | Component | Functionality |
-|-----------|-----------|---------------|
-| Hantera deltagare | `AdminUsers` | User CRUD table — add, edit, delete, toggle active, assign coach |
-| Hantera ovningar | `AdminExercises` | Exercise CRUD — add, edit, delete exercises with code editor |
-| Hantera projekt | `AdminProjects` | Project CRUD — add, edit, delete projects |
-| Nyheter & Event | `AdminPosts` | Posts/news — rich text editor (Quill delta), pin, publish |
-| Narvarohantering | `AdminAttendance` | Attendance by date — toggle present/absent per student |
-| Deltagarprofiler | `CoachAttendance` | Participant detail — attendance chart + messaging |
-| Buggar & Ideer | `AdminBugReports` | View and delete bug/idea reports |
+---
+
+## /narvaro — Närvaro
+
+**Roles:** Admin/Teacher only (ProtectedRoute allow="admin")
+**Component:** `pages/Narvaro.tsx` → `AdminAttendance`
+
+- Attendance by date — toggle present/absent per student
+
+---
+
+## /buggar — Buggar & Idéer
+
+**Roles:** Admin/Teacher only (ProtectedRoute allow="admin")
+**Component:** `pages/Buggar.tsx` → `AdminBugReports`
+
+- View bug reports and ideas submitted via feedback form
+- Tabs: Buggar / Idéer
+
+---
+
+<!-- RETIRED: /admin — Admin Panel (pages/Admin.tsx)
+Previously a menu-based hub for sub-pages. Promoted sub-pages to sidebar:
+- Hantera deltagare → /hantera-anvandare
+- Närvarohantering → /narvaro
+- Buggar & Idéer → /buggar
+Remaining sub-pages (Hantera övningar, Hantera projekt, Nyheter & Event, Deltagarprofiler) are unreachable — code retained for future re-enablement.
+-->
 
 ---
 
