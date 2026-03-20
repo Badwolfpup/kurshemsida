@@ -29,8 +29,14 @@ export function DeltagareList({
   const { unreadStudentIds } = useUnreadCounts();
   const [warningTarget, setWarningTarget] = useState<Participant | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const active = participants.filter((p) => p.active);
-  const inactive = participants.filter((p) => !p.active);
+  const nameSort = (a: Participant, b: Participant) =>
+    a.firstName.localeCompare(b.firstName, "sv") || a.lastName.localeCompare(b.lastName, "sv");
+  const active = participants.filter((p) => p.active).sort((a, b) => {
+    const aWarn = hasAbsenceAlert(a) ? 1 : 0;
+    const bWarn = hasAbsenceAlert(b) ? 1 : 0;
+    return aWarn - bWarn || nameSort(a, b);
+  });
+  const inactive = participants.filter((p) => !p.active).sort(nameSort);
 
   return (
     <div className="space-y-6">
