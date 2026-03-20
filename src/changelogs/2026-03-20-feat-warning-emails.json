@@ -1,12 +1,12 @@
-[
-  {
-    "type": "feature",
-    "title": "Frånvarovarning via e-post",
-    "description": "Lärare kan nu skicka ett e-postmeddelande till en deltagares coach direkt från Deltagare-sidan när en elev inte har varit närvarande de senaste 2 veckorna. Välj mellan ett förgenerat meddelande eller skriv ett eget."
-  },
-  {
-    "type": "feature",
-    "title": "Coach: uppdelad deltagarlista",
-    "description": "Coachens Mina deltagare-sida visar nu elever som inte varit närvarande de senaste 4 veckorna i en separat sektion."
+{
+  "displaydate": "2026-03-20",
+  "entries": {
+    "admin": [
+      "Ny kuvertikon bredvid frånvarovarningen i Deltagare — skicka e-post till deltagarens coach med förgenerat eller eget meddelande"
+    ],
+    "coach": [
+      "Mina deltagare är nu uppdelad — elever som inte varit närvarande de senaste 4 veckorna visas i en separat sektion"
+    ],
+    "student": []
   }
-]
+}

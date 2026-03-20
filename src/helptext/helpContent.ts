@@ -6,15 +6,14 @@ export type HelpEntry = {
 export const helpContent: Record<string, HelpEntry> = {
   // ── Admin Panel ──────────────────────────────────────────────────────────────
   "admin.menu": {
-    title: "Admin Panel",
+    title: "Administration",
     content: [
-      "Här administrerar du hela plattformen. Välj ett område i menyn för att komma igång.",
-      "• Hantera deltagare – lägg till, redigera eller inaktivera deltagarkonton",
-      "• Hantera övningar – skapa och redigera övningsuppgifter som tilldelas deltagare",
-      "• Hantera projekt – skapa och redigera projektuppgifter",
-      "• Nyheter & Event – publicera nyheter och evenemang som visas på startsidan",
-      "• Närvarohantering – registrera och se närvaro för deltagare",
-      "• Deltagarprofiler – se detaljerad information om enskilda deltagare",
+      "Administrationsfunktionerna finns direkt i sidomenyn:",
+      "• Hantera användare – lägg till, redigera eller inaktivera konton för alla roller",
+      "• Närvaro – registrera och se närvaro för deltagare",
+      "• Buggar & Idéer – se inskickade buggrapporter och idéer från användare",
+      "• Deltagare – lista med alla deltagare, coach-filter och frånvarovarningar",
+      "• Kalender – hantera tillgänglighet, bokningar och upptagen tid",
     ],
   },
   "admin.users": {
@@ -74,6 +73,7 @@ export const helpContent: Record<string, HelpEntry> = {
       "• Föreslå möte – du kan föreslå ett möte med en coach eller elev. Motparten får ett mejl och kan godkänna eller neka.",
       "• Fasta intromötestider – vissa tider är reserverade för intromöten och visas med ljusare färg i coachkalendern. Coacher kan bara boka intromöten på dessa tider.",
       "• Återkommande event – skapa schemalagda event (t.ex. coachträff) som upprepas varje vecka eller varannan vecka. Välj ansvarig lärare och klassrum.",
+      "• Upptagen tid – klicka på en tom tid och välj \"Upptagen\" för att blockera den. Upptagen tid visas som mörkgrå block och förhindrar att coacher bokar tiden.",
       "• NoClass-dagar visas med röd bakgrund i kalendern — inga lektioner dessa dagar.",
       "• Visa kalendrar: Klicka på lärarens namn för att toggla av/på.",
     ],
@@ -151,8 +151,11 @@ export const helpContent: Record<string, HelpEntry> = {
   "deltagare": {
     title: "Deltagare",
     content: [
-      "Här ser du en lista över alla aktiva deltagare i systemet.",
-      "Klicka på en deltagare för att se deras profil med information om kurs, coach, närvaro och framsteg.",
+      "Här ser du en lista över alla aktiva och inaktiva deltagare i systemet.",
+      "• Coach-filter – använd rullgardinsmenyn för att filtrera deltagare efter coach.",
+      "• Frånvarovarning – deltagare som inte varit närvarande de senaste 2 veckorna markeras med en varningstriangel.",
+      "• Skicka varning – klicka på kuvertikonen bredvid varningstriangeln för att skicka ett e-postmeddelande till deltagarens coach. Välj mellan ett förgenerat meddelande eller skriv ett eget.",
+      "Klicka på en deltagare för att se deras profil med närvaro, schema, kontaktinfo och meddelanden.",
     ],
   },
 
@@ -161,7 +164,9 @@ export const helpContent: Record<string, HelpEntry> = {
     title: "Mina deltagare",
     content: [
       "Här ser du de deltagare som är tilldelade dig som coach.",
-      "Klicka på en deltagare för att se deras närvaro och profil. Du kan registrera och följa deras utveckling härifrån.",
+      "• Deltagare som har varit närvarande de senaste 4 veckorna visas i huvudlistan.",
+      "• Deltagare som inte varit närvarande de senaste 4 veckorna visas i en separat sektion längst ner.",
+      "Klicka på en deltagare för att se deras närvaro och profil.",
     ],
   },
 
@@ -171,6 +176,28 @@ export const helpContent: Record<string, HelpEntry> = {
     content: [
       "Här hittar du kontaktuppgifter till administratörer och lärare.",
       "Använd e-post eller telefon för att nå dem direkt. Du kan också skicka meddelanden via Meddelanden-sidan.",
+    ],
+  },
+
+  // ── Klassrum ─────────────────────────────────────────────────────────────────
+  "klassrum": {
+    title: "Klassrum",
+    content: [
+      "Här planerar du bordsplaceringen för Spår 1 och Spår 2.",
+      "• Översiktsfliken visar antal lediga bord och schemalagda elever per dag och block för båda klassrummen.",
+      "• Varje bord har två väljare (förmiddag/eftermiddag) där du tilldelar elever till platser.",
+      "• Väljarna visar bara elever som är schemalagda den dagen och inte redan placerade.",
+      "• Bordstilldelningar sparas per dag (måndag–torsdag) och bevaras mellan sessioner.",
+    ],
+  },
+
+  // ── Deltagarschema ──────────────────────────────────────────────────────────
+  "deltagarschema": {
+    title: "Deltagarschema",
+    content: [
+      "Här ser du en översikt över hur många deltagare som är schemalagda per dag och block (förmiddag/eftermiddag).",
+      "• Under varje dag (måndag–torsdag) visas en lista med schemalagda deltagare, sorterade efter heldags-, förmiddags- och eftermiddagsdeltagare.",
+      "• Deltagare utan schema visas som \"Ej schemalagda\" i översikten.",
     ],
   },
 
@@ -184,6 +211,7 @@ export const helpContent: Record<string, HelpEntry> = {
       "• \"Bara för intromöte\" – vissa tider (ljusare färg) är reserverade för intromöten. Du kan bara välja intromöte på dessa tider.",
       "Dina bokningar visas i kalendern. Du kan avboka eller begära ombokning direkt från kalendern.",
       "• Föreslå möte – du kan föreslå ett möte med en lärare, även utanför deras tillgängliga tider. Läraren får ett mejl och måste godkänna mötet.",
+      "• Upptagen tid – tider markerade som \"Upptagen\" (mörkgrå block) kan inte bokas.",
       "• Återkommande event (t.ex. coachträffar) visas som lila block med klassrumsnamn.",
       "• NoClass-dagar visas med röd bakgrund — inga lektioner dessa dagar.",
     ],
