@@ -28,6 +28,7 @@ import CoachProjects from './pages/CoachProjects';
 import CoachBookingView from './pages/CoachBookingView';
 import StudentCalendar from './pages/StudentCalendar';
 import Deltagare from './pages/Deltagare';
+import StudentSchedule from './pages/StudentSchedule';
 import MeddelandenPage from './pages/MeddelandenPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -93,6 +94,7 @@ function AppRoutes() {
         <Route path="/narvaro" element={<ProtectedRoute allow="admin"><Narvaro /></ProtectedRoute>} />
         <Route path="/buggar" element={<ProtectedRoute allow="admin"><Buggar /></ProtectedRoute>} />
         <Route path="/admin-schedule" element={<ProtectedRoute allow="admin"><AdminSchedule /></ProtectedRoute>} />
+        <Route path="/deltagarschema" element={<ProtectedRoute allow="admin"><StudentSchedule /></ProtectedRoute>} />
         {/* Coach routes */}
         <Route path="/mina-deltagare" element={<CoachMyParticipants />} />
         <Route path="/kontakt" element={<CoachContact />} />
