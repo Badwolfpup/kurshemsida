@@ -90,21 +90,21 @@ function DayTab({ students, day }: { students: UserType[]; day: DayConfig }) {
   }
 
   return (
-    <div style={{ maxWidth: 420 }}>
-      <div className="flex items-end pb-2" style={{ paddingLeft: 210 }}>
-        <span className="text-xs text-muted-foreground font-medium" style={{ width: 26, textAlign: 'center' }}>FM</span>
-        <span style={{ width: 5 }} />
-        <span className="text-xs text-muted-foreground font-medium" style={{ width: 26, textAlign: 'center' }}>EM</span>
+    <div className="max-w-[420px]">
+      <div className="flex items-end pb-2 pl-[210px]">
+        <span className="text-xs text-muted-foreground font-medium w-[26px] text-center">FM</span>
+        <span className="w-[5px]" />
+        <span className="text-xs text-muted-foreground font-medium w-[26px] text-center">EM</span>
       </div>
       {sorted.map((student) => (
         <div key={student.id} className="flex items-center py-1 hover:bg-muted/50 rounded">
-          <span className="text-sm truncate" style={{ width: 200 }}>
+          <span className="text-sm truncate w-[200px]">
             {student.firstName} {student.lastName}
           </span>
-          <span style={{ width: 10 }} />
-          <ScheduleBlock active={student[day.amKey] as boolean} />
-          <span style={{ width: 5 }} />
-          <ScheduleBlock active={student[day.pmKey] as boolean} />
+          <span className="w-[10px]" />
+          <ScheduleBlock active={!!(student[day.amKey])} />
+          <span className="w-[5px]" />
+          <ScheduleBlock active={!!(student[day.pmKey])} />
         </div>
       ))}
     </div>
