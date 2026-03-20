@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import HelpDialog from "@/components/HelpDialog";
 import { useUsers } from "@/hooks/useUsers";
+import { useAttendance } from "@/hooks/useAttendance";
 import { DeltagareList } from "@/components/deltagare/DeltagareList";
 import CoachAttendance from "@/components/admin/CoachAttendance";
 import type UserType from "@/Types/User";
@@ -92,6 +93,22 @@ const Deltagare = () => {
   const [selectedCoachId, setSelectedCoachId] = useState<number>(0);
   const { data: allUsers = [], isLoading } = useUsers();
 
+  const today = useMemo(() => new Date(), []);
+  const { data: attendanceData = [] } = useAttendance(today, 2);
+
+  const attendanceMap = useMemo(() => {
+    const map: Record<number, Record<string, boolean>> = {};
+    for (const record of attendanceData) {
+      const dates: Record<string, boolean> = {};
+      for (const d of record.date) {
+        const key = new Date(d).toISOString().split("T")[0];
+        dates[key] = true;
+      }
+      map[record.userId] = dates;
+    }
+    return map;
+  }, [attendanceData]);
+
   const coaches = useMemo(() => allUsers.filter((u) => u.authLevel === 3 && u.isActive), [allUsers]);
 
   const participants = useMemo<Participant[]>(() => {
@@ -99,8 +116,11 @@ const Deltagare = () => {
     if (selectedCoachId !== 0) {
       students = students.filter((u) => u.coachId === selectedCoachId);
     }
-    return students.map((u) => mapUserToParticipant(u, allUsers, u.id));
-  }, [allUsers, selectedCoachId]);
+    return students.map((u) => ({
+      ...mapUserToParticipant(u, allUsers, u.id),
+      attendance: attendanceMap[u.id] ?? {},
+    }));
+  }, [allUsers, selectedCoachId, attendanceMap]);
 
   const selectedUser = selectedId ? allUsers.find((u) => u.id === selectedId) : null;
 

@@ -366,17 +366,20 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                     ).map((item) => (
                       <TableRow key={item.id}>
                         <TableCell>{checkInitials(item)}</TableCell>
-                        {Array.from({ length: 8 }).map((_, index) => (
+                        {Array.from({ length: 8 }).map((_, index) => {
+                          const dayOffset = index < 4 ? index - 6 : index - 3;
+                          return (
                           <TableCell key={index} className={`text-center${index === 4 ? " border-l-2 border-border" : ""}`}>
-                            {item.startDate !== null && new Date(item.startDate) <= getDate(index + 2 - 7) && (
+                            {item.startDate !== null && new Date(item.startDate) <= getDate(dayOffset) && (
                               <Checkbox
-                                checked={attendance.filter((x) => x.userId === item.id).filter((dates) => dates.date.some((d) => compareDates(new Date(d), getDate(index + 1 - 7)))).length > 0}
+                                checked={attendance.filter((x) => x.userId === item.id).filter((dates) => dates.date.some((d) => compareDates(new Date(d), getDate(dayOffset)))).length > 0}
                                 disabled={userType === "Coach" || seluser !== null}
                                 onCheckedChange={() => {}}
                               />
                             )}
                           </TableCell>
-                        ))}
+                          );
+                        })}
                       </TableRow>
                     ))}
                   </TableBody>
