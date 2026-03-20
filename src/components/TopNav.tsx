@@ -50,7 +50,7 @@ export function TopNav({ onMenuToggle }: TopNavProps) {
       <div className="topnav__actions">
         {isLoggedIn && <KomIgangDialog />}
         {isLoggedIn && <ChangelogDialog />}
-        {isLoggedIn && <NewsDialog />}
+        {/* {isLoggedIn && <NewsDialog />} */}{/* Students temporarily disabled */}
         {isLoggedIn ? (
           avatarUrl ? (
             <img

@@ -325,7 +325,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                   {/* {hasChat && <TabsTrigger value="meddelanden">Meddelanden</TabsTrigger>} */}{/* GDPR review — temporarily suspended */}
                   <TabsTrigger value="kontaktinfo">Kontaktinfo</TabsTrigger>
                   <TabsTrigger value="larare">{userType === "Admin" ? "Lärarkontakt" : "Lärare på kursen"}</TabsTrigger>
-                  <TabsTrigger value="progression">Progression</TabsTrigger>
+                  {/* <TabsTrigger value="progression">Progression</TabsTrigger> */}{/* Students temporarily disabled */}
                   <TabsTrigger value="statistik">Statistik</TabsTrigger>
                 </TabsList>
                 <HelpDialog helpKey={activeTab === "narvaro" && userType === "Coach" ? "attendance.narvaro.coach" : `attendance.${activeTab}`} />
@@ -545,6 +545,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                 </Table>
                 </div>
               </TabsContent>
+              {/* Students temporarily disabled — Progression tab content
               <TabsContent value="progression">
                 {userType === "Admin" && selectedUser && (() => {
                   const students = users.filter((u) => u.authLevel === 4);
@@ -592,6 +593,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                   );
                 })()}
               </TabsContent>
+              */}
             </Tabs>
           )}
 

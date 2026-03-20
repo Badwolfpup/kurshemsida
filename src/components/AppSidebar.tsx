@@ -14,6 +14,8 @@ import {
   MessageSquare,
   Contact,
   Calendar as CalendarIcon,
+  CalendarCheck,
+  Bug,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -35,9 +37,11 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, messagesCount: number, s
 
   if (isAdmin) {
     items.push(
-      { title: 'Admin Panel', url: '/admin', icon: ShieldCheck },
-      { title: 'Övningar', url: '/ovningar', icon: Dumbbell },
-      { title: 'Projekt', url: '/projekt', icon: FolderKanban },
+      // { title: 'Admin Panel', url: '/admin', icon: ShieldCheck }, // Retired — sub-pages promoted to sidebar
+      { title: 'Hantera användare', url: '/hantera-anvandare', icon: Users },
+      { title: 'Närvaro', url: '/narvaro', icon: CalendarCheck },
+      // { title: 'Övningar', url: '/ovningar', icon: Dumbbell }, // Students temporarily disabled
+      // { title: 'Projekt', url: '/projekt', icon: FolderKanban }, // Students temporarily disabled
       { title: 'Deltagare', url: '/deltagare', icon: Users, badgeCount: studentContextCount },
       {
         title: 'Kalender & Bokning',
@@ -45,7 +49,7 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, messagesCount: number, s
         icon: CalendarIcon,
       },
       // { title: 'Profil', url: '/profil', icon: UserCircle },
-      { title: 'Terminal', url: '/terminal', icon: TerminalIcon },
+      // { title: 'Terminal', url: '/terminal', icon: TerminalIcon }, // Students temporarily disabled
       // { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, badgeCount: messagesCount } // GDPR review — temporarily suspended
     );
   } else if (isCoach) {
@@ -76,13 +80,15 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, messagesCount: number, s
 }
 
 function getBottomNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
-  const items: NavItem[] = [
-    {
-      title: 'Profil',
-      url: isCoach ? '/coach-installningar' : '/preferenser',
-      icon: Settings,
-    },
-  ];
+  const items: NavItem[] = [];
+  if (isAdmin) {
+    items.push({ title: 'Buggar & Idéer', url: '/buggar', icon: Bug });
+  }
+  items.push({
+    title: 'Profil',
+    url: isCoach ? '/coach-installningar' : '/preferenser',
+    icon: Settings,
+  });
   return items;
 }
 
