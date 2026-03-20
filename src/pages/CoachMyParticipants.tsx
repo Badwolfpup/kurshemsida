@@ -12,6 +12,9 @@ import { useAttendance } from "@/hooks/useAttendance";
 import type UserType from "@/Types/User";
 
 
+const ABSENCE_WEEKS = 4;
+const ABSENCE_DAYS = ABSENCE_WEEKS * 7;
+
 function ParticipantRow({ p, unreadStudentIds, onSelect }: { p: UserType; unreadStudentIds: Set<number>; onSelect: (id: number) => void }) {
   return (
     <TableRow key={p.id} onClick={() => onSelect(p.id)} className="cursor-pointer hover:bg-accent/50">
@@ -37,11 +40,11 @@ const CoachMyParticipants = () => {
   );
 
   const today = useMemo(() => new Date(), []);
-  const { data: attendanceData = [] } = useAttendance(today, 4);
+  const { data: attendanceData = [] } = useAttendance(today, ABSENCE_WEEKS);
 
   const fourWeeksAgoMs = useMemo(() => {
     const d = new Date();
-    d.setDate(d.getDate() - 28);
+    d.setDate(d.getDate() - ABSENCE_DAYS);
     return d.getTime();
   }, []);
 
@@ -120,7 +123,7 @@ const CoachMyParticipants = () => {
           {absentParticipants.length > 0 && (
             <div>
               <h2 className="font-display font-semibold text-muted-foreground mb-3">
-                Ej närvarande senaste 4 veckorna ({absentParticipants.length})
+                Ej närvarande senaste {ABSENCE_WEEKS} veckorna ({absentParticipants.length})
               </h2>
               <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden opacity-60">
                 <Table>

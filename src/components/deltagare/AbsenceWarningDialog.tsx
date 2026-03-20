@@ -18,7 +18,9 @@ import type { Participant } from "@/pages/Deltagare";
 type Mode = "pregenerated" | "custom";
 
 function formatDate(dateStr: string): string {
+  if (!dateStr) return "okänt datum";
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "okänt datum";
   return date.toLocaleDateString("sv-SE", {
     day: "numeric",
     month: "long",
@@ -78,10 +80,10 @@ export function AbsenceWarningDialog({
       {
         onSuccess: () => {
           toast({ title: "Frånvarovarning skickad" });
-          onOpenChange(false);
           setMode("pregenerated");
           setCustomSubject("");
           setCustomBody("");
+          onOpenChange(false);
         },
         onError: () => {
           toast({

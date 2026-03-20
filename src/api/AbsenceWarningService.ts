@@ -1,12 +1,3 @@
-const responseAction = (response: Response): void => {
-  if (response.status === 401) {
-    window.location.href = "/login";
-    throw new Error("Unauthorized. Redirecting to login.");
-  } else if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-};
-
 export const absenceWarningService = {
   getLastAttendedDate: async (
     studentId: number
@@ -32,4 +23,13 @@ export const absenceWarningService = {
     });
     responseAction(response);
   },
+};
+
+const responseAction = (response: Response): void => {
+  if (response.status === 401) {
+    window.location.href = "/login";
+    throw new Error("Unauthorized. Redirecting to login.");
+  } else if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
 };
