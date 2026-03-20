@@ -9,7 +9,21 @@ import CoachAttendance from "@/components/admin/CoachAttendance";
 import { Button } from "@/components/ui/button";
 import { useUnreadCounts } from "@/hooks/useMessages";
 import { useAttendance } from "@/hooks/useAttendance";
+import type UserType from "@/Types/User";
 
+
+function ParticipantRow({ p, unreadStudentIds, onSelect }: { p: UserType; unreadStudentIds: Set<number>; onSelect: (id: number) => void }) {
+  return (
+    <TableRow key={p.id} onClick={() => onSelect(p.id)} className="cursor-pointer hover:bg-accent/50">
+      <TableCell className="font-medium">
+        {p.firstName[0]}.{p.lastName[0]}
+        {unreadStudentIds.has(p.id) && (
+          <span className="inline-block w-2 h-2 rounded-full bg-destructive ml-2" />
+        )}
+      </TableCell>
+    </TableRow>
+  );
+}
 
 const CoachMyParticipants = () => {
   const { user } = useAuth();
@@ -22,22 +36,24 @@ const CoachMyParticipants = () => {
     (u) => u.authLevel === 4 && u.isActive && u.coachId === user?.id
   );
 
-  const { data: attendanceData = [] } = useAttendance(new Date(), 4);
+  const today = useMemo(() => new Date(), []);
+  const { data: attendanceData = [] } = useAttendance(today, 4);
 
-  const fourWeeksAgo = useMemo(() => {
+  const fourWeeksAgoMs = useMemo(() => {
     const d = new Date();
     d.setDate(d.getDate() - 28);
-    return d;
+    return d.getTime();
   }, []);
 
   const attendedIds = useMemo(() => {
     const ids = new Set<number>();
     for (const record of attendanceData) {
-      const hasRecent = record.date.some((d) => new Date(d) >= fourWeeksAgo);
-      if (hasRecent) ids.add(record.userId);
+      if (record.date.some((d) => new Date(d).getTime() >= fourWeeksAgoMs)) {
+        ids.add(record.userId);
+      }
     }
     return ids;
-  }, [attendanceData, fourWeeksAgo]);
+  }, [attendanceData, fourWeeksAgoMs]);
 
   const activeParticipants = participants.filter((p) => attendedIds.has(p.id));
   const absentParticipants = participants.filter((p) => !attendedIds.has(p.id));
@@ -90,14 +106,7 @@ const CoachMyParticipants = () => {
               </TableHeader>
               <TableBody>
                 {activeParticipants.map((p) => (
-                  <TableRow key={p.id} onClick={() => { setSelectedParticipant(p.id); setShowAttendance(true); }} className="cursor-pointer hover:bg-accent/50">
-                    <TableCell className="font-medium">
-                      {p.firstName[0]}.{p.lastName[0]}
-                      {unreadStudentIds.has(p.id) && (
-                        <span className="inline-block w-2 h-2 rounded-full bg-destructive ml-2" />
-                      )}
-                    </TableCell>
-                  </TableRow>
+                  <ParticipantRow key={p.id} p={p} unreadStudentIds={unreadStudentIds} onSelect={(id) => { setSelectedParticipant(id); setShowAttendance(true); }} />
                 ))}
                 {activeParticipants.length === 0 && (
                   <TableRow>
@@ -117,14 +126,7 @@ const CoachMyParticipants = () => {
                 <Table>
                   <TableBody>
                     {absentParticipants.map((p) => (
-                      <TableRow key={p.id} onClick={() => { setSelectedParticipant(p.id); setShowAttendance(true); }} className="cursor-pointer hover:bg-accent/50">
-                        <TableCell className="font-medium">
-                          {p.firstName[0]}.{p.lastName[0]}
-                          {unreadStudentIds.has(p.id) && (
-                            <span className="inline-block w-2 h-2 rounded-full bg-destructive ml-2" />
-                          )}
-                        </TableCell>
-                      </TableRow>
+                      <ParticipantRow key={p.id} p={p} unreadStudentIds={unreadStudentIds} onSelect={(id) => { setSelectedParticipant(id); setShowAttendance(true); }} />
                     ))}
                   </TableBody>
                 </Table>

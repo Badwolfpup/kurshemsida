@@ -8,6 +8,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -140,9 +141,8 @@ export function AbsenceWarningDialog({
             <div className="space-y-3">
               <div className="space-y-1.5">
                 <Label htmlFor="subject">Ämne</Label>
-                <input
+                <Input
                   id="subject"
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   value={customSubject}
                   onChange={(e) => setCustomSubject(e.target.value)}
                   placeholder={`Frånvarovarning ${initials}`}
