@@ -5,7 +5,7 @@ import { sv } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './BookingCalendar.css';
 import FourDayView, { localizer, fourDayRange } from './FourDayView';
-import { WORKDAY_START_HOUR, WORKDAY_END_HOUR, DAY_NAMES, RECURRING_EVENT_COLOR, STATUS_COLORS } from './calendarUtils';
+import { WORKDAY_START_HOUR, WORKDAY_END_HOUR, DAY_NAMES, RECURRING_EVENT_COLOR, BUSY_TIME_COLOR, STATUS_COLORS } from './calendarUtils';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { CalendarEvent } from '@/Types/CalendarTypes';
@@ -73,6 +73,10 @@ export default function CalendarShell({
 
     if (event.resource.type === 'recurring') {
       return { style: { ...base, backgroundColor: RECURRING_EVENT_COLOR, color: '#fff', opacity: 0.85 } };
+    }
+
+    if (event.resource.type === 'busy') {
+      return { style: { ...base, backgroundColor: BUSY_TIME_COLOR, color: '#fff', opacity: 0.9 } };
     }
 
     if (!isOwn && event.resource.type !== 'availability') {

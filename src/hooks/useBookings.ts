@@ -10,6 +10,10 @@ import {
   addAvailabilityNew,
   updateAvailabilityNew,
   deleteAvailabilityNew,
+  getBusyTimes,
+  addBusyTime,
+  updateBusyTime,
+  deleteBusyTime,
   type CreateBookingData,
 } from '@/api/BookingService';
 
@@ -183,6 +187,50 @@ export function useDeleteAvailability() {
     mutationFn: (id: number) => deleteAvailabilityNew(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['availabilities'] });
+    },
+  });
+}
+
+// ── Busy Time hooks ──
+
+export function useBusyTimes() {
+  return useQuery({
+    queryKey: ['busyTimes'],
+    queryFn: getBusyTimes,
+    staleTime: 30_000,
+  });
+}
+
+export function useAddBusyTime() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { adminId: number; startTime: Date | string; endTime: Date | string; note?: string; force?: boolean }) =>
+      addBusyTime(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['busyTimes'] });
+      qc.invalidateQueries({ queryKey: ['availabilities'] });
+      qc.invalidateQueries({ queryKey: ['bookings'] });
+    },
+  });
+}
+
+export function useUpdateBusyTime() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: number; startTime: string; endTime: string; note?: string | null }) =>
+      updateBusyTime(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['busyTimes'] });
+    },
+  });
+}
+
+export function useDeleteBusyTime() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => deleteBusyTime(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['busyTimes'] });
     },
   });
 }

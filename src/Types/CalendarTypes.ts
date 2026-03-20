@@ -6,7 +6,8 @@ export type CalendarEventType =
   | 'accepted'
   | 'declined'
   | 'rescheduled'
-  | 'recurring';
+  | 'recurring'
+  | 'busy';
 
 export interface CalendarEventResource {
   type: CalendarEventType;
@@ -19,6 +20,7 @@ export interface CalendarEventResource {
   recurringEventId?: number;
   recurringEventName?: string;
   classroom?: number;
+  busyTimeId?: number;
 }
 
 export interface CalendarEvent {

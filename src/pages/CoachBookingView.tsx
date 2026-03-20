@@ -9,7 +9,7 @@ import { fourDayRange } from '@/components/calendar/FourDayView';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
-import { useBookings, useAvailabilities, useCreateBooking, useUpdateBookingStatus, useCancelBooking, useRescheduleBooking } from '@/hooks/useBookings';
+import { useBookings, useAvailabilities, useCreateBooking, useUpdateBookingStatus, useCancelBooking, useRescheduleBooking, useBusyTimes } from '@/hooks/useBookings';
 import { useRecurringEvents } from '@/hooks/useRecurringEvents';
 import { useNoClasses } from '@/hooks/useNoClass';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,7 @@ function CoachBookingView() {
   const weekEnd = addDays(weekStart, 6);
   const { data: recurringInstances = [] } = useRecurringEvents(weekStart, weekEnd);
   const { data: noClassDates = [] } = useNoClasses();
+  const { data: busyTimes = [] } = useBusyTimes();
 
   // Mutations
   const createBooking = useCreateBooking();
@@ -261,6 +262,20 @@ function CoachBookingView() {
       }
     }
 
+    // Busy times (read-only for coaches)
+    for (const bt of busyTimes) {
+      if (!selectedAdminIds.includes(bt.adminId.toString())) continue;
+      const adminName = nameMap.get(bt.adminId) || '';
+      result.push({
+        id: `busy-${bt.id}`,
+        title: `${adminName} – Upptagen`,
+        start: new Date(bt.startTime),
+        end: new Date(bt.endTime),
+        allDay: false,
+        resource: { type: 'busy', busyTimeId: bt.id, adminId: bt.adminId, isOwn: false },
+      });
+    }
+
     // Recurring events (read-only) — always show regardless of teacher toggle
     const filteredRecurring = recurringInstances;
     for (const inst of filteredRecurring) {
@@ -275,7 +290,7 @@ function CoachBookingView() {
     }
 
     return result;
-  }, [filteredAvailabilities, myBookings, allBookings, selectedAdminIds, coachId, adminColorMap, nameMap, SEVEN_DAYS_AGO, recurringInstances]);
+  }, [filteredAvailabilities, myBookings, allBookings, selectedAdminIds, coachId, adminColorMap, nameMap, SEVEN_DAYS_AGO, recurringInstances, busyTimes]);
 
   // Open booking dialog from free slot click
   // Auto-switch to 'intro' when selected start time enters a preset window
@@ -370,8 +385,10 @@ function CoachBookingView() {
       resetSuggestDialog();
     } catch (err) {
       const conflictErr = err as BookingConflictError;
-      if (conflictErr.conflictData?.type === 'conflict') {
-        setConflictErrorBookings(conflictErr.conflictData.bookings);
+      if (conflictErr.conflictData?.type === 'busy') {
+        toast({ title: 'Upptagen', description: conflictErr.conflictData.message || 'Handledaren är upptagen under denna tid.', variant: 'destructive' });
+      } else if (conflictErr.conflictData?.type === 'conflict') {
+        setConflictErrorBookings(conflictErr.conflictData.bookings || []);
         setShowConflictError(true);
       } else if (conflictErr.conflictData?.type === 'warning') {
         setPendingForceData({ ...data, force: true });
