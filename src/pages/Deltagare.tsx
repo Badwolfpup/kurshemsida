@@ -101,7 +101,8 @@ const Deltagare = () => {
     for (const record of attendanceData) {
       const dates: Record<string, boolean> = {};
       for (const d of record.date) {
-        const key = new Date(d).toISOString().split("T")[0];
+        const dt = new Date(d);
+        const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
         dates[key] = true;
       }
       map[record.userId] = dates;
