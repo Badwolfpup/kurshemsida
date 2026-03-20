@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { useUsers } from '@/hooks/useUsers';
 import { useSeatingAssignments, useAssignSeat, useClearSeat } from '@/hooks/useSeating';
 import { useToast } from '@/hooks/use-toast';
+import HelpDialog from '@/components/HelpDialog';
 import type UserType from '@/Types/User';
 import type { SeatingAssignment } from '@/api/SeatingService';
 
@@ -353,6 +354,7 @@ export default function Klassrum() {
           <LayoutGrid className="h-5 w-5 text-primary-foreground" />
         </div>
         <h1 className="font-display text-2xl font-bold text-foreground">Klassrum</h1>
+        <HelpDialog helpKey="klassrum" />
       </div>
 
       <Card className="p-6">

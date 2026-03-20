@@ -1,5 +1,5 @@
 {
-  "displaydate": null,
+  "displaydate": "2026-03-20",
   "entries": {
     "admin": [
       "Striktare TypeScript- och ESLint-regler aktiverade för att fånga buggar tidigare.",

@@ -74,7 +74,7 @@ Projekt.tsx → useAddProject() → projectService.addProject(dto) → POST /api
 - Auth token: HttpOnly cookie, auto-sent via `credentials: 'include'`
 
 ## Query Patterns
-- Query keys: `['projects']`, `['bookings']`, `['threads']`, `['unreadCount']`, `['availabilities']`, etc.
+- Query keys: `['projects']`, `['bookings']`, `['threads']`, `['unreadCount']`, `['availabilities']`, `['busyTimes']`, `['seating', classroomId, dayOfWeek]`, etc.
 - Mutations invalidate parent query on success
 - Messaging uses `refetchInterval: 10_000` for polling
 - Stale time varies: 5min for projects, 30s for bookings
@@ -102,6 +102,8 @@ Auth-based conditional rendering: not logged in → Login, guest → Homepage on
 | `/preferenser` | Preferenser | — |
 | `/admin` | Admin | allow="admin" |
 | `/admin-schedule` | AdminSchedule | allow="admin" |
+| `/deltagarschema` | StudentSchedule | allow="admin" |
+| `/klassrum` | Klassrum | allow="admin" |
 | `/student-calendar` | StudentCalendar | allow="student" |
 | `/mina-deltagare` | CoachMyParticipants | — |
 | `/kontakt` | CoachContact | — |
@@ -127,7 +129,9 @@ See `.claude/PAGE_MAP.md` for detailed per-page, per-role functionality breakdow
 | User | id, firstName, lastName, email, authLevel, coachId, schedule bools, emailNotifications |
 | Project | id, title, description, html, css, js, difficulty, projectType |
 | Exercise | id, title, description, js, expectedResult, difficulty, exerciseType, clues |
-| Booking | id, adminId, coachId, studentId, startTime, endTime, status, meetingType, note, seen, reason, rescheduledBy |
+| Booking | id, adminId, coachId, studentId, startTime, endTime, status, meetingType, note, seen, reason, rescheduledBy, createdByRole |
+| BusyTime | id, adminId, startTime, endTime, note |
+| SeatingAssignment | id, classroomId, dayOfWeek, period (am/pm), row, column, studentId |
 | Thread | id, user1Id, user2Id, studentContextId |
 | Message | id, threadId, senderId, content, createdAt |
 | Availability | id, adminId, startTime, endTime, isBooked |
@@ -160,7 +164,32 @@ See `.claude/PAGE_MAP.md` for detailed per-page, per-role functionality breakdow
 - All calendars use React Query hooks: `useBookings`, `useAvailabilities`, `useRecurringEvents`, `useNoClasses` (in `src/hooks/`)
 - Unified booking API via `src/api/BookingService.ts` (new endpoints: `/api/bookings`, `/api/availability`)
 - `RecurringEventService.ts` handles `/api/recurring-events` CRUD + exceptions
-- `calendarUtils.ts` exports: `getFreeSegments`, `getAdminColorMap`, `ALL_TIME_OPTIONS`, `padTime`, `STATUS_COLORS`, `RECURRING_EVENT_COLOR`
+- `calendarUtils.ts` exports: `getFreeSegments`, `getAdminColorMap`, `ALL_TIME_OPTIONS`, `padTime`, `STATUS_COLORS`, `RECURRING_EVENT_COLOR`, `BUSY_TIME_COLOR`
+- Busy time: teachers mark unavailable blocks (dark gray on calendar). Coaches see them, can't book during busy time. Backend trims/splits availability on overlap.
+- Booking `CreatedByRole` field tracks who created each pending booking — frontend uses it to show correct actions (accept/decline vs withdraw)
+
+## Seating System
+- Page: `src/pages/Klassrum.tsx` — visual classroom layout with per-seat FM/EM selects
+- Hooks: `src/hooks/useSeating.ts` — `useSeatingAssignments`, `useAssignSeat`, `useClearSeat`
+- Service: `src/api/SeatingService.ts` — GET/PUT/DELETE `/api/seating`
+- Backend: `SeatingEndpoints.cs` — CRUD with input validation, unique constraint per seat/day/period
+- Two layouts: Spår 1 (classroomId=1, 15 tables) and Spår 2 (classroomId=2, 8 tables)
+- Students filtered by `user.course` matching classroomId
+- Overview tab shows free seats and scheduled student counts per day/block
+
+## Student Schedule Page
+- Page: `src/pages/StudentSchedule.tsx` — read-only view of student schedules per day
+- Uses existing `useUsers()` data, filters by schedule booleans (scheduledMonAm, etc.)
+- Tabs: Översikt (counts per day/block) + Mon-Thu (sorted student lists with colored blocks)
+
+## Absence Warning Emails
+- Teacher feature on Deltagare page: mail icon next to warning triangle for absent students
+- Dialog: `src/components/deltagare/AbsenceWarningDialog.tsx` — pregenerated or custom message
+- Hooks: `src/hooks/useAbsenceWarning.ts` — `useLastAttendedDate` (query), `useSendAbsenceWarning` (mutation)
+- Service: `src/api/AbsenceWarningService.ts`
+- Backend endpoints: `GET /api/absence-warning/last-attended/{studentId}`, `POST /api/absence-warning/send`
+- Email sent via `SendEmailFireAndForget` (Resend API, no-op in dev), body HTML-encoded
+- Coach Mina deltagare (`CoachMyParticipants.tsx`): participant list split by attendance — active students on top, absent 4+ weeks in separate section
 
 ## AI Exercise & Project System
 - Students generate exercises/projects via AI (Grok), then submit feedback which saves to history

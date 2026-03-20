@@ -1,0 +1,11 @@
+{
+  "worktreeBase": ".claude/worktrees",
+  "symlinks": ["node_modules"],
+  "copyFiles": [".claude/settings.local.json"],
+  "siblingRepo": {
+    "path": "C:/Users/adam_/source/repos/Kursserver",
+    "defaultBranch": "master",
+    "copyFiles": ["Kursserver/appsettings.json", "Kursserver/appsettings.Development.json", ".claude/settings.local.json"]
+  },
+  "defaultBranch": "main"
+}

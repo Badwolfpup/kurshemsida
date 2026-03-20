@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { useUsers } from '@/hooks/useUsers';
 import type UserType from '@/Types/User';
+import HelpDialog from '@/components/HelpDialog';
 
 interface DayConfig {
   label: string;
@@ -134,6 +135,7 @@ export default function StudentSchedule() {
           <CalendarCheck className="h-5 w-5 text-primary-foreground" />
         </div>
         <h1 className="font-display text-2xl font-bold text-foreground">Deltagarschema</h1>
+        <HelpDialog helpKey="deltagarschema" />
       </div>
 
       <Card className="p-6">
