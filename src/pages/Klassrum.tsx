@@ -138,7 +138,7 @@ function TableCell({ row, col, students, assignments, classroomId, dayOfWeek, la
 }
 
 function ClassroomGrid({ classroomId, students: allStudents, dayOfWeek }: { classroomId: number; students: UserType[]; dayOfWeek: number }) {
-  const students = useMemo(() => allStudents.filter((s) => s.course === classroomId), [allStudents, classroomId]);
+  const students = useMemo(() => allStudents.filter((s) => (s.course ?? 0) === classroomId), [allStudents, classroomId]);
   const { data: assignments = [] } = useSeatingAssignments(classroomId, dayOfWeek);
   const assignMut = useAssignSeat();
   const clearMut = useClearSeat();
@@ -271,8 +271,8 @@ function ClassroomGrid({ classroomId, students: allStudents, dayOfWeek }: { clas
 }
 
 function OverviewTab({ students }: { students: UserType[] }) {
-  const spar1Students = useMemo(() => students.filter((s) => s.course === 1), [students]);
-  const spar2Students = useMemo(() => students.filter((s) => s.course === 2), [students]);
+  const spar1Students = useMemo(() => students.filter((s) => (s.course ?? 0) === 1), [students]);
+  const spar2Students = useMemo(() => students.filter((s) => (s.course ?? 0) === 2), [students]);
 
   const { data: s1d1 = [] } = useSeatingAssignments(1, 1);
   const { data: s1d2 = [] } = useSeatingAssignments(1, 2);
@@ -286,9 +286,9 @@ function OverviewTab({ students }: { students: UserType[] }) {
   const spar1Total = SPAR1_LAYOUT.length;
   const spar2Total = SPAR2_LAYOUT.length;
 
-  function countUnassigned(assignments: SeatingAssignment[], total: number, period: string) {
-    const assigned = new Set(assignments.filter((a) => a.period === period).map((a) => `${a.row}-${a.column}`)).size;
-    return total - assigned;
+  function countFreeSeats(assignments: SeatingAssignment[], total: number, period: string) {
+    const occupied = new Set(assignments.filter((a) => a.period === period).map((a) => `${a.row}-${a.column}`)).size;
+    return Math.max(0, total - occupied);
   }
 
   const spar1Assignments = [s1d1, s1d2, s1d3, s1d4];
@@ -304,8 +304,8 @@ function OverviewTab({ students }: { students: UserType[] }) {
           <h3 className="text-sm font-semibold mb-2">{spar.label} ({spar.total} bord)</h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {DAYS.map((day, i) => {
-              const freeAm = countUnassigned(spar.assignments[i], spar.total, 'am');
-              const freePm = countUnassigned(spar.assignments[i], spar.total, 'pm');
+              const freeAm = countFreeSeats(spar.assignments[i], spar.total, 'am');
+              const freePm = countFreeSeats(spar.assignments[i], spar.total, 'pm');
               const scheduledAm = spar.students.filter((s) => !!s[day.amKey]).length;
               const scheduledPm = spar.students.filter((s) => !!s[day.pmKey]).length;
               return (

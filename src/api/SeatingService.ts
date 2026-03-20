@@ -12,7 +12,7 @@ export interface SeatingAssignment {
 
 export async function getSeatingAssignments(classroomId: number, dayOfWeek: number): Promise<SeatingAssignment[]> {
   const res = await fetch(`${API}?classroomId=${classroomId}&dayOfWeek=${dayOfWeek}`, { credentials: 'include' });
-  if (!res.ok) throw new Error(`Failed to fetch seating (${res.status})`);
+  responseAction(res);
   return res.json();
 }
 
@@ -30,7 +30,7 @@ export async function assignSeat(data: {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error(`Failed to assign seat (${res.status})`);
+  responseAction(res);
 }
 
 export async function clearSeat(data: {
@@ -51,5 +51,14 @@ export async function clearSeat(data: {
     method: 'DELETE',
     credentials: 'include',
   });
-  if (!res.ok) throw new Error(`Failed to clear seat (${res.status})`);
+  responseAction(res);
 }
+
+const responseAction = (response: Response): void => {
+  if (response.status === 401) {
+    window.location.href = '/login';
+    throw new Error('Unauthorized. Redirecting to login.');
+  } else if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+};
