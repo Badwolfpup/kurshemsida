@@ -1,0 +1,14 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Ny sida \"Klassrum\" i sidomenyn — visuell bordsplanering för Spår 1 och Spår 2.",
+      "Varje bord har två väljare (förmiddag/eftermiddag) där du tilldelar elever till platser.",
+      "Väljarna visar bara elever som är schemalagda den dagen och inte redan placerade.",
+      "Översiktsfliken visar antal lediga bord och schemalagda elever per dag och block för båda klassrummen.",
+      "Bordstilldelningar sparas per dag (måndag–torsdag) och bevaras mellan sessioner."
+    ],
+    "coach": [],
+    "student": []
+  }
+}
