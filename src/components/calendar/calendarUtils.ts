@@ -8,6 +8,7 @@ export const DAY_NAMES = ['', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'
 export const ADMIN_COLORS = ['#2563eb', '#c6a04a', '#b45309', '#be123c', '#4338ca', '#0369a1', '#8b5cf6', '#7c2d12'];
 
 export const RECURRING_EVENT_COLOR = '#9ca3af'; // gray-400
+export const BUSY_TIME_COLOR = '#4b5563'; // gray-600
 
 export const STATUS_COLORS = {
   pending: { bg: '#f59e0b', opacity: 0.75 },

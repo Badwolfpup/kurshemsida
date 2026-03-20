@@ -7,11 +7,11 @@ import ConflictDialog from '@/components/calendar/ConflictDialog';
 import RecurringEventDialog from '@/components/calendar/RecurringEventDialog';
 import RecurringEventClickDialog from '@/components/calendar/RecurringEventClickDialog';
 import AdminBookingDialog from './AdminBookingDialog';
-import { getFreeSegments, getAdminColorMap, RECURRING_EVENT_COLOR, STATUS_COLORS } from '@/components/calendar/calendarUtils';
+import { getFreeSegments, getAdminColorMap, RECURRING_EVENT_COLOR, BUSY_TIME_COLOR, STATUS_COLORS, ALL_TIME_OPTIONS } from '@/components/calendar/calendarUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
-import { useBookings, useAvailabilities, useCreateBooking, useUpdateBookingStatus, useCancelBooking, useRescheduleBooking, useTransferBooking, useAddAvailability, useUpdateAvailability, useDeleteAvailability } from '@/hooks/useBookings';
+import { useBookings, useAvailabilities, useCreateBooking, useUpdateBookingStatus, useCancelBooking, useRescheduleBooking, useTransferBooking, useAddAvailability, useUpdateAvailability, useDeleteAvailability, useBusyTimes, useAddBusyTime, useUpdateBusyTime, useDeleteBusyTime } from '@/hooks/useBookings';
 import { useRecurringEvents, useCreateRecurringEvent, useUpdateRecurringEvent, useDeleteRecurringEvent, useSetRecurringEventException } from '@/hooks/useRecurringEvents';
 import { useNoClasses } from '@/hooks/useNoClass';
 import { Button } from '@/components/ui/button';
@@ -22,9 +22,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Calendar as CalendarIcon } from 'lucide-react';
 import HelpDialog from '@/components/HelpDialog';
 import type { CalendarEvent } from '@/Types/CalendarTypes';
-import type { Booking, Availability, BookingConflictError } from '@/api/BookingService';
+import type { Booking, Availability, BookingConflictError, BusyTime, BusyTimeConflictError } from '@/api/BookingService';
 import type { RecurringEventInstance } from '@/Types/CalendarTypes';
-import { ALL_TIME_OPTIONS } from '@/components/calendar/calendarUtils';
 
 function AdminSchedule() {
   const { user } = useAuth();
@@ -43,6 +42,8 @@ function AdminSchedule() {
   const { data: recurringInstances = [] } = useRecurringEvents(weekStart, weekEnd);
   const { data: noClassDates = [] } = useNoClasses();
 
+  const { data: busyTimes = [] } = useBusyTimes();
+
   // Mutations
   const createBooking = useCreateBooking();
   const updateStatus = useUpdateBookingStatus();
@@ -52,6 +53,9 @@ function AdminSchedule() {
   const addAvailMut = useAddAvailability();
   const updateAvailMut = useUpdateAvailability();
   const deleteAvailMut = useDeleteAvailability();
+  const addBusyTimeMut = useAddBusyTime();
+  const updateBusyTimeMut = useUpdateBusyTime();
+  const deleteBusyTimeMut = useDeleteBusyTime();
   const createRecurring = useCreateRecurringEvent();
   const updateRecurring = useUpdateRecurringEvent();
   const deleteRecurring = useDeleteRecurringEvent();
@@ -64,6 +68,24 @@ function AdminSchedule() {
   const [showRecurringDialog, setShowRecurringDialog] = useState(false);
   const [selectedRecurringInstance, setSelectedRecurringInstance] = useState<RecurringEventInstance | null>(null);
   const [showRecurringClickDialog, setShowRecurringClickDialog] = useState(false);
+
+  // Slot type choice dialog (availability vs busy)
+  const [showSlotChoiceDialog, setShowSlotChoiceDialog] = useState(false);
+  const [slotChoiceStart, setSlotChoiceStart] = useState<Date | null>(null);
+  const [slotChoiceEnd, setSlotChoiceEnd] = useState<Date | null>(null);
+
+  // Busy time edit dialog
+  const [selectedBusyTime, setSelectedBusyTime] = useState<BusyTime | null>(null);
+  const [showEditBusyDialog, setShowEditBusyDialog] = useState(false);
+  const [editBusyStartHour, setEditBusyStartHour] = useState(8);
+  const [editBusyStartMinute, setEditBusyStartMinute] = useState(0);
+  const [editBusyEndHour, setEditBusyEndHour] = useState(9);
+  const [editBusyEndMinute, setEditBusyEndMinute] = useState(0);
+
+  // Busy time booking conflict confirm
+  const [busyConflictBookings, setBusyConflictBookings] = useState<Booking[]>([]);
+  const [showBusyConflictConfirm, setShowBusyConflictConfirm] = useState(false);
+  const [pendingBusyData, setPendingBusyData] = useState<{ adminId: number; startTime: Date; endTime: Date; note?: string } | null>(null);
 
   // Availability edit dialog
   const [selectedAvailability, setSelectedAvailability] = useState<Availability | null>(null);
@@ -115,7 +137,8 @@ function AdminSchedule() {
       if (!isOwn && !visibleAdminIds.includes(avail.adminId.toString())) continue;
       const color = adminColorMap.get(avail.adminId) || '#6b7280';
       const adminName = nameMap.get(avail.adminId) || `Admin ${avail.adminId}`;
-      const freeSegs = getFreeSegments(avail, bookings);
+      const relevantBookings = allBookings.filter((b) => b.adminId === avail.adminId);
+      const freeSegs = getFreeSegments(avail, relevantBookings);
       for (let i = 0; i < freeSegs.length; i++) {
         result.push({
           id: `avail-${avail.id}-${i}`,
@@ -151,6 +174,20 @@ function AdminSchedule() {
       }
     }
 
+    // Busy times
+    for (const bt of busyTimes) {
+      const isOwn = bt.adminId === adminId;
+      if (!isOwn && !visibleAdminIds.includes(bt.adminId.toString())) continue;
+      result.push({
+        id: `busy-${bt.id}`,
+        title: isOwn ? 'Upptagen' : `${nameMap.get(bt.adminId) || ''} – Upptagen`,
+        start: new Date(bt.startTime),
+        end: new Date(bt.endTime),
+        allDay: false,
+        resource: { type: 'busy', busyTimeId: bt.id, adminId: bt.adminId, isOwn },
+      });
+    }
+
     // Recurring events
     for (const inst of recurringInstances) {
       result.push({
@@ -164,13 +201,49 @@ function AdminSchedule() {
     }
 
     return result;
-  }, [availabilities, bookings, allBookings, visibleAdminIds, adminColorMap, nameMap, adminId, SEVEN_DAYS_AGO, recurringInstances]);
+  }, [availabilities, bookings, allBookings, visibleAdminIds, adminColorMap, nameMap, adminId, SEVEN_DAYS_AGO, recurringInstances, busyTimes]);
 
   // Handlers
   const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
     if (isBefore(startOfDay(start), today)) return;
-    if (window.confirm(`Lägg till tillgänglighet: ${format(start, 'yyyy-MM-dd HH:mm')} – ${format(end, 'HH:mm')}?`)) {
-      addAvailMut.mutate({ adminId, startTime: start, endTime: end });
+    setSlotChoiceStart(start);
+    setSlotChoiceEnd(end);
+    setShowSlotChoiceDialog(true);
+  };
+
+  const handleSlotChoice = async (choice: 'availability' | 'busy') => {
+    setShowSlotChoiceDialog(false);
+    if (!slotChoiceStart || !slotChoiceEnd) return;
+    if (choice === 'availability') {
+      addAvailMut.mutate({ adminId, startTime: slotChoiceStart, endTime: slotChoiceEnd });
+    } else {
+      try {
+        await addBusyTimeMut.mutateAsync({ adminId, startTime: slotChoiceStart, endTime: slotChoiceEnd });
+        toast({ title: 'Upptagen tid tillagd' });
+      } catch (err) {
+        const conflictErr = err as BusyTimeConflictError;
+        if (conflictErr.conflictData?.type === 'confirm') {
+          setPendingBusyData({ adminId, startTime: slotChoiceStart, endTime: slotChoiceEnd });
+          setBusyConflictBookings(conflictErr.conflictData.bookings || []);
+          setShowBusyConflictConfirm(true);
+        } else {
+          toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte lägga till.', variant: 'destructive' });
+        }
+      }
+    }
+  };
+
+  const handleConfirmBusyConflict = async () => {
+    if (!pendingBusyData) return;
+    setShowBusyConflictConfirm(false);
+    try {
+      await addBusyTimeMut.mutateAsync({ ...pendingBusyData, force: true });
+      toast({ title: 'Upptagen tid tillagd' });
+    } catch (err) {
+      toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte lägga till.', variant: 'destructive' });
+    } finally {
+      setPendingBusyData(null);
+      setBusyConflictBookings([]);
     }
   };
 
@@ -181,6 +254,20 @@ function AdminSchedule() {
         setSelectedRecurringInstance(inst);
         setShowRecurringClickDialog(true);
       }
+      return;
+    }
+
+    if (event.resource.type === 'busy') {
+      if (!event.resource.isOwn) return;
+      const bt = busyTimes.find((b) => b.id === event.resource.busyTimeId);
+      if (!bt) return;
+      if (isBefore(startOfDay(new Date(bt.startTime)), today)) return;
+      setSelectedBusyTime(bt);
+      const s = new Date(bt.startTime);
+      const e = new Date(bt.endTime);
+      setEditBusyStartHour(s.getHours()); setEditBusyStartMinute(s.getMinutes());
+      setEditBusyEndHour(e.getHours()); setEditBusyEndMinute(e.getMinutes());
+      setShowEditBusyDialog(true);
       return;
     }
 
@@ -240,6 +327,42 @@ function AdminSchedule() {
     }
   };
 
+  const handleSaveBusyTime = async () => {
+    if (!selectedBusyTime) return;
+    const base = new Date(selectedBusyTime.startTime);
+    const newStart = new Date(base.getFullYear(), base.getMonth(), base.getDate(), editBusyStartHour, editBusyStartMinute);
+    const newEnd = new Date(base.getFullYear(), base.getMonth(), base.getDate(), editBusyEndHour, editBusyEndMinute);
+    if (newStart >= newEnd) {
+      toast({ title: 'Fel', description: 'Starttid måste vara före sluttid.', variant: 'destructive' });
+      return;
+    }
+    try {
+      await updateBusyTimeMut.mutateAsync({
+        id: selectedBusyTime.id,
+        startTime: format(newStart, "yyyy-MM-dd'T'HH:mm:ss"),
+        endTime: format(newEnd, "yyyy-MM-dd'T'HH:mm:ss"),
+      });
+      toast({ title: 'Sparad' });
+      setShowEditBusyDialog(false);
+      setSelectedBusyTime(null);
+    } catch {
+      toast({ title: 'Fel', description: 'Kunde inte uppdatera.', variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteBusyTime = async () => {
+    if (!selectedBusyTime) return;
+    if (!window.confirm('Är du säker på att du vill ta bort denna upptagna tid?')) return;
+    try {
+      await deleteBusyTimeMut.mutateAsync(selectedBusyTime.id);
+      toast({ title: 'Borttagen' });
+      setShowEditBusyDialog(false);
+      setSelectedBusyTime(null);
+    } catch (err) {
+      toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte ta bort.', variant: 'destructive' });
+    }
+  };
+
   const handleCreateAppointment = async (data: { coachId?: number; studentId?: number; meetingType: string; note: string; startTime: string; endTime: string; force?: boolean }) => {
     try {
       await createBooking.mutateAsync({
@@ -254,12 +377,31 @@ function AdminSchedule() {
       toast({ title: 'Möte skapat' });
     } catch (err) {
       const conflictErr = err as BookingConflictError;
-      if (conflictErr.conflictData?.type === 'conflict') {
-        setConflictErrorBookings(conflictErr.conflictData.bookings);
+      if (conflictErr.conflictData?.type === 'busy-warning') {
+        // Teacher's own busy time — confirm and retry with force
+        if (window.confirm(conflictErr.conflictData.message || 'Du har markerat denna tid som upptagen. Vill du boka ändå?')) {
+          try {
+            await createBooking.mutateAsync({
+              coachId: data.coachId ?? null,
+              studentId: data.studentId ?? null,
+              meetingType: data.meetingType,
+              note: data.note,
+              startTime: data.startTime,
+              endTime: data.endTime,
+              force: true,
+            });
+            toast({ title: 'Möte skapat' });
+            return; // Success — don't re-throw
+          } catch (retryErr) {
+            toast({ title: 'Fel', description: retryErr instanceof Error ? retryErr.message : 'Kunde inte skapa mötet.', variant: 'destructive' });
+          }
+        }
+      } else if (conflictErr.conflictData?.type === 'conflict') {
+        setConflictErrorBookings(conflictErr.conflictData.bookings || []);
         setShowConflictError(true);
       } else if (conflictErr.conflictData?.type === 'warning') {
         setPendingBookingData({ ...data, force: true, coachId: data.coachId ?? null, studentId: data.studentId ?? null });
-        setConflictWarningBookings(conflictErr.conflictData.bookings);
+        setConflictWarningBookings(conflictErr.conflictData.bookings || []);
         setShowConflictWarning(true);
       } else {
         toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte skapa mötet.', variant: 'destructive' });
@@ -308,6 +450,10 @@ function AdminSchedule() {
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded" style={{ backgroundColor: STATUS_COLORS.declined.bg }} />
           <span>Nekad</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: BUSY_TIME_COLOR }} />
+          <span>Upptagen</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded" style={{ backgroundColor: RECURRING_EVENT_COLOR }} />
@@ -503,6 +649,114 @@ function AdminSchedule() {
                 <Button onClick={handleSaveAvailability}>Spara</Button>
               </div>
             </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Slot type choice dialog */}
+      <Dialog open={showSlotChoiceDialog} onOpenChange={setShowSlotChoiceDialog}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle>Typ av tidblock</DialogTitle>
+            <DialogDescription>
+              {slotChoiceStart && slotChoiceEnd && `${format(slotChoiceStart, 'yyyy-MM-dd HH:mm')} – ${format(slotChoiceEnd, 'HH:mm')}`}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            <Button onClick={() => handleSlotChoice('availability')}>Tillgänglighet</Button>
+            <Button variant="secondary" onClick={() => handleSlotChoice('busy')}>Upptagen</Button>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSlotChoiceDialog(false)}>Avbryt</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit busy time dialog */}
+      <Dialog open={showEditBusyDialog} onOpenChange={setShowEditBusyDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Redigera upptagen tid</DialogTitle>
+            <DialogDescription asChild>
+              <div className="mt-1">
+                {selectedBusyTime && <p className="text-sm">{format(new Date(selectedBusyTime.startTime), 'yyyy-MM-dd')}</p>}
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Starttid</Label>
+              <Select
+                value={`${editBusyStartHour}:${editBusyStartMinute}`}
+                onValueChange={(val) => {
+                  const [h, m] = val.split(':').map(Number);
+                  setEditBusyStartHour(h); setEditBusyStartMinute(m);
+                  if (editBusyEndHour * 60 + editBusyEndMinute <= h * 60 + m) {
+                    const next = ALL_TIME_OPTIONS.find((o) => o.hour * 60 + o.minute > h * 60 + m);
+                    if (next) { setEditBusyEndHour(next.hour); setEditBusyEndMinute(next.minute); }
+                  }
+                }}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ALL_TIME_OPTIONS.slice(0, -1).map((o) => (
+                    <SelectItem key={o.label} value={`${o.hour}:${o.minute}`}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Sluttid</Label>
+              <Select
+                value={`${editBusyEndHour}:${editBusyEndMinute}`}
+                onValueChange={(val) => { const [h, m] = val.split(':').map(Number); setEditBusyEndHour(h); setEditBusyEndMinute(m); }}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ALL_TIME_OPTIONS.filter((o) => o.hour * 60 + o.minute > editBusyStartHour * 60 + editBusyStartMinute).map((o) => (
+                    <SelectItem key={o.label} value={`${o.hour}:${o.minute}`}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <div className="flex gap-3 w-full justify-between">
+              <Button variant="outline" className="text-destructive border-destructive hover:bg-destructive/10" onClick={handleDeleteBusyTime}>
+                Ta bort
+              </Button>
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setShowEditBusyDialog(false)}>Avbryt</Button>
+                <Button onClick={handleSaveBusyTime}>Spara</Button>
+              </div>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Busy time booking conflict confirmation */}
+      <Dialog open={showBusyConflictConfirm} onOpenChange={(o) => { setShowBusyConflictConfirm(o); if (!o) { setPendingBusyData(null); setBusyConflictBookings([]); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Möten kommer att avbokas</DialogTitle>
+            <DialogDescription>
+              Följande möten överlappar med den upptagna tiden och kommer att avbokas:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            {busyConflictBookings.map((b) => (
+              <div key={b.id} className="flex items-center gap-2 text-sm p-2 border rounded">
+                <span className="font-medium">{b.coachId ? nameMap.get(b.coachId) : b.studentId ? nameMap.get(b.studentId) : 'Okänd'}</span>
+                <span className="text-muted-foreground">
+                  {format(new Date(b.startTime), 'HH:mm')} – {format(new Date(b.endTime), 'HH:mm')}
+                </span>
+                <span className="text-muted-foreground">({b.meetingType})</span>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowBusyConflictConfirm(false); setPendingBusyData(null); setBusyConflictBookings([]); }}>Avbryt</Button>
+            <Button variant="destructive" onClick={handleConfirmBusyConflict}>Avboka och fortsätt</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

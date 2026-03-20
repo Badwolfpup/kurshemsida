@@ -26,6 +26,7 @@ export interface Booking {
   reason?: string;
   seen?: boolean;
   rescheduledBy?: string;
+  createdByRole?: string;
 }
 
 // ── New consolidated API functions ──
@@ -184,6 +185,74 @@ export function toLocalIso(d: Date | string): string {
 }
 
 export interface BookingConflictError extends Error {
-  conflictData: { type: 'conflict' | 'warning'; bookings: Booking[] };
+  conflictData: { type: 'conflict' | 'warning' | 'busy' | 'busy-warning'; bookings?: Booking[]; message?: string };
+}
+
+// ── Busy Time API ──
+
+export interface BusyTime {
+  id: number;
+  adminId: number;
+  startTime: string;
+  endTime: string;
+  note?: string | null;
+}
+
+export interface BusyTimeConflictError extends Error {
+  conflictData: { type: 'confirm'; bookings: Booking[] };
+}
+
+export async function getBusyTimes(): Promise<BusyTime[]> {
+  const res = await fetch(`${NEW_API}/busy-time`, { credentials: 'include' });
+  if (!res.ok) throw new Error(`Failed to fetch busy times (${res.status})`);
+  return res.json();
+}
+
+export async function addBusyTime(data: { adminId: number; startTime: Date | string; endTime: Date | string; note?: string; force?: boolean }): Promise<BusyTime> {
+  const res = await fetch(`${NEW_API}/busy-time`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      adminId: data.adminId,
+      startTime: toLocalIso(data.startTime),
+      endTime: toLocalIso(data.endTime),
+      note: data.note ?? null,
+      force: data.force ?? false,
+    }),
+  });
+  if (res.status === 409) {
+    const parsed = await res.json();
+    const err = new Error('confirm') as BusyTimeConflictError;
+    err.conflictData = parsed;
+    throw err;
+  }
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Failed to add busy time (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function updateBusyTime(id: number, data: { startTime: string; endTime: string; note?: string | null }): Promise<BusyTime> {
+  const res = await fetch(`${NEW_API}/busy-time/${id}`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Failed to update busy time (${res.status})`);
+  return res.json();
+}
+
+export async function deleteBusyTime(id: number): Promise<void> {
+  const res = await fetch(`${NEW_API}/busy-time/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Failed to delete busy time (${res.status})`);
+  }
 }
 

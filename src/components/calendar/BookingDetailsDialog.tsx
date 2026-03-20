@@ -95,13 +95,21 @@ export default function BookingDetailsDialog({
     (role === 'student' && booking.rescheduledBy === 'admin')
   );
 
+  // Map role prop to the role string stored in CreatedByRole
+  const createdByCurrentUser = booking?.createdByRole
+    ? (role === 'admin' && (booking.createdByRole === 'Admin' || booking.createdByRole === 'Teacher'))
+      || (role === 'coach' && booking.createdByRole === 'Coach')
+      || (role === 'student' && booking.createdByRole === 'Student')
+    : false;
+
   const canAcceptDecline = canRespond && (
-    (role === 'admin' && (booking.status === 'pending' || isRescheduledByOther)) ||
-    (role === 'coach' && (booking.status === 'pending' || isRescheduledByOther)) ||
-    (role === 'student' && (booking.status === 'pending' || isRescheduledByOther))
+    (booking?.status === 'pending' && !createdByCurrentUser) ||
+    isRescheduledByOther
   );
 
-  const canCancelBooking = canRespond && booking.status === 'accepted';
+  const canWithdrawRequest = canRespond && booking?.status === 'pending' && createdByCurrentUser;
+
+  const canCancelBooking = canRespond && booking?.status === 'accepted';
   const canReschedule = canRespond && (booking.status === 'accepted' || booking.status === 'pending' || isRescheduledByOther);
   const canTransfer = canRespond && role === 'admin' && booking.status === 'accepted' && onTransfer && otherTeachers.length > 0;
 
@@ -350,6 +358,15 @@ export default function BookingDetailsDialog({
                 )}
                 {canReschedule && onReschedule && role !== 'student' && (
                   <Button variant="outline" onClick={openRescheduleMode}>Ändra tid</Button>
+                )}
+              </div>
+            ) : canWithdrawRequest ? (
+              <div className="flex gap-3 w-full justify-end">
+                {onCancel && (
+                  <Button variant="outline" className="text-destructive border-destructive hover:bg-destructive/10"
+                    onClick={async () => { await onCancel(booking.id, reason || undefined); handleClose(); }}>
+                    <X className="h-4 w-4 mr-1" /> Avbryt förfrågan
+                  </Button>
                 )}
               </div>
             ) : (

@@ -1,0 +1,17 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Lärare kan nu markera tid som \"Upptagen\" i kalendern — klicka på en tom tid och välj mellan Tillgänglighet eller Upptagen.",
+      "Upptagen tid visas som mörkgrå block i kalendern och förhindrar att coacher bokar den tiden.",
+      "Om upptagen tid överlappar med ett befintligt möte visas en bekräftelsedialog innan mötet avbokas.",
+      "Tillgänglighet som överlappar med upptagen tid trimmas eller delas automatiskt.",
+      "Lärare kan redigera och ta bort upptagna tider genom att klicka på blocket."
+    ],
+    "coach": [
+      "Coacher ser nu när lärare är upptagna som mörkgrå \"Upptagen\"-block i kalendern.",
+      "Det går inte längre att boka eller föreslå möten under tider markerade som upptagna."
+    ],
+    "student": []
+  }
+}
