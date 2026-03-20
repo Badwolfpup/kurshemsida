@@ -7,7 +7,7 @@ import ConflictDialog from '@/components/calendar/ConflictDialog';
 import RecurringEventDialog from '@/components/calendar/RecurringEventDialog';
 import RecurringEventClickDialog from '@/components/calendar/RecurringEventClickDialog';
 import AdminBookingDialog from './AdminBookingDialog';
-import { getFreeSegments, getAdminColorMap, RECURRING_EVENT_COLOR, BUSY_TIME_COLOR, STATUS_COLORS } from '@/components/calendar/calendarUtils';
+import { getFreeSegments, getAdminColorMap, RECURRING_EVENT_COLOR, BUSY_TIME_COLOR, STATUS_COLORS, ALL_TIME_OPTIONS } from '@/components/calendar/calendarUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
@@ -24,7 +24,6 @@ import HelpDialog from '@/components/HelpDialog';
 import type { CalendarEvent } from '@/Types/CalendarTypes';
 import type { Booking, Availability, BookingConflictError, BusyTime, BusyTimeConflictError } from '@/api/BookingService';
 import type { RecurringEventInstance } from '@/Types/CalendarTypes';
-import { ALL_TIME_OPTIONS } from '@/components/calendar/calendarUtils';
 
 function AdminSchedule() {
   const { user } = useAuth();
@@ -138,7 +137,8 @@ function AdminSchedule() {
       if (!isOwn && !visibleAdminIds.includes(avail.adminId.toString())) continue;
       const color = adminColorMap.get(avail.adminId) || '#6b7280';
       const adminName = nameMap.get(avail.adminId) || `Admin ${avail.adminId}`;
-      const freeSegs = getFreeSegments(avail, bookings);
+      const relevantBookings = allBookings.filter((b) => b.adminId === avail.adminId);
+      const freeSegs = getFreeSegments(avail, relevantBookings);
       for (let i = 0; i < freeSegs.length; i++) {
         result.push({
           id: `avail-${avail.id}-${i}`,
