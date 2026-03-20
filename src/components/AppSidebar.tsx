@@ -16,6 +16,7 @@ import {
   Calendar as CalendarIcon,
   CalendarCheck,
   Bug,
+  LayoutGrid,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -44,6 +45,7 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, messagesCount: number, s
       // { title: 'Projekt', url: '/projekt', icon: FolderKanban }, // Students temporarily disabled
       { title: 'Deltagare', url: '/deltagare', icon: Users, badgeCount: studentContextCount },
       { title: 'Deltagarschema', url: '/deltagarschema', icon: CalendarCheck },
+      { title: 'Klassrum', url: '/klassrum', icon: LayoutGrid },
       {
         title: 'Kalender & Bokning',
         url: '/admin-schedule',
