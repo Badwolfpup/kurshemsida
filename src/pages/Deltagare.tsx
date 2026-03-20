@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Users, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import HelpDialog from "@/components/HelpDialog";
 import { useUsers } from "@/hooks/useUsers";
 import { DeltagareList } from "@/components/deltagare/DeltagareList";
@@ -88,12 +89,18 @@ function mapUserToParticipant(
 
 const Deltagare = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedCoachId, setSelectedCoachId] = useState<number>(0);
   const { data: allUsers = [], isLoading } = useUsers();
 
+  const coaches = useMemo(() => allUsers.filter((u) => u.authLevel === 3 && u.isActive), [allUsers]);
+
   const participants = useMemo<Participant[]>(() => {
-    const students = allUsers.filter((u) => u.authLevel === 4);
-    return students.map((u, i) => mapUserToParticipant(u, allUsers, i));
-  }, [allUsers]);
+    let students = allUsers.filter((u) => u.authLevel === 4);
+    if (selectedCoachId !== 0) {
+      students = students.filter((u) => u.coachId === selectedCoachId);
+    }
+    return students.map((u) => mapUserToParticipant(u, allUsers, u.id));
+  }, [allUsers, selectedCoachId]);
 
   const selectedUser = selectedId ? allUsers.find((u) => u.id === selectedId) : null;
 
@@ -124,6 +131,15 @@ const Deltagare = () => {
         </div>
         <h1 className="font-display text-2xl font-bold text-foreground">Deltagare</h1>
         <HelpDialog helpKey="deltagare" />
+        <Select value={selectedCoachId.toString()} onValueChange={(v) => setSelectedCoachId(Number(v))}>
+          <SelectTrigger className="w-48 ml-auto"><SelectValue placeholder="Alla coacher" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="0">Alla coacher</SelectItem>
+            {coaches.map((c) => (
+              <SelectItem key={c.id} value={c.id.toString()}>{c.firstName} {c.lastName}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <DeltagareList participants={participants} onSelect={setSelectedId} />
     </div>

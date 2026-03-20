@@ -15,7 +15,10 @@ import Index from './pages/Index';
 import Projekt from './pages/Projekt';
 import Ovningar from './pages/Ovningar';
 import Portfolio from './pages/Portfolio';
-import Admin from './pages/Admin';
+// import Admin from './pages/Admin'; // Retired — sub-pages promoted to sidebar
+import HanteraAnvandare from './pages/HanteraAnvandare';
+import Narvaro from './pages/Narvaro';
+import Buggar from './pages/Buggar';
 import Terminal from './pages/Terminal';
 import Preferenser from './pages/Preferenser';
 import CoachSettings from './pages/CoachSettings';
@@ -85,7 +88,10 @@ function AppRoutes() {
         {/* <Route path="/student-calendar" element={<ProtectedRoute allow="student"><StudentCalendar /></ProtectedRoute>} /> */}
 
         <Route path="/deltagare" element={<Deltagare />} />
-        <Route path="/admin" element={<ProtectedRoute allow="admin"><Admin /></ProtectedRoute>} />
+        {/* <Route path="/admin" element={<ProtectedRoute allow="admin"><Admin /></ProtectedRoute>} /> */}{/* Retired — sub-pages promoted to sidebar */}
+        <Route path="/hantera-anvandare" element={<ProtectedRoute allow="admin"><HanteraAnvandare /></ProtectedRoute>} />
+        <Route path="/narvaro" element={<ProtectedRoute allow="admin"><Narvaro /></ProtectedRoute>} />
+        <Route path="/buggar" element={<ProtectedRoute allow="admin"><Buggar /></ProtectedRoute>} />
         <Route path="/admin-schedule" element={<ProtectedRoute allow="admin"><AdminSchedule /></ProtectedRoute>} />
         {/* Coach routes */}
         <Route path="/mina-deltagare" element={<CoachMyParticipants />} />
