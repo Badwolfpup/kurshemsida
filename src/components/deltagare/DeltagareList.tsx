@@ -1,7 +1,9 @@
-import { AlertTriangle, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, ChevronRight, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Participant } from "@/pages/Deltagare";
 import { useUnreadCounts } from "@/hooks/useMessages";
+import { AbsenceWarningDialog } from "./AbsenceWarningDialog";
 
 export function hasAbsenceAlert(p: Participant): boolean {
   const today = new Date();
@@ -25,6 +27,8 @@ export function DeltagareList({
   onSelect: (id: number) => void;
 }) {
   const { unreadStudentIds } = useUnreadCounts();
+  const [warningTarget, setWarningTarget] = useState<Participant | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const active = participants.filter((p) => p.active);
   const inactive = participants.filter((p) => !p.active);
 
@@ -73,7 +77,23 @@ export function DeltagareList({
                       <span className="w-2 h-2 rounded-full bg-destructive shrink-0" />
                     )}
                     {hasAbsenceAlert(p) && (
-                      <AlertTriangle className="inline h-3.5 w-3.5 text-destructive shrink-0" />
+                      <>
+                        <AlertTriangle className="inline h-3.5 w-3.5 text-destructive shrink-0" />
+                        {p.coachEmail && (
+                          <span onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => {
+                                setWarningTarget(p);
+                                setDialogOpen(true);
+                              }}
+                              className="inline-flex items-center hover:text-destructive transition-colors"
+                              aria-label="Skicka frånvarovarning"
+                            >
+                              <Mail className="inline h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            </button>
+                          </span>
+                        )}
+                      </>
                     )}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">{p.email}</p>
@@ -120,6 +140,11 @@ export function DeltagareList({
           </div>
         </div>
       )}
+      <AbsenceWarningDialog
+        participant={warningTarget}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+      />
     </div>
   );
 }
