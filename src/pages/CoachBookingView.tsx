@@ -392,7 +392,7 @@ function CoachBookingView() {
         setShowConflictError(true);
       } else if (conflictErr.conflictData?.type === 'warning') {
         setPendingForceData({ ...data, force: true });
-        setConflictWarningBookings(conflictErr.conflictData.bookings);
+        setConflictWarningBookings(conflictErr.conflictData.bookings || []);
         setShowConflictWarning(true);
       } else {
         toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte skicka.', variant: 'destructive' });

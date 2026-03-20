@@ -224,7 +224,7 @@ function AdminSchedule() {
         const conflictErr = err as BusyTimeConflictError;
         if (conflictErr.conflictData?.type === 'confirm') {
           setPendingBusyData({ adminId, startTime: slotChoiceStart, endTime: slotChoiceEnd });
-          setBusyConflictBookings(conflictErr.conflictData.bookings);
+          setBusyConflictBookings(conflictErr.conflictData.bookings || []);
           setShowBusyConflictConfirm(true);
         } else {
           toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte lägga till.', variant: 'destructive' });
