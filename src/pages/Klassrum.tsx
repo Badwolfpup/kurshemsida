@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { LayoutGrid } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { useUsers } from '@/hooks/useUsers';
 import { useSeatingAssignments, useAssignSeat, useClearSeat } from '@/hooks/useSeating';
@@ -48,6 +48,8 @@ function getAssignedStudentIds(assignments: SeatingAssignment[], period: string)
 
 interface SeatSelectProps {
   students: UserType[];
+  overflowStudents?: UserType[];
+  overflowSourceAssignments?: SeatingAssignment[];
   assignments: SeatingAssignment[];
   row: number;
   col: number;
@@ -58,20 +60,28 @@ interface SeatSelectProps {
   onClear: (data: { classroomId: number; dayOfWeek: number; period: string; row: number; column: number }) => void;
 }
 
-function SeatSelect({ students, assignments, row, col, period, classroomId, dayOfWeek, onAssign, onClear }: SeatSelectProps) {
+function SeatSelect({ students, overflowStudents, overflowSourceAssignments, assignments, row, col, period, classroomId, dayOfWeek, onAssign, onClear }: SeatSelectProps) {
   const current = getAssignment(assignments, row, col, period);
   const assignedIds = getAssignedStudentIds(assignments, period);
+  const day = DAYS.find((d) => d.value === dayOfWeek);
+  const isScheduled = (s: UserType) => day ? (period === 'am' ? !!s[day.amKey] : !!s[day.pmKey]) : false;
 
   const available = students.filter((s) => {
     if (current && s.id === current.studentId) return true;
     if (assignedIds.has(s.id)) return false;
-    const day = DAYS.find((d) => d.value === dayOfWeek);
-    if (!day) return false;
-    return period === 'am' ? !!s[day.amKey] : !!s[day.pmKey];
+    return isScheduled(s);
   }).sort((a, b) => a.firstName.localeCompare(b.firstName, 'sv'));
 
+  const sourceAssignedIds = overflowSourceAssignments ? getAssignedStudentIds(overflowSourceAssignments, period) : new Set<number>();
+  const availableOverflow = overflowStudents?.filter((s) => {
+    if (current && s.id === current.studentId) return true;
+    if (sourceAssignedIds.has(s.id)) return false;
+    if (assignedIds.has(s.id)) return false;
+    return isScheduled(s);
+  }).sort((a, b) => a.firstName.localeCompare(b.firstName, 'sv')) ?? [];
+
   const currentName = current
-    ? students.find((s) => s.id === current.studentId)
+    ? (students.find((s) => s.id === current.studentId) ?? overflowStudents?.find((s) => s.id === current.studentId))
     : undefined;
 
   return (
@@ -97,6 +107,19 @@ function SeatSelect({ students, assignments, row, col, period, classroomId, dayO
             {s.firstName} {s.lastName}
           </SelectItem>
         ))}
+        {availableOverflow.length > 0 && (
+          <>
+            <SelectSeparator />
+            <SelectGroup>
+              <SelectLabel className="text-xs text-muted-foreground">Spår 1</SelectLabel>
+              {availableOverflow.map((s) => (
+                <SelectItem key={s.id} value={s.id.toString()}>
+                  {s.firstName} {s.lastName}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </>
+        )}
       </SelectContent>
     </Select>
   );
@@ -106,6 +129,8 @@ interface TableCellProps {
   row: number;
   col: number;
   students: UserType[];
+  overflowStudents?: UserType[];
+  overflowSourceAssignments?: SeatingAssignment[];
   assignments: SeatingAssignment[];
   classroomId: number;
   dayOfWeek: number;
@@ -114,7 +139,7 @@ interface TableCellProps {
   onClear: SeatSelectProps['onClear'];
 }
 
-function TableCell({ row, col, students, assignments, classroomId, dayOfWeek, layout, onAssign, onClear }: TableCellProps) {
+function TableCell({ row, col, students, overflowStudents, overflowSourceAssignments, assignments, classroomId, dayOfWeek, layout, onAssign, onClear }: TableCellProps) {
   if (!hasTable(row, col, layout)) {
     return <div />;
   }
@@ -122,15 +147,15 @@ function TableCell({ row, col, students, assignments, classroomId, dayOfWeek, la
   return (
     <div className="rounded-lg border-2 border-border bg-muted/30 p-1 flex flex-col gap-0.5">
       <SeatSelect
-        students={students} assignments={assignments}
-        row={row} col={col} period="am"
+        students={students} overflowStudents={overflowStudents} overflowSourceAssignments={overflowSourceAssignments}
+        assignments={assignments} row={row} col={col} period="am"
         classroomId={classroomId} dayOfWeek={dayOfWeek}
         onAssign={onAssign} onClear={onClear}
       />
       <div className="border-t border-border/50" />
       <SeatSelect
-        students={students} assignments={assignments}
-        row={row} col={col} period="pm"
+        students={students} overflowStudents={overflowStudents} overflowSourceAssignments={overflowSourceAssignments}
+        assignments={assignments} row={row} col={col} period="pm"
         classroomId={classroomId} dayOfWeek={dayOfWeek}
         onAssign={onAssign} onClear={onClear}
       />
@@ -141,9 +166,15 @@ function TableCell({ row, col, students, assignments, classroomId, dayOfWeek, la
 function ClassroomGrid({ classroomId, students: allStudents, dayOfWeek }: { classroomId: number; students: UserType[]; dayOfWeek: number }) {
   const students = useMemo(() => allStudents.filter((s) => (s.course ?? 0) === classroomId), [allStudents, classroomId]);
   const { data: assignments = [] } = useSeatingAssignments(classroomId, dayOfWeek);
+  const { data: spar1Assignments = [] } = useSeatingAssignments(1, dayOfWeek);
   const assignMut = useAssignSeat();
   const clearMut = useClearSeat();
   const { toast } = useToast();
+
+  const overflowStudents = useMemo(() => {
+    if (classroomId !== 2) return undefined;
+    return allStudents.filter((s) => (s.course ?? 0) === 1);
+  }, [classroomId, allStudents]);
 
   const handleAssign: SeatSelectProps['onAssign'] = async (data) => {
     try {
@@ -176,7 +207,7 @@ function ClassroomGrid({ classroomId, students: allStudents, dayOfWeek }: { clas
   }, [students, assignments, day]);
 
   const layout = classroomId === 1 ? SPAR1_LAYOUT : SPAR2_LAYOUT;
-  const props = { students, assignments, classroomId, dayOfWeek, layout, onAssign: handleAssign, onClear: handleClear };
+  const props = { students, overflowStudents, overflowSourceAssignments: classroomId === 2 ? spar1Assignments : undefined, assignments, classroomId, dayOfWeek, layout, onAssign: handleAssign, onClear: handleClear };
 
   const unassignedSidebar = (
     <div className="w-[180px] shrink-0">
