@@ -457,7 +457,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                     <Table>
                       <TableHeader><TableRow><TableHead>Namn</TableHead><TableHead>Telefonnummer</TableHead><TableHead>Email</TableHead></TableRow></TableHeader>
                       <TableBody>
-                        {users?.filter((u) => u.authLevel <= 2 && u.isActive && u.firstName !== "Alexandra").map((contact) => (
+                        {users?.filter((u) => u.authLevel <= 2 && u.isActive).map((contact) => (
                           <TableRow key={contact.id}>
                             <TableCell className={contact.id === selectedUser?.contactId ? "bg-green-100" : ""}>{contact.firstName} {contact.lastName}</TableCell>
                             <TableCell className={contact.id === selectedUser?.contactId ? "bg-green-100" : ""}>{contact.telephone}</TableCell>

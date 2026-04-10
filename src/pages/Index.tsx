@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Calendar, Building, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import heroImg from '@/assets/hero-classroom.jpg';
 import activitiesImg from '@/assets/activities.jpg';
 import facilitiesImg from '@/assets/facilities.jpg';
@@ -72,6 +74,9 @@ const Index = () => {
             Din väg in i tech börjar här. Lär dig koda, bygg projekt och forma
             din framtid – med stöd hela vägen.
           </p>
+          <Button asChild variant="secondary" className="index__hero-btn">
+            <Link to="/kodsidor">Utforska kodsidor</Link>
+          </Button>
         </div>
         <div className="index__hero-bg" />
       </motion.div>

@@ -88,11 +88,12 @@ Projekt.tsx → useAddProject() → projectService.addProject(dto) → POST /api
 - `CodeEditor` — Monaco wrapper for exercise/project code
 
 ## Routing (App.tsx)
-Auth-based conditional rendering: not logged in → Login, guest → Homepage only, logged in → full app with AppLayout.
+Auth-based conditional rendering: not logged in → Login (except public routes like `/kodsidor`), guest → Homepage + public routes, logged in → full app with AppLayout.
 
 | Path | Component | Guard |
 |------|-----------|-------|
 | `/` | Index | — |
+| `/kodsidor` | Kodsidor | — (public, accessible without login) |
 | `/login` | Login | Redirects if logged in |
 | `/projekt` | Projekt | — |
 | `/ovningar` | Ovningar | — |

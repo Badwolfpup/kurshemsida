@@ -1,0 +1,15 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Ny publik sida \"Kodsidor\" (/kodsidor) med 19 lärplattformar och kodspel, uppdelat i fyra flikar: Rekommenderade, Kompletterande, Kodutmaningar och Minispel.",
+      "Knappen \"Utforska kodsidor\" tillagd i hero-sektionen på startsidan.",
+      "Alexandra-filtret borttaget — hon visas nu i schemaläggning, kontaktlistor och bokningsöverföringar."
+    ],
+    "coach": [
+      "Alexandra visas nu i kontaktlistan och bokningsvyn.",
+      "Ny sida \"Kodsidor\" tillgänglig från startsidan — där du kan visa intresserade deltagare vilka sidor vi använder"
+    ],
+    "student": []
+  }
+}
