@@ -75,10 +75,9 @@ export default function BookingDetailsDialog({
     return rescheduleOptions.filter((o) => o.hour * 60 + o.minute > startTotal);
   }, [rescheduleOptions, rescheduleStart]);
 
-  // Teachers available for transfer (excluding Alexandra)
   const otherTeachers = useMemo(() => {
     if (!booking) return [];
-    return teachers.filter((t) => t.firstName !== 'Alexandra' && t.id !== booking.adminId);
+    return teachers.filter((t) => t.id !== booking.adminId);
   }, [teachers, booking]);
 
   const handleClose = () => {

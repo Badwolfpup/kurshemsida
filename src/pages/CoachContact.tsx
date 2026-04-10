@@ -5,7 +5,7 @@ import HelpDialog from "@/components/HelpDialog";
 const CoachContact = () => {
   const { data: allUsers = [], isLoading } = useUsers();
 
-  const admins = allUsers.filter((u) => u.authLevel <= 2 && u.isActive && u.firstName !== "Alexandra");
+  const admins = allUsers.filter((u) => u.authLevel <= 2 && u.isActive);
 
   if (isLoading) {
     return (

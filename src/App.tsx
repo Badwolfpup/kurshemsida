@@ -31,6 +31,7 @@ import Deltagare from './pages/Deltagare';
 import StudentSchedule from './pages/StudentSchedule';
 import Klassrum from './pages/Klassrum';
 import MeddelandenPage from './pages/MeddelandenPage';
+import Kodsidor from './pages/Kodsidor';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const queryClient = new QueryClient();
@@ -47,17 +48,18 @@ function AppRoutes() {
     );
   }
 
-  // Not logged in and not guest → show login
+  // Not logged in and not guest → show login (but allow public pages)
   if (!isLoggedIn && !isGuest) {
     return (
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/kodsidor" element={<AppLayout><Kodsidor /></AppLayout>} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
   }
 
-  // Guest → only homepage
+  // Guest → homepage and public pages
   if (isGuest && !isLoggedIn) {
     return (
       <Routes>
@@ -69,6 +71,7 @@ function AppRoutes() {
             </AppLayout>
           }
         />
+        <Route path="/kodsidor" element={<AppLayout><Kodsidor /></AppLayout>} />
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -80,6 +83,7 @@ function AppRoutes() {
     <AppLayout>
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/kodsidor" element={<Kodsidor />} />
         {/* Student routes — temporarily disabled (students cannot log in) */}
         {/* <Route path="/projekt" element={<Projekt />} /> */}
         {/* <Route path="/ovningar" element={<Ovningar />} /> */}

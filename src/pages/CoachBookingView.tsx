@@ -84,7 +84,7 @@ function CoachBookingView() {
 
   // Derived
   const admins = useMemo(() =>
-    allUsers.filter((u) => u.authLevel <= 2 && u.isActive && u.firstName !== 'Alexandra'),
+    allUsers.filter((u) => u.authLevel <= 2 && u.isActive),
     [allUsers]
   );
 

@@ -39,6 +39,10 @@
   line-height: 1.6;
 }
 
+.index__hero-btn {
+  margin-top: 1rem;
+}
+
 .index__hero-bg {
   position: absolute;
   inset: 0;

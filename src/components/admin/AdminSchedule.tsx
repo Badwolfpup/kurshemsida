@@ -110,7 +110,7 @@ function AdminSchedule() {
   const coaches = useMemo(() => allUsers.filter((u) => u.authLevel === 3 && u.isActive), [allUsers]);
   const students = useMemo(() => allUsers.filter((u) => u.authLevel === 4 && u.isActive), [allUsers]);
   const adminColorMap = useMemo(() => getAdminColorMap(allAdmins), [allAdmins]);
-  const otherTeachers = useMemo(() => allAdmins.filter((a) => a.firstName !== 'Alexandra'), [allAdmins]);
+  const otherTeachers = useMemo(() => allAdmins, [allAdmins]);
   const nameMap = useMemo(() => {
     const map = new Map<number, string>();
     allUsers.forEach((u) => map.set(u.id, `${u.firstName} ${u.lastName}`));
