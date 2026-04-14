@@ -1,0 +1,17 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Startsidan visar nu kursinformation (Om kursen) direkt på sidan istället för i en dialog — med två kolumner för Spår 1 och Spår 2.",
+      "Kodsidor, Aktiviteter, Lokaler och Handledarna visas som kompakta minikort med bakgrundsbilder mellan hero-bannern och kursinnehållet.",
+      "Kodsidor-dialogen visar nu alla plattformar med beskrivningar och fördelar, grupperade per kategori.",
+      "Aktiviteter uppdaterade: JavaScript-föreläsning och Code Along borttagna, ny Tisdag-föreläsning/workshop tillagd.",
+      "Våra lokaler uppdaterade: ordningen ändrad till Spår 1, Spår 2, Spel & Häng och beskrivningar borttagna.",
+      "Besökare som inte är inloggade landar nu på startsidan istället för inloggningssidan."
+    ],
+    "coach": [
+      "Startsidan har fått en ny layout med kursinformation direkt synlig."
+    ],
+    "student": []
+  }
+}
