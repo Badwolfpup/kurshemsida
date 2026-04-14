@@ -48,13 +48,14 @@ function AppRoutes() {
     );
   }
 
-  // Not logged in and not guest → show login (but allow public pages)
+  // Not logged in and not guest → show start page (but allow public pages)
   if (!isLoggedIn && !isGuest) {
     return (
       <Routes>
+        <Route path="/" element={<AppLayout><Index /></AppLayout>} />
         <Route path="/login" element={<Login />} />
         <Route path="/kodsidor" element={<AppLayout><Kodsidor /></AppLayout>} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }

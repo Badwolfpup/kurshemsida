@@ -141,30 +141,16 @@ function AktiviteterContent() {
             <span className="cd-tag">Praktisk</span>
           </div>
         </div>
-        <div className="cd-activity cd-activity--wednesday">
+        <div className="cd-activity cd-activity--tuesday">
           <div className="cd-activity-head">
-            <span className="cd-activity-day">Onsdag</span>
-            <span className="cd-activity-time">11:00 - 12:00</span>
+            <span className="cd-activity-day">Tisdag</span>
+            <span className="cd-activity-time">13:00 - 14:00</span>
           </div>
-          <h4>JavaScript-föreläsning</h4>
-          <p>Veckovis föreläsningar om JavaScript-koncept.</p>
-          <div className="cd-activity-leader"><strong>Ledare:</strong> Victoria &amp; Adam</div>
+          <h4>Föreläsning/Workshop</h4>
+          <p>Veckovisa föreläsningar/workshops om programmering.</p>
           <div className="cd-tags">
-            <span className="cd-tag">JavaScript</span>
-            <span className="cd-tag">Föreläsning</span>
-          </div>
-        </div>
-        <div className="cd-activity cd-activity--thursday">
-          <div className="cd-activity-head">
-            <span className="cd-activity-day">Torsdag</span>
-            <span className="cd-activity-time">13:00 - 14:30</span>
-          </div>
-          <h4>Code Along - Praktisk Programmering</h4>
-          <p>Vi kodar tillsammans och bygger projekt.</p>
-          <div className="cd-activity-leader"><strong>Plattform:</strong> Microsoft Teams</div>
-          <div className="cd-tags">
-            <span className="cd-tag">Praktisk</span>
-            <span className="cd-tag">Code Along</span>
+            <span className="cd-tag">Programmering</span>
+            <span className="cd-tag">Workshop</span>
           </div>
         </div>
         <div className="cd-activity cd-activity--social">
@@ -221,15 +207,14 @@ function LokalerContent() {
       </p>
       <div className="cd-locales">
         {[
-          { title: "Spår 2 - Klassrum", desc: "Ett lugnt klassrum för att utforska programmering." },
-          { title: "Spel & Häng - Socialt Rum", desc: "Mysigt rum för onsdagshäng med spel." },
-          { title: "Spår 1 - Avancerat Arbetsrum", desc: "Professionellt arbetsrum med kraftfulla datorer." },
+          { title: "Spår 1" },
+          { title: "Spår 2" },
+          { title: "Spel & Häng - Socialt Rum" },
         ].map((loc) => (
           <div key={loc.title} className="cd-locale">
             <img src={facilitiesImg} alt={loc.title} className="cd-locale-img" />
             <div className="cd-locale-info">
               <h4>{loc.title}</h4>
-              <p>{loc.desc}</p>
             </div>
           </div>
         ))}
@@ -260,11 +245,219 @@ function HandledarnaContent() {
   );
 }
 
+const kodsidorCategories = [
+  {
+    title: "Rekommenderade",
+    platforms: [
+      {
+        name: "FreeCodeCamp",
+        url: "https://www.freecodecamp.org/learn",
+        description: "En av de största gratisplattformarna för att lära sig webbutveckling.",
+        highlights: [
+          "Helt gratis — inga dolda kostnader eller betalmurrar",
+          "Du bygger faktiska projekt som du kan lägga i portfolion",
+          "Stor och aktiv community",
+          "Allt körs i webbläsaren",
+        ],
+      },
+      {
+        name: "Scrimba",
+        url: "https://www.scrimba.com",
+        description: "Videobaserad plattform där du kan pausa och redigera kod direkt i lektionen.",
+        highlights: [
+          "Videobaserade kurser",
+          "Pausa videon och skriv kod direkt i samma fönster",
+        ],
+      },
+      {
+        name: "SoloLearn",
+        url: "https://www.sololearn.com",
+        description: "Gamifierad plattform, perfekt för att komma igång med kodning.",
+        highlights: [
+          "Korta lektioner - cirka 10 minuter",
+          "Passar också bra på mobilen på bussen på vägen till skolan",
+          "Gamifierat med XP och badges",
+        ],
+      },
+    ],
+  },
+  {
+    title: "Kompletterande",
+    platforms: [
+      {
+        name: "Khan Academy",
+        url: "https://www.khanacademy.org/computing",
+        description: "Gratis videolektioner och interaktiva övningar. Finns på svenska.",
+        highlights: [
+          "Helt gratis och tillgänglig direkt i webbläsaren",
+          "Bra för nybörjare med korta videor och interaktiva kodexempel",
+          "Lär i eget tempo utan press",
+        ],
+      },
+      {
+        name: "Frontend Mentor",
+        url: "https://www.frontendmentor.io/",
+        description: "Designutmaningar där du bygger verkliga projekt från designfiler.",
+        highlights: [
+          "Riktiga projekt från proffsiga designfiler",
+          "Träna på att läsa en design och koda den",
+          "Perfekt för portfolioprojekt",
+          "Tydliga svårighetsnivåer",
+        ],
+      },
+      {
+        name: "The Odin Project",
+        url: "https://www.theodinproject.com/",
+        description: "Djup kursplan som lär ut webbutveckling med riktiga verktyg.",
+        highlights: [
+          "Komplett gratis-kurs från noll till junior webbutvecklare",
+          "Lär ut Git, terminalen och riktiga arbetsflöden",
+          "Kräver eget driv — du söker svar och löser problem själv, precis som på ett riktigt jobb",
+        ],
+      },
+      {
+        name: "Exercism",
+        url: "https://exercism.org",
+        description: "Kodövningar i 82 språk med frivillig mentorhjälp.",
+        highlights: [
+          "Gratis kodgranskning av erfarna programmerare",
+          "Se andras lösningar efter att du lämnat in",
+          "Brant svårighetskurva — utmanande övningar som verkligen testar din förståelse",
+        ],
+      },
+    ],
+  },
+  {
+    title: "Kodutmaningar",
+    platforms: [
+      {
+        name: "Codewars",
+        url: "https://www.codewars.com/",
+        description: "Kodutmaningar med rangsystem inspirerat av kampsport.",
+        highlights: [
+          "Kör direkt i webbläsaren — bara köra igång",
+          "Se andras lösningar efter varje övning",
+          "Stödjer 55+ programmeringsspråk",
+        ],
+      },
+      {
+        name: "LeetCode",
+        url: "https://leetcode.com/",
+        description: "Populär plattform för kodutmaningar och intervjuförberedelser.",
+        highlights: [
+          "Bästa plattformen för jobbintervjuer inom tech",
+          "Enorm mängd uppgifter — du börjar se mönster",
+          "Stort community med diskussionstrådar",
+          "Inte lämplig för nybörjare",
+        ],
+      },
+    ],
+  },
+  {
+    title: "Minispel",
+    platforms: [
+      {
+        name: "Flexbox Froggy",
+        url: "https://flexboxfroggy.com/",
+        description: "Lär dig CSS Flexbox genom att hjälpa grodor nå sina näckrosor.",
+        highlights: [],
+      },
+      {
+        name: "Grid Garden",
+        url: "https://cssgridgarden.com/",
+        description: "Lär dig CSS Grid genom att vattna din trädgård.",
+        highlights: [],
+      },
+      {
+        name: "CSS Diner",
+        url: "https://flukeout.github.io/",
+        description: "Lär dig CSS-selektorer genom att välja rätt element på en matbricka.",
+        highlights: [],
+      },
+      {
+        name: "Flexbox Zombies",
+        url: "https://flexboxzombies.com/",
+        description: "Lär dig Flexbox genom att bekämpa zombier med CSS-kod.",
+        highlights: [],
+      },
+      {
+        name: "Flexbox Adventure",
+        url: "https://codingfantasy.com/",
+        description: "Gamifierat äventyr där du styr riddare med Flexbox-kod.",
+        highlights: [],
+      },
+      {
+        name: "Grid Attack",
+        url: "https://codingfantasy.com/",
+        description: "Lär dig CSS Grid genom att försvara din borg.",
+        highlights: [],
+      },
+      {
+        name: "Anchoreum",
+        url: "https://anchoreum.com/",
+        description: "Lär dig CSS Anchor Positioning genom ett interaktivt spel.",
+        highlights: [],
+      },
+      {
+        name: "Tailwind Trainer",
+        url: "https://codepip.com/games/tailwind-trainer/",
+        description: "Öva Tailwind CSS-klasser genom ett interaktivt spel.",
+        highlights: [],
+      },
+      {
+        name: "Service Workies",
+        url: "https://serviceworkies.com/",
+        description: "Lär dig Service Workers genom ett berättelsedrivet spel.",
+        highlights: [],
+      },
+      {
+        name: "MCP Panic",
+        url: "https://codingfantasy.com/",
+        description: "Lär dig bygga MCP som AI-agenter använder.",
+        highlights: [],
+      },
+    ],
+  },
+];
+
+function KodsidorContent() {
+  return (
+    <div className="cd-section cd-kodsidor">
+      <p className="cd-intro">
+        Plattformar och verktyg för att lära dig programmering och webbutveckling.
+      </p>
+      {kodsidorCategories.map((cat) => (
+        <div key={cat.title} className="cd-block">
+          <h3>{cat.title}</h3>
+          <div className="cd-platforms">
+            {cat.platforms.map((p) => (
+              <div key={p.name} className="cd-platform">
+                <div className="cd-platform-header">
+                  <h4>{p.name}</h4>
+                  <a href={p.url} target="_blank" rel="noopener noreferrer" className="cd-platform-link">
+                    Besök
+                  </a>
+                </div>
+                <p>{p.description}</p>
+                <ul className="cd-list">
+                  {p.highlights.map((h, i) => (
+                    <li key={i}>{h}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const dialogContent: Record<
   string,
   { title: string; component: () => React.ReactElement }
 > = {
-  "Om kursen": { title: "Om Kursen", component: OmKursenContent },
+  "Kodsidor": { title: "Kodsidor", component: KodsidorContent },
   "Våra aktiviteter": { title: "Kursaktiviteter", component: AktiviteterContent },
   "Våra lokaler": { title: "Våra Lokaler", component: LokalerContent },
   Handledarna: { title: "Våra Lärare", component: HandledarnaContent },

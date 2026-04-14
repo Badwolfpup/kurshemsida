@@ -264,3 +264,51 @@
   color: hsl(var(--muted-foreground));
   line-height: 1.5;
 }
+
+/* Kodsidor dialog */
+.cd-kodsidor .cd-block + .cd-block {
+  margin-top: 0.25rem;
+}
+.cd-platforms {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.cd-platform {
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+.cd-platform-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+.cd-platform-header h4 {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: hsl(var(--foreground));
+}
+.cd-platform-link {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: hsl(var(--primary));
+  text-decoration: none;
+}
+.cd-platform-link:hover {
+  text-decoration: underline;
+}
+.cd-platform > p {
+  margin: 0 0 0.4rem 0;
+  font-size: 0.8rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.5;
+}
+.cd-platform .cd-list {
+  margin: 0 0 0 1rem;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}

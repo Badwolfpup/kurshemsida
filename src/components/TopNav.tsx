@@ -69,7 +69,7 @@ export function TopNav({ onMenuToggle }: TopNavProps) {
               {initials}
             </div>
           )
-        ) : isGuest ? (
+        ) : (
           <Button
             variant="outline"
             size="sm"
@@ -79,7 +79,7 @@ export function TopNav({ onMenuToggle }: TopNavProps) {
             <LogIn className="h-4 w-4" />
             Logga in
           </Button>
-        ) : null}
+        )}
       </div>
     </header>
   );
