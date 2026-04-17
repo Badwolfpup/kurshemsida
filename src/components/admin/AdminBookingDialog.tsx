@@ -6,26 +6,23 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 
-import { ALL_TIME_OPTIONS } from '@/components/calendar/calendarUtils';
+import { ALL_TIME_OPTIONS, DAY_NAMES } from '@/components/calendar/calendarUtils';
 import { fourDayRange } from '@/components/calendar/FourDayView';
-import { DAY_NAMES } from '@/components/calendar/calendarUtils';
 import { getDay } from 'date-fns';
 import type UserType from '@/Types/User';
+import type { MeetingType } from '@/Types/CalendarTypes';
 
 interface AdminBookingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   currentDate: Date;
   coaches: UserType[];
-  students: UserType[];
   onSubmit: (data: {
-    coachId?: number;
-    studentId?: number;
-    meetingType: string;
+    coachId: number;
+    meetingType: MeetingType;
     note: string;
     startTime: string;
     endTime: string;
-    force?: boolean;
   }) => Promise<void>;
 }
 
@@ -34,45 +31,33 @@ export default function AdminBookingDialog({
   onOpenChange,
   currentDate,
   coaches,
-  students,
   onSubmit,
 }: AdminBookingDialogProps) {
   const [coachId, setCoachId] = useState<number | null>(null);
-  const [studentId, setStudentId] = useState<number | null>(null);
-  const [meetingType, setMeetingType] = useState<string>('followup');
+  const [meetingType, setMeetingType] = useState<MeetingType>('Followup');
   const [note, setNote] = useState('');
   const [day, setDay] = useState('');
-  const [startHour, setStartHour] = useState(9);
-  const [startMinute, setStartMinute] = useState(0);
+  const [startHour, setStartHour] = useState(8);
+  const [startMinute, setStartMinute] = useState(30);
   const [endHour, setEndHour] = useState(9);
-  const [endMinute, setEndMinute] = useState(30);
+  const [endMinute, setEndMinute] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [showNoteError, setShowNoteError] = useState(false);
 
   const today = useMemo(() => startOfDay(new Date()), []);
 
-  // Students filtered by selected coach
-  const filteredStudents = useMemo(() => {
-    if (coachId) {
-      return students.filter((s) => s.coachId === coachId);
-    }
-    return students;
-  }, [coachId, students]);
-
   const handleClose = () => {
     onOpenChange(false);
     setCoachId(null);
-    setStudentId(null);
-    setMeetingType('followup');
+    setMeetingType('Followup');
     setNote('');
     setDay('');
     setShowNoteError(false);
   };
 
   const handleSubmit = async () => {
-    if (!day) return;
-    if (!coachId) return;
-    if (meetingType === 'other' && !note.trim()) {
+    if (!day || !coachId) return;
+    if (meetingType === 'Other' && !note.trim()) {
       setShowNoteError(true);
       return;
     }
@@ -86,8 +71,7 @@ export default function AdminBookingDialog({
     setSubmitting(true);
     try {
       await onSubmit({
-        coachId: coachId!,
-        studentId: studentId ?? undefined,
+        coachId,
         meetingType,
         note,
         startTime: format(startTime, "yyyy-MM-dd'T'HH:mm:ss"),
@@ -104,13 +88,13 @@ export default function AdminBookingDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Föreslå möte</DialogTitle>
-          <DialogDescription>Välj typ av möte och fyll i detaljer.</DialogDescription>
+          <DialogDescription>Välj coach och fyll i detaljer. Coachen godkänner sedan förfrågan.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           <div className="space-y-2">
             <Label>Coach</Label>
-            <Select value={coachId?.toString() || ''} onValueChange={(v) => { setCoachId(Number(v)); setStudentId(null); }}>
+            <Select value={coachId?.toString() || ''} onValueChange={(v) => setCoachId(Number(v))}>
               <SelectTrigger><SelectValue placeholder="Välj coach..." /></SelectTrigger>
               <SelectContent>
                 {coaches.map((c) => (
@@ -121,24 +105,12 @@ export default function AdminBookingDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Elev {meetingType === 'followup' ? '(krävs)' : '(valfritt)'}</Label>
-            <Select value={studentId?.toString() || ''} onValueChange={(v) => setStudentId(v ? Number(v) : null)}>
-              <SelectTrigger><SelectValue placeholder="Välj elev..." /></SelectTrigger>
-              <SelectContent>
-                {filteredStudents.map((s) => (
-                  <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
             <Label>Mötestyp</Label>
-            <Select value={meetingType} onValueChange={setMeetingType}>
+            <Select value={meetingType} onValueChange={(v) => setMeetingType(v as MeetingType)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="followup">Uppföljning</SelectItem>
-                <SelectItem value="other">Annat</SelectItem>
+                <SelectItem value="Followup">Uppföljning</SelectItem>
+                <SelectItem value="Other">Annat</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -198,7 +170,7 @@ export default function AdminBookingDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Meddelande {meetingType === 'other' ? '(krävs)' : '(valfritt)'}</Label>
+            <Label>Meddelande {meetingType === 'Other' ? '(krävs)' : '(valfritt)'}</Label>
             <Textarea
               placeholder="Lägg till ett meddelande..."
               value={note}
@@ -214,7 +186,7 @@ export default function AdminBookingDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose}>Avbryt</Button>
-          <Button onClick={handleSubmit} disabled={submitting}>Boka</Button>
+          <Button onClick={handleSubmit} disabled={submitting}>Skicka förfrågan</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

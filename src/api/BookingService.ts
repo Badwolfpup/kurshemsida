@@ -1,6 +1,6 @@
-// kurshemsida/src/api/BookingService.ts
-export const API_URL = '/api/admin-availability';
-const NEW_API = '/api';
+import type { BookingActor, BookingStatus, MeetingType } from '@/Types/CalendarTypes';
+
+const API = '/api';
 
 export interface Availability {
   id: number;
@@ -8,53 +8,51 @@ export interface Availability {
   adminName?: string;
   startTime: string;
   endTime: string;
-  isBooked?: boolean;
 }
 
 export interface Booking {
   id: number;
   adminId: number;
-  adminAvailabilityId: number | null;
   coachId: number | null;
   studentId: number | null;
   startTime: string;
   endTime: string;
   bookedAt: string;
   note: string;
-  meetingType: string;
-  status: string;
+  meetingType: MeetingType;
+  status: BookingStatus;
   reason?: string;
   seen?: boolean;
-  rescheduledBy?: string;
-  createdByRole?: string;
+  rescheduledBy?: BookingActor | null;
+  createdByRole?: BookingActor;
 }
 
-// ── New consolidated API functions ──
-
 export interface CreateBookingData {
-  adminAvailabilityId?: number | null;
   adminId?: number | null;
   coachId?: number | null;
   studentId?: number | null;
   note?: string;
-  meetingType?: string;
+  meetingType: MeetingType;
   startTime: string;
   endTime: string;
-  force?: boolean;
 }
 
-/** Unified booking creation via new POST /api/bookings */
+export interface BookingConflictError extends Error {
+  bookings: Booking[];
+}
+
+/** POST /api/bookings — creates Pending suggestion. 409 only on Accepted overlap (B1). */
 export async function createBooking(data: CreateBookingData): Promise<Booking> {
-  const res = await fetch(`${NEW_API}/bookings`, {
+  const res = await fetch(`${API}/bookings`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
   if (res.status === 409) {
-    const parsed = await res.json();
-    const err = new Error('conflict') as BookingConflictError;
-    err.conflictData = parsed;
+    const parsed = await res.json().catch(() => ({}));
+    const err = new Error('Tiden är redan bokad.') as BookingConflictError;
+    err.bookings = parsed.bookings ?? [];
     throw err;
   }
   if (!res.ok) {
@@ -64,23 +62,20 @@ export async function createBooking(data: CreateBookingData): Promise<Booking> {
   return res.json();
 }
 
-/** Role-filtered bookings via new GET /api/bookings */
-export async function getBookingsNew(): Promise<Booking[]> {
-  const res = await fetch(`${NEW_API}/bookings`, { credentials: 'include' });
+export async function getBookings(): Promise<Booking[]> {
+  const res = await fetch(`${API}/bookings`, { credentials: 'include' });
   if (!res.ok) throw new Error(`Failed to fetch bookings (${res.status})`);
   return res.json();
 }
 
-/** Role-filtered availabilities via new GET /api/availability */
-export async function getAvailabilitiesNew(): Promise<Availability[]> {
-  const res = await fetch(`${NEW_API}/availability`, { credentials: 'include' });
+export async function getAvailabilities(): Promise<Availability[]> {
+  const res = await fetch(`${API}/availability`, { credentials: 'include' });
   if (!res.ok) throw new Error(`Failed to fetch availabilities (${res.status})`);
   return res.json();
 }
 
-/** Update booking status via new PUT /api/bookings/{id}/status */
-export async function updateBookingStatusNew(id: number, status: string, reason?: string): Promise<Booking> {
-  const res = await fetch(`${NEW_API}/bookings/${id}/status`, {
+export async function updateBookingStatus(id: number, status: BookingStatus, reason?: string): Promise<Booking> {
+  const res = await fetch(`${API}/bookings/${id}/status`, {
     method: 'PUT',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -93,13 +88,12 @@ export async function updateBookingStatusNew(id: number, status: string, reason?
   return res.json();
 }
 
-/** Cancel booking via new PUT /api/bookings/{id}/cancel */
-export async function cancelBookingNew(id: number, reason?: string): Promise<Booking> {
-  const res = await fetch(`${NEW_API}/bookings/${id}/cancel`, {
+export async function cancelBooking(id: number, reason?: string): Promise<Booking> {
+  const res = await fetch(`${API}/bookings/${id}/cancel`, {
     method: 'PUT',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status: 'declined', reason: reason ?? '' }),
+    body: JSON.stringify({ status: 'Declined', reason: reason ?? '' }),
   });
   if (!res.ok) {
     const text = await res.text();
@@ -108,13 +102,18 @@ export async function cancelBookingNew(id: number, reason?: string): Promise<Boo
   return res.json();
 }
 
-/** Reschedule booking via new PUT /api/bookings/{id}/reschedule */
-export async function rescheduleBookingNew(id: number, startTime: string, endTime: string, reason?: string, rescheduledBy?: string): Promise<Booking> {
-  const res = await fetch(`${NEW_API}/bookings/${id}/reschedule`, {
+export async function rescheduleBooking(
+  id: number,
+  startTime: string,
+  endTime: string,
+  rescheduledBy: BookingActor,
+  reason?: string,
+): Promise<Booking> {
+  const res = await fetch(`${API}/bookings/${id}/reschedule`, {
     method: 'PUT',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, startTime, endTime, reason: reason ?? '', rescheduledBy: rescheduledBy ?? '' }),
+    body: JSON.stringify({ id, startTime, endTime, rescheduledBy, reason: reason ?? '' }),
   });
   if (!res.ok) {
     const text = await res.text();
@@ -123,9 +122,8 @@ export async function rescheduleBookingNew(id: number, startTime: string, endTim
   return res.json();
 }
 
-/** Transfer booking to another teacher via PUT /api/bookings/{id}/transfer */
 export async function transferBooking(id: number, targetAdminId: number, reason?: string): Promise<Booking> {
-  const res = await fetch(`${NEW_API}/bookings/${id}/transfer`, {
+  const res = await fetch(`${API}/bookings/${id}/transfer`, {
     method: 'PUT',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -138,9 +136,8 @@ export async function transferBooking(id: number, targetAdminId: number, reason?
   return res.json();
 }
 
-/** Add availability via new POST /api/availability */
-export async function addAvailabilityNew(data: { adminId: number; startTime: Date | string; endTime: Date | string }): Promise<Availability> {
-  const res = await fetch(`${NEW_API}/availability`, {
+export async function addAvailability(data: { adminId: number; startTime: Date | string; endTime: Date | string }): Promise<Availability> {
+  const res = await fetch(`${API}/availability`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -154,21 +151,19 @@ export async function addAvailabilityNew(data: { adminId: number; startTime: Dat
   return res.json();
 }
 
-/** Update availability via new PUT /api/availability/{id} */
-export async function updateAvailabilityNew(id: number, data: { startTime: string; endTime: string; isBooked: boolean }): Promise<Availability> {
-  const res = await fetch(`${NEW_API}/availability/${id}`, {
+export async function updateAvailability(id: number, data: { startTime: string; endTime: string }): Promise<Availability> {
+  const res = await fetch(`${API}/availability/${id}`, {
     method: 'PUT',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    body: JSON.stringify({ id, ...data }),
   });
   if (!res.ok) throw new Error(`Failed to update availability (${res.status})`);
   return res.json();
 }
 
-/** Delete availability via new DELETE /api/availability/{id} */
-export async function deleteAvailabilityNew(id: number): Promise<void> {
-  const res = await fetch(`${NEW_API}/availability/${id}`, {
+export async function deleteAvailability(id: number): Promise<void> {
+  const res = await fetch(`${API}/availability/${id}`, {
     method: 'DELETE',
     credentials: 'include',
   });
@@ -184,10 +179,6 @@ export function toLocalIso(d: Date | string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
-export interface BookingConflictError extends Error {
-  conflictData: { type: 'conflict' | 'warning' | 'busy' | 'busy-warning'; bookings?: Booking[]; message?: string };
-}
-
 // ── Busy Time API ──
 
 export interface BusyTime {
@@ -198,18 +189,14 @@ export interface BusyTime {
   note?: string | null;
 }
 
-export interface BusyTimeConflictError extends Error {
-  conflictData: { type: 'confirm'; bookings: Booking[] };
-}
-
 export async function getBusyTimes(): Promise<BusyTime[]> {
-  const res = await fetch(`${NEW_API}/busy-time`, { credentials: 'include' });
+  const res = await fetch(`${API}/busy-time`, { credentials: 'include' });
   if (!res.ok) throw new Error(`Failed to fetch busy times (${res.status})`);
   return res.json();
 }
 
-export async function addBusyTime(data: { adminId: number; startTime: Date | string; endTime: Date | string; note?: string; force?: boolean }): Promise<BusyTime> {
-  const res = await fetch(`${NEW_API}/busy-time`, {
+export async function addBusyTime(data: { adminId: number; startTime: Date | string; endTime: Date | string; note?: string }): Promise<BusyTime> {
+  const res = await fetch(`${API}/busy-time`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -218,15 +205,8 @@ export async function addBusyTime(data: { adminId: number; startTime: Date | str
       startTime: toLocalIso(data.startTime),
       endTime: toLocalIso(data.endTime),
       note: data.note ?? null,
-      force: data.force ?? false,
     }),
   });
-  if (res.status === 409) {
-    const parsed = await res.json();
-    const err = new Error('confirm') as BusyTimeConflictError;
-    err.conflictData = parsed;
-    throw err;
-  }
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || `Failed to add busy time (${res.status})`);
@@ -235,7 +215,7 @@ export async function addBusyTime(data: { adminId: number; startTime: Date | str
 }
 
 export async function updateBusyTime(id: number, data: { startTime: string; endTime: string; note?: string | null }): Promise<BusyTime> {
-  const res = await fetch(`${NEW_API}/busy-time/${id}`, {
+  const res = await fetch(`${API}/busy-time/${id}`, {
     method: 'PUT',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -246,7 +226,7 @@ export async function updateBusyTime(id: number, data: { startTime: string; endT
 }
 
 export async function deleteBusyTime(id: number): Promise<void> {
-  const res = await fetch(`${NEW_API}/busy-time/${id}`, {
+  const res = await fetch(`${API}/busy-time/${id}`, {
     method: 'DELETE',
     credentials: 'include',
   });
@@ -255,4 +235,3 @@ export async function deleteBusyTime(id: number): Promise<void> {
     throw new Error(text || `Failed to delete busy time (${res.status})`);
   }
 }
-

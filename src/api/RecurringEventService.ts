@@ -1,4 +1,4 @@
-import type { RecurringEventInstance } from '@/Types/CalendarTypes';
+import type { RecurringEventInstance, RecurringFrequency } from '@/Types/CalendarTypes';
 import { toLocalIso } from './BookingService';
 
 const API_URL = '/api/recurring-events';
@@ -9,10 +9,11 @@ export interface RecurringEvent {
   weekday: number;
   startTime: string;
   endTime: string;
-  frequency: string;
+  frequency: RecurringFrequency;
   startDate: string;
   adminId: number;
   createdAt: string;
+  classroom?: number;
 }
 
 export interface CreateRecurringEventData {
@@ -20,7 +21,7 @@ export interface CreateRecurringEventData {
   weekday: number;
   startTime: string; // TimeSpan format "HH:mm:ss"
   endTime: string;
-  frequency: string;
+  frequency: RecurringFrequency;
   startDate: string;
   adminId?: number;
   classroom?: number;
@@ -31,7 +32,7 @@ export interface UpdateRecurringEventData {
   weekday?: number;
   startTime?: string;
   endTime?: string;
-  frequency?: string;
+  frequency?: RecurringFrequency;
   classroom?: number;
 }
 

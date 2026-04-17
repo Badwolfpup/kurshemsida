@@ -1,11 +1,15 @@
 import type { Availability, Booking } from '@/api/BookingService';
 
+export type BookingStatus = 'Pending' | 'Accepted' | 'Declined';
+export type MeetingType = 'Intro' | 'Followup' | 'Other';
+export type BookingActor = 'Admin' | 'Coach';
+export type RecurringFrequency = 'Weekly' | 'Biweekly';
+
 export type CalendarEventType =
   | 'availability'
   | 'pending'
   | 'accepted'
   | 'declined'
-  | 'rescheduled'
   | 'recurring'
   | 'busy';
 
@@ -39,7 +43,7 @@ export interface RecurringEventInstance {
   end: string;
   date: string;
   adminId: number;
-  frequency: string;
+  frequency: RecurringFrequency;
   isException: boolean;
   classroom?: number;
 }

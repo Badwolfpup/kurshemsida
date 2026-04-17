@@ -1,7 +1,10 @@
 import type { Availability, Booking } from '@/api/BookingService';
+import type { BookingStatus } from '@/Types/CalendarTypes';
 
 export const WORKDAY_START_HOUR = 8;
-export const WORKDAY_END_HOUR = 15;
+export const WORKDAY_START_MINUTE = 30;
+export const WORKDAY_END_HOUR = 14;
+export const WORKDAY_END_MINUTE = 30;
 
 export const DAY_NAMES = ['', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'];
 
@@ -10,21 +13,29 @@ export const ADMIN_COLORS = ['#2563eb', '#c6a04a', '#b45309', '#be123c', '#4338c
 export const RECURRING_EVENT_COLOR = '#9ca3af'; // gray-400
 export const BUSY_TIME_COLOR = '#4b5563'; // gray-600
 
-export const STATUS_COLORS = {
-  pending: { bg: '#f59e0b', opacity: 0.75 },
-  rescheduled: { bg: '#8b5cf6', opacity: 0.9 },
-  accepted: { bg: '#22c55e', opacity: 1 },
-  declined: { bg: '#ef4444', opacity: 0.6 },
-} as const;
+export const STATUS_COLORS: Record<BookingStatus, { bg: string; opacity: number }> = {
+  Pending: { bg: '#f59e0b', opacity: 0.75 },
+  Accepted: { bg: '#22c55e', opacity: 1 },
+  Declined: { bg: '#ef4444', opacity: 0.6 },
+};
 
-/** Subtract non-declined bookings from availability to get free time segments */
+/**
+ * Returns free time segments of an availability overlay after punching visual holes
+ * for any non-declined bookings on the same admin that overlap the overlay window.
+ * Bookings are independent entities; we match by adminId + time overlap (decorative only).
+ */
 export function getFreeSegments(avail: Availability, bookings: Booking[]): { start: Date; end: Date }[] {
   const aStart = new Date(avail.startTime);
   const aEnd = new Date(avail.endTime);
 
   const sorted = bookings
-    .filter((b) => b.adminAvailabilityId === avail.id && b.status !== 'declined')
+    .filter((b) => b.adminId === avail.adminId && b.status !== 'Declined')
     .map((b) => ({ start: new Date(b.startTime), end: new Date(b.endTime) }))
+    .filter((b) => b.start < aEnd && b.end > aStart)
+    .map((b) => ({
+      start: b.start < aStart ? aStart : b.start,
+      end: b.end > aEnd ? aEnd : b.end,
+    }))
     .sort((a, b) => a.start.getTime() - b.start.getTime());
 
   const segments: { start: Date; end: Date }[] = [];
@@ -41,11 +52,12 @@ export function getFreeSegments(avail: Availability, bookings: Booking[]): { sta
 
 export function generate30MinOptions() {
   const opts: { hour: number; minute: number; label: string }[] = [];
-  for (let h = WORKDAY_START_HOUR; h <= WORKDAY_END_HOUR; h++) {
-    for (const m of [0, 30]) {
-      if (h === WORKDAY_END_HOUR && m > 0) break;
-      opts.push({ hour: h, minute: m, label: `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}` });
-    }
+  const startTotal = WORKDAY_START_HOUR * 60 + WORKDAY_START_MINUTE;
+  const endTotal = WORKDAY_END_HOUR * 60 + WORKDAY_END_MINUTE;
+  for (let t = startTotal; t <= endTotal; t += 30) {
+    const h = Math.floor(t / 60);
+    const m = t % 60;
+    opts.push({ hour: h, minute: m, label: `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}` });
   }
   return opts;
 }
@@ -58,11 +70,6 @@ export function getAdminColorMap(admins: { id: number }[]): Map<number, string> 
     map.set(admin.id, ADMIN_COLORS[index % ADMIN_COLORS.length]);
   });
   return map;
-}
-
-export function isWithinWorkHours(date: Date): boolean {
-  const h = date.getHours();
-  return h >= WORKDAY_START_HOUR && h < WORKDAY_END_HOUR;
 }
 
 /** Format hour+minute to TimeSpan string "HH:mm:00" */

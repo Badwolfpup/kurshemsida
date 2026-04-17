@@ -2,15 +2,15 @@ import { describe, it, expect } from 'vitest';
 import {
   getFreeSegments,
   generate30MinOptions,
-  isWithinWorkHours,
   getAdminColorMap,
   WORKDAY_START_HOUR,
+  WORKDAY_START_MINUTE,
   WORKDAY_END_HOUR,
+  WORKDAY_END_MINUTE,
   ADMIN_COLORS,
 } from '@/components/calendar/calendarUtils';
 import type { Availability, Booking } from '@/api/BookingService';
-
-// --- Helpers ---
+import type { BookingStatus } from '@/Types/CalendarTypes';
 
 function makeAvail(id: number, startH: number, endH: number): Availability {
   return {
@@ -21,23 +21,20 @@ function makeAvail(id: number, startH: number, endH: number): Availability {
   };
 }
 
-function makeBooking(availId: number, startH: number, endH: number, status = 'accepted'): Booking {
+function makeBooking(adminId: number, startH: number, endH: number, status: BookingStatus = 'Accepted'): Booking {
   return {
-    id: Math.random(),
-    adminId: 1,
-    adminAvailabilityId: availId,
+    id: Math.floor(Math.random() * 1_000_000),
+    adminId,
     coachId: 2,
     studentId: 3,
     startTime: new Date(2026, 2, 6, startH, 0).toISOString(),
     endTime: new Date(2026, 2, 6, endH, 0).toISOString(),
     bookedAt: new Date().toISOString(),
     note: '',
-    meetingType: 'session',
+    meetingType: 'Followup',
     status,
   };
 }
-
-// --- getFreeSegments ---
 
 describe('getFreeSegments()', () => {
   it('returns full availability when no bookings exist', () => {
@@ -85,14 +82,14 @@ describe('getFreeSegments()', () => {
 
   it('ignores declined bookings', () => {
     const avail = makeAvail(1, 9, 12);
-    const bookings = [makeBooking(1, 9, 12, 'declined')];
+    const bookings = [makeBooking(1, 9, 12, 'Declined')];
     const result = getFreeSegments(avail, bookings);
     expect(result).toHaveLength(1);
     expect(result[0].start.getHours()).toBe(9);
     expect(result[0].end.getHours()).toBe(12);
   });
 
-  it('ignores bookings for a different availability', () => {
+  it('ignores bookings on a different admin', () => {
     const avail = makeAvail(1, 9, 12);
     const bookings = [makeBooking(999, 9, 12)];
     const result = getFreeSegments(avail, bookings);
@@ -105,22 +102,26 @@ describe('getFreeSegments()', () => {
     expect(getFreeSegments(avail, bookings)).toHaveLength(0);
   });
 
-  it('handles booking starting after availability ends (out-of-range)', () => {
+  it('clamps a booking extending past availability end', () => {
     const avail = makeAvail(1, 9, 12);
-    // Booking is beyond the availability window — should not affect segments
-    const bookings = [makeBooking(1, 13, 14)];
+    const bookings = [makeBooking(1, 11, 14)];
     const result = getFreeSegments(avail, bookings);
-    // The booking start (13) > cursor (9), so code pushes {9, 13} — extends past avail end
-    // This is a known edge: in practice bookings are always within avail bounds (backend-validated)
     expect(result).toHaveLength(1);
     expect(result[0].start.getHours()).toBe(9);
-    // Segment end extends to booking start (13), not clamped to avail end (12)
-    expect(result[0].end.getHours()).toBe(13);
+    expect(result[0].end.getHours()).toBe(11);
+  });
+
+  it('ignores a booking outside availability window', () => {
+    const avail = makeAvail(1, 9, 12);
+    const bookings = [makeBooking(1, 13, 14)];
+    const result = getFreeSegments(avail, bookings);
+    expect(result).toHaveLength(1);
+    expect(result[0].start.getHours()).toBe(9);
+    expect(result[0].end.getHours()).toBe(12);
   });
 
   it('handles overlapping bookings correctly', () => {
     const avail = makeAvail(1, 9, 12);
-    // Two overlapping bookings: 9-10:30 and 10-11
     const b1: Booking = {
       ...makeBooking(1, 9, 10),
       endTime: new Date(2026, 2, 6, 10, 30).toISOString(),
@@ -133,69 +134,34 @@ describe('getFreeSegments()', () => {
   });
 });
 
-// --- generate30MinOptions ---
-
 describe('generate30MinOptions()', () => {
-  it('generates correct number of options (8:00-15:00 = 15 slots)', () => {
+  it('generates options from WORKDAY_START to WORKDAY_END in 30-min steps', () => {
     const opts = generate30MinOptions();
-    // 8:00, 8:30, 9:00, ..., 14:30, 15:00 = (15-8)*2 + 1 = 15
-    expect(opts).toHaveLength(15);
+    const startTotal = WORKDAY_START_HOUR * 60 + WORKDAY_START_MINUTE;
+    const endTotal = WORKDAY_END_HOUR * 60 + WORKDAY_END_MINUTE;
+    const expected = Math.floor((endTotal - startTotal) / 30) + 1;
+    expect(opts).toHaveLength(expected);
   });
 
-  it('starts at WORKDAY_START_HOUR', () => {
+  it('first option is WORKDAY_START', () => {
     const opts = generate30MinOptions();
     expect(opts[0].hour).toBe(WORKDAY_START_HOUR);
-    expect(opts[0].minute).toBe(0);
+    expect(opts[0].minute).toBe(WORKDAY_START_MINUTE);
   });
 
-  it('ends at WORKDAY_END_HOUR:00 (no :30 at end hour)', () => {
+  it('last option is WORKDAY_END', () => {
     const opts = generate30MinOptions();
     const last = opts[opts.length - 1];
     expect(last.hour).toBe(WORKDAY_END_HOUR);
-    expect(last.minute).toBe(0);
+    expect(last.minute).toBe(WORKDAY_END_MINUTE);
   });
 
   it('formats labels with zero-padded hours and minutes', () => {
     const opts = generate30MinOptions();
-    expect(opts[0].label).toBe('08:00');
-    expect(opts[1].label).toBe('08:30');
-    expect(opts[2].label).toBe('09:00');
-  });
-
-  it('alternates between :00 and :30 minutes', () => {
-    const opts = generate30MinOptions();
-    // All options except last should alternate 0, 30, 0, 30...
-    for (let i = 0; i < opts.length - 1; i++) {
-      expect(opts[i].minute).toBe(i % 2 === 0 ? 0 : 30);
-    }
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    expect(opts[0].label).toBe(`${pad(WORKDAY_START_HOUR)}:${pad(WORKDAY_START_MINUTE)}`);
   });
 });
-
-// --- isWithinWorkHours ---
-
-describe('isWithinWorkHours()', () => {
-  it('returns true at WORKDAY_START_HOUR', () => {
-    expect(isWithinWorkHours(new Date(2026, 2, 6, WORKDAY_START_HOUR, 0))).toBe(true);
-  });
-
-  it('returns true at 14:59 (just before WORKDAY_END_HOUR)', () => {
-    expect(isWithinWorkHours(new Date(2026, 2, 6, WORKDAY_END_HOUR - 1, 59))).toBe(true);
-  });
-
-  it('returns false at WORKDAY_END_HOUR', () => {
-    expect(isWithinWorkHours(new Date(2026, 2, 6, WORKDAY_END_HOUR, 0))).toBe(false);
-  });
-
-  it('returns false before WORKDAY_START_HOUR', () => {
-    expect(isWithinWorkHours(new Date(2026, 2, 6, WORKDAY_START_HOUR - 1, 59))).toBe(false);
-  });
-
-  it('returns true at midday', () => {
-    expect(isWithinWorkHours(new Date(2026, 2, 6, 12, 0))).toBe(true);
-  });
-});
-
-// --- getAdminColorMap ---
 
 describe('getAdminColorMap()', () => {
   it('returns empty map for empty admins', () => {
