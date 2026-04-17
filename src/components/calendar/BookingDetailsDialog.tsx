@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Check, X } from 'lucide-react';
 import SplitButton from '@/components/ui/SplitButton';
-import type { Booking, Availability } from '@/api/BookingService';
+import type { Booking } from '@/api/BookingService';
+import type { MeetingType } from '@/Types/CalendarTypes';
 import { ALL_TIME_OPTIONS } from './calendarUtils';
 import { startOfDay, isBefore } from 'date-fns';
 
@@ -22,9 +23,8 @@ interface BookingDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   booking: Booking | null;
-  role: 'admin' | 'coach' | 'student';
+  role: 'admin' | 'coach';
   nameMap: Map<number, string>;
-  availabilities?: Availability[];
   teachers?: Teacher[];
   onAccept?: (id: number, reason?: string) => Promise<void>;
   onDecline?: (id: number, reason?: string) => Promise<void>;
@@ -39,7 +39,6 @@ export default function BookingDetailsDialog({
   booking,
   role,
   nameMap,
-  availabilities = [],
   teachers = [],
   onAccept,
   onDecline,
@@ -49,7 +48,7 @@ export default function BookingDetailsDialog({
 }: BookingDetailsDialogProps) {
   const [mode, setMode] = useState<'view' | 'reschedule'>('view');
   const [reason, setReason] = useState('');
-  const [rescheduleStart, setRescheduleStart] = useState({ hour: 8, minute: 0 });
+  const [rescheduleStart, setRescheduleStart] = useState({ hour: 8, minute: 30 });
   const [rescheduleEnd, setRescheduleEnd] = useState({ hour: 9, minute: 0 });
   const [transferTargetId, setTransferTargetId] = useState<number | null>(null);
   const [confirmTransfer, setConfirmTransfer] = useState<{ targetId: number; targetName: string } | null>(null);
@@ -57,23 +56,10 @@ export default function BookingDetailsDialog({
   const today = useMemo(() => startOfDay(new Date()), []);
   const isInPast = booking ? isBefore(startOfDay(new Date(booking.startTime)), today) : false;
 
-  const rescheduleOptions = useMemo(() => {
-    if (!booking) return ALL_TIME_OPTIONS;
-    const avail = availabilities.find((a) => a.id === booking.adminAvailabilityId);
-    if (!avail) return ALL_TIME_OPTIONS;
-    const aStart = new Date(avail.startTime);
-    const aEnd = new Date(avail.endTime);
-    return ALL_TIME_OPTIONS.filter((o) => {
-      const total = o.hour * 60 + o.minute;
-      return total >= aStart.getHours() * 60 + aStart.getMinutes() &&
-             total <= aEnd.getHours() * 60 + aEnd.getMinutes();
-    });
-  }, [booking, availabilities]);
-
   const rescheduleEndOptions = useMemo(() => {
     const startTotal = rescheduleStart.hour * 60 + rescheduleStart.minute;
-    return rescheduleOptions.filter((o) => o.hour * 60 + o.minute > startTotal);
-  }, [rescheduleOptions, rescheduleStart]);
+    return ALL_TIME_OPTIONS.filter((o) => o.hour * 60 + o.minute > startTotal);
+  }, [rescheduleStart]);
 
   const otherTeachers = useMemo(() => {
     if (!booking) return [];
@@ -88,29 +74,24 @@ export default function BookingDetailsDialog({
   };
 
   const canRespond = !isInPast && booking;
-  const isRescheduledByOther = booking?.status === 'rescheduled' && (
-    (role === 'admin' && booking.rescheduledBy === 'coach') ||
-    (role === 'coach' && booking.rescheduledBy === 'admin') ||
-    (role === 'student' && booking.rescheduledBy === 'admin')
+
+  // Role of the current user as stored in CreatedByRole / RescheduledBy
+  const currentActor = role === 'admin' ? 'Admin' : 'Coach';
+
+  const isRescheduledAwaitingMe =
+    booking?.status === 'Pending' && booking.rescheduledBy != null && booking.rescheduledBy !== currentActor;
+
+  const createdByCurrentUser = booking?.createdByRole === currentActor;
+
+  const canAcceptDecline = !!canRespond && booking != null && (
+    (booking.status === 'Pending' && !createdByCurrentUser) || isRescheduledAwaitingMe
   );
 
-  // Map role prop to the role string stored in CreatedByRole
-  const createdByCurrentUser = booking?.createdByRole
-    ? (role === 'admin' && (booking.createdByRole === 'Admin' || booking.createdByRole === 'Teacher'))
-      || (role === 'coach' && booking.createdByRole === 'Coach')
-      || (role === 'student' && booking.createdByRole === 'Student')
-    : false;
+  const canWithdrawRequest = !!canRespond && booking != null && booking.status === 'Pending' && createdByCurrentUser;
 
-  const canAcceptDecline = canRespond && (
-    (booking?.status === 'pending' && !createdByCurrentUser) ||
-    isRescheduledByOther
-  );
-
-  const canWithdrawRequest = canRespond && booking?.status === 'pending' && createdByCurrentUser;
-
-  const canCancelBooking = canRespond && booking?.status === 'accepted';
-  const canReschedule = canRespond && (booking.status === 'accepted' || booking.status === 'pending' || isRescheduledByOther);
-  const canTransfer = canRespond && role === 'admin' && booking.status === 'accepted' && onTransfer && otherTeachers.length > 0;
+  const canCancelBooking = !!canRespond && booking != null && booking.status === 'Accepted';
+  const canReschedule = !!canRespond && booking != null && (booking.status === 'Accepted' || booking.status === 'Pending');
+  const canTransfer = !!canRespond && booking != null && role === 'admin' && booking.status === 'Accepted' && !!onTransfer && otherTeachers.length > 0;
 
   const openRescheduleMode = () => {
     if (!booking) return;
@@ -167,19 +148,16 @@ export default function BookingDetailsDialog({
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Överföring misslyckades';
       setTransferError(
-        msg.includes('already has a booking') ? 'Läraren har redan ett möte vid den tiden.'
-        : msg.includes('preset intro') ? 'Läraren har en förinställd introtid då — bara intromöten tillåtna.'
-        : msg
+        msg.includes('already has a booking') ? 'Läraren har redan ett möte vid den tiden.' : msg
       );
     }
   };
 
-  const meetingTypeLabel = (type: string) => {
+  const meetingTypeLabel = (type: MeetingType) => {
     switch (type) {
-      case 'intro': return 'Intromöte';
-      case 'followup': return 'Uppföljning';
-      case 'session': return 'Handledning';
-      case 'other': return 'Annat';
+      case 'Intro': return 'Intromöte';
+      case 'Followup': return 'Uppföljning';
+      case 'Other': return 'Annat';
       default: return type || '—';
     }
   };
@@ -193,9 +171,9 @@ export default function BookingDetailsDialog({
           <DialogHeader>
             <DialogTitle>
               {mode === 'reschedule' ? 'Ändra tid' :
-                booking.status === 'pending' ? 'Bokningsförfrågan' :
-                booking.status === 'rescheduled' ? 'Ombokning – svar krävs' :
-                booking.status === 'accepted' ? 'Godkänd bokning' : 'Nekad bokning'}
+                isRescheduledAwaitingMe ? 'Ombokning – svar krävs' :
+                booking.status === 'Pending' ? 'Bokningsförfrågan' :
+                booking.status === 'Accepted' ? 'Godkänd bokning' : 'Nekad bokning'}
             </DialogTitle>
             <DialogDescription asChild>
               <div className="space-y-2 mt-2">
@@ -233,14 +211,14 @@ export default function BookingDetailsDialog({
                     setRescheduleStart({ hour: h, minute: m });
                     const newTotal = h * 60 + m;
                     if (rescheduleEnd.hour * 60 + rescheduleEnd.minute <= newTotal) {
-                      const next = rescheduleOptions.find((o) => o.hour * 60 + o.minute > newTotal);
+                      const next = ALL_TIME_OPTIONS.find((o) => o.hour * 60 + o.minute > newTotal);
                       if (next) setRescheduleEnd({ hour: next.hour, minute: next.minute });
                     }
                   }}
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {rescheduleOptions.slice(0, -1).map((o) => (
+                    {ALL_TIME_OPTIONS.slice(0, -1).map((o) => (
                       <SelectItem key={o.label} value={`${o.hour}:${o.minute}`}>{o.label}</SelectItem>
                     ))}
                   </SelectContent>
@@ -284,7 +262,6 @@ export default function BookingDetailsDialog({
             </div>
           )}
 
-          {/* Transfer section for accepted bookings */}
           {mode === 'view' && canTransfer && (
             <div className="space-y-2 pt-2 border-t">
               <Label>Överlåt till annan lärare</Label>
@@ -329,7 +306,7 @@ export default function BookingDetailsDialog({
                     <X className="h-4 w-4 mr-1" /> Neka
                   </Button>
                 )}
-                {canReschedule && onReschedule && role !== 'student' && (
+                {canReschedule && onReschedule && (
                   <Button variant="outline" onClick={openRescheduleMode}>Föreslå annan tid</Button>
                 )}
                 {onAccept && role === 'admin' && onTransfer && otherTeachers.length > 0 ? (
@@ -355,7 +332,7 @@ export default function BookingDetailsDialog({
                     <X className="h-4 w-4 mr-1" /> Avboka
                   </Button>
                 )}
-                {canReschedule && onReschedule && role !== 'student' && (
+                {canReschedule && onReschedule && (
                   <Button variant="outline" onClick={openRescheduleMode}>Ändra tid</Button>
                 )}
               </div>
@@ -375,7 +352,6 @@ export default function BookingDetailsDialog({
         </DialogContent>
       </Dialog>
 
-      {/* Confirmation dialog for transfer */}
       <AlertDialog open={!!confirmTransfer} onOpenChange={(o) => { if (!o) { setConfirmTransfer(null); setTransferError(''); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>

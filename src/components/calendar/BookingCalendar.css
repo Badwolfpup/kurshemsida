@@ -3,6 +3,17 @@
   border-top: 0;
 }
 
+/* Keep header columns aligned with body columns: rbc adds margin-right
+   to .rbc-time-header-content when it detects a scrollbar on the body.
+   Force no scrollbar on the body instead so no compensation is needed. */
+.booking-calendar--workhours .rbc-time-content {
+  overflow-y: hidden;
+}
+
+.booking-calendar--workhours .rbc-time-header-content {
+  margin-right: 0 !important;
+}
+
 .booking-calendar--workhours .rbc-allday-cell {
   display: none;
 }

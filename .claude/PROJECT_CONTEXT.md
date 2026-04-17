@@ -158,16 +158,27 @@ See `.claude/PAGE_MAP.md` for detailed per-page, per-role functionality breakdow
 - Email notifications on new messages (respects `EmailNotifications` flag, skipped in dev)
 
 ## Calendar System
-- Shared components in `src/components/calendar/`: `CalendarShell`, `FourDayView`, `BookingDetailsDialog`, `ConflictDialog`, `RecurringEventDialog`, `RecurringEventClickDialog`, `StudentBookingDialog`, `calendarUtils`
+- Shared components in `src/components/calendar/`: `CalendarShell`, `FourDayView`, `BookingDetailsDialog`, `RecurringEventDialog`, `RecurringEventClickDialog`, `calendarUtils`
 - Admin-specific: `src/components/admin/AdminSchedule.tsx`, `AdminBookingDialog.tsx`
 - Coach: `src/pages/CoachBookingView.tsx`
-- Student: `src/pages/StudentCalendar.tsx`
 - All calendars use React Query hooks: `useBookings`, `useAvailabilities`, `useRecurringEvents`, `useNoClasses` (in `src/hooks/`)
-- Unified booking API via `src/api/BookingService.ts` (new endpoints: `/api/bookings`, `/api/availability`)
+- Booking API via `src/api/BookingService.ts` — endpoints: `/api/bookings`, `/api/availability`, `/api/busy-time`
 - `RecurringEventService.ts` handles `/api/recurring-events` CRUD + exceptions
-- `calendarUtils.ts` exports: `getFreeSegments`, `getAdminColorMap`, `ALL_TIME_OPTIONS`, `padTime`, `STATUS_COLORS`, `RECURRING_EVENT_COLOR`, `BUSY_TIME_COLOR`
-- Busy time: teachers mark unavailable blocks (dark gray on calendar). Coaches see them, can't book during busy time. Backend trims/splits availability on overlap.
-- Booking `CreatedByRole` field tracks who created each pending booking — frontend uses it to show correct actions (accept/decline vs withdraw)
+- `calendarUtils.ts` exports: `getFreeSegments`, `getAdminColorMap`, `ALL_TIME_OPTIONS`, `padTime`, `STATUS_COLORS`, `RECURRING_EVENT_COLOR`, `BUSY_TIME_COLOR`, plus `WORKDAY_*` constants (08:30–14:30)
+- **Booking flow is approval-based**: every new booking starts `Status=Pending`. The non-creator (admin or coach) approves. There is no auto-accept path.
+- **Conflict model**: overlap with an `Accepted` booking → 409 hard block (shown as toast). Overlaps with pending bookings, busy time, or recurring events never block at the backend — they coexist freely. Coaches see frontend-only warnings when clicking on busy/recurring cells before the suggestion dialog opens.
+- **Availability is decorative**: `AdminAvailability` rows are rectangles painted on the admin's calendar to signal preferred times. They do NOT gate bookings. `Booking` no longer has an `AdminAvailabilityId` FK.
+- **Busy time is no-consideration**: creating or updating a busy block does not check or cancel existing bookings. Admin resolves visual overlaps manually.
+- **Reschedule returns to Pending**: a reschedule sets `Status=Pending` + `RescheduledBy=Admin|Coach`. The presence of `RescheduledBy` is what the UI uses to render "Ombokning – svar krävs".
+- **Domain enums** (stored as PascalCase strings in DB via EF `HasConversion<string>()`):
+  - `BookingStatus`: `Pending | Accepted | Declined`
+  - `MeetingType`: `Intro | Followup | Other`
+  - `BookingActor` (reused for `CreatedByRole` and `RescheduledBy`): `Admin | Coach`
+  - `RecurringFrequency`: `Weekly | Biweekly`
+  - Frontend types match in `src/Types/CalendarTypes.ts` as TS string unions.
+- **Coach calendar UX**: single-select teacher dropdown (`ToggleGroup type="single"`, defaults to first alphabetical admin). Clicking anywhere in the calendar opens the suggestion dialog. Coaches see own bookings (all statuses) + other coaches' `Accepted` bookings masked as opaque "Upptagen" blocks (no identity leaked). Other coaches' pending bookings are not visible.
+- **Backend JSON enum serialization**: Minimal APIs require `builder.Services.ConfigureHttpJsonOptions(...)` with `JsonStringEnumConverter` in addition to `AddControllers().AddJsonOptions(...)`. Both are wired in `Program.cs` — missing either breaks one surface.
+- **Files deleted in the 2026-04 booking rework**: `AdminAvailabilityEndpoints.cs`, `PresetIntroConfig.cs`, `PresetIntroSlotService.cs`, `ScheduleHelpers.cs`, `BookAvailabilityDto.cs` (backend); `StudentCalendar.tsx`, `StudentBookingDialog.tsx`, `ConflictDialog.tsx` (frontend). Do not re-introduce these concepts — if you find references, they are stale.
 
 ## Seating System
 - Page: `src/pages/Klassrum.tsx` — visual classroom layout with per-seat FM/EM selects

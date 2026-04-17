@@ -3,7 +3,6 @@ import { format, isBefore, startOfDay, startOfWeek, addDays } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import CalendarShell from '@/components/calendar/CalendarShell';
 import BookingDetailsDialog from '@/components/calendar/BookingDetailsDialog';
-import ConflictDialog from '@/components/calendar/ConflictDialog';
 import RecurringEventDialog from '@/components/calendar/RecurringEventDialog';
 import RecurringEventClickDialog from '@/components/calendar/RecurringEventClickDialog';
 import AdminBookingDialog from './AdminBookingDialog';
@@ -11,7 +10,11 @@ import { getFreeSegments, getAdminColorMap, RECURRING_EVENT_COLOR, BUSY_TIME_COL
 import { useAuth } from '@/contexts/AuthContext';
 import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
-import { useBookings, useAvailabilities, useCreateBooking, useUpdateBookingStatus, useCancelBooking, useRescheduleBooking, useTransferBooking, useAddAvailability, useUpdateAvailability, useDeleteAvailability, useBusyTimes, useAddBusyTime, useUpdateBusyTime, useDeleteBusyTime } from '@/hooks/useBookings';
+import {
+  useBookings, useAvailabilities, useCreateBooking, useUpdateBookingStatus, useCancelBooking, useRescheduleBooking,
+  useTransferBooking, useAddAvailability, useUpdateAvailability, useDeleteAvailability,
+  useBusyTimes, useAddBusyTime, useUpdateBusyTime, useDeleteBusyTime,
+} from '@/hooks/useBookings';
 import { useRecurringEvents, useCreateRecurringEvent, useUpdateRecurringEvent, useDeleteRecurringEvent, useSetRecurringEventException } from '@/hooks/useRecurringEvents';
 import { useNoClasses } from '@/hooks/useNoClass';
 import { Button } from '@/components/ui/button';
@@ -22,7 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Calendar as CalendarIcon } from 'lucide-react';
 import HelpDialog from '@/components/HelpDialog';
 import type { CalendarEvent } from '@/Types/CalendarTypes';
-import type { Booking, Availability, BookingConflictError, BusyTime, BusyTimeConflictError } from '@/api/BookingService';
+import type { Booking, Availability, BusyTime } from '@/api/BookingService';
 import type { RecurringEventInstance } from '@/Types/CalendarTypes';
 
 function AdminSchedule() {
@@ -33,7 +36,6 @@ function AdminSchedule() {
 
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  // Data queries
   const { data: allBookings = [] } = useBookings();
   const { data: availabilities = [] } = useAvailabilities();
 
@@ -44,7 +46,6 @@ function AdminSchedule() {
 
   const { data: busyTimes = [] } = useBusyTimes();
 
-  // Mutations
   const createBooking = useCreateBooking();
   const updateStatus = useUpdateBookingStatus();
   const cancelBookingMut = useCancelBooking();
@@ -61,7 +62,6 @@ function AdminSchedule() {
   const deleteRecurring = useDeleteRecurringEvent();
   const setException = useSetRecurringEventException();
 
-  // Dialog state
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showBookingDetails, setShowBookingDetails] = useState(false);
   const [showAppointmentDialog, setShowAppointmentDialog] = useState(false);
@@ -69,43 +69,26 @@ function AdminSchedule() {
   const [selectedRecurringInstance, setSelectedRecurringInstance] = useState<RecurringEventInstance | null>(null);
   const [showRecurringClickDialog, setShowRecurringClickDialog] = useState(false);
 
-  // Slot type choice dialog (availability vs busy)
   const [showSlotChoiceDialog, setShowSlotChoiceDialog] = useState(false);
   const [slotChoiceStart, setSlotChoiceStart] = useState<Date | null>(null);
   const [slotChoiceEnd, setSlotChoiceEnd] = useState<Date | null>(null);
 
-  // Busy time edit dialog
   const [selectedBusyTime, setSelectedBusyTime] = useState<BusyTime | null>(null);
   const [showEditBusyDialog, setShowEditBusyDialog] = useState(false);
   const [editBusyStartHour, setEditBusyStartHour] = useState(8);
-  const [editBusyStartMinute, setEditBusyStartMinute] = useState(0);
+  const [editBusyStartMinute, setEditBusyStartMinute] = useState(30);
   const [editBusyEndHour, setEditBusyEndHour] = useState(9);
   const [editBusyEndMinute, setEditBusyEndMinute] = useState(0);
 
-  // Busy time booking conflict confirm
-  const [busyConflictBookings, setBusyConflictBookings] = useState<Booking[]>([]);
-  const [showBusyConflictConfirm, setShowBusyConflictConfirm] = useState(false);
-  const [pendingBusyData, setPendingBusyData] = useState<{ adminId: number; startTime: Date; endTime: Date; note?: string } | null>(null);
-
-  // Availability edit dialog
   const [selectedAvailability, setSelectedAvailability] = useState<Availability | null>(null);
   const [showEditAvailDialog, setShowEditAvailDialog] = useState(false);
   const [editAvailStartHour, setEditAvailStartHour] = useState(8);
-  const [editAvailStartMinute, setEditAvailStartMinute] = useState(0);
+  const [editAvailStartMinute, setEditAvailStartMinute] = useState(30);
   const [editAvailEndHour, setEditAvailEndHour] = useState(9);
   const [editAvailEndMinute, setEditAvailEndMinute] = useState(0);
 
-  // Visible admins (ToggleGroup) — own admin selected by default
   const [visibleAdminIds, setVisibleAdminIds] = useState<string[]>([adminId.toString()]);
 
-  // Conflict dialogs
-  const [conflictErrorBookings, setConflictErrorBookings] = useState<Booking[]>([]);
-  const [showConflictError, setShowConflictError] = useState(false);
-  const [conflictWarningBookings, setConflictWarningBookings] = useState<Booking[]>([]);
-  const [showConflictWarning, setShowConflictWarning] = useState(false);
-  const [pendingBookingData, setPendingBookingData] = useState<Parameters<typeof createBooking.mutateAsync>[0] | null>(null);
-
-  // Derived data
   const allAdmins = useMemo(() => allUsers.filter((u) => u.authLevel <= 2 && u.isActive), [allUsers]);
   const coaches = useMemo(() => allUsers.filter((u) => u.authLevel === 3 && u.isActive), [allUsers]);
   const students = useMemo(() => allUsers.filter((u) => u.authLevel === 4 && u.isActive), [allUsers]);
@@ -117,28 +100,20 @@ function AdminSchedule() {
     return map;
   }, [allUsers]);
 
-  const noClassDateObjects = useMemo(() => {
-    return noClassDates.map((d) => startOfDay(new Date(d)));
-  }, [noClassDates]);
-
-  const bookings = useMemo(() => allBookings.filter((b) => b.adminId === adminId), [allBookings, adminId]);
-  const showOwnEvents = visibleAdminIds.includes(adminId.toString());
+  const noClassDateObjects = useMemo(() => noClassDates.map((d) => startOfDay(new Date(d))), [noClassDates]);
 
   const today = useMemo(() => startOfDay(new Date()), []);
   const SEVEN_DAYS_AGO = useMemo(() => { const d = new Date(); d.setDate(d.getDate() - 7); return d; }, []);
 
-  // Build calendar events
   const events = useMemo((): CalendarEvent[] => {
     const result: CalendarEvent[] = [];
 
-    // Availability segments (only show if admin is toggled visible)
     for (const avail of availabilities) {
       const isOwn = avail.adminId === adminId;
       if (!isOwn && !visibleAdminIds.includes(avail.adminId.toString())) continue;
       const color = adminColorMap.get(avail.adminId) || '#6b7280';
       const adminName = nameMap.get(avail.adminId) || `Admin ${avail.adminId}`;
-      const relevantBookings = allBookings.filter((b) => b.adminId === avail.adminId);
-      const freeSegs = getFreeSegments(avail, relevantBookings);
+      const freeSegs = getFreeSegments(avail, allBookings);
       for (let i = 0; i < freeSegs.length; i++) {
         result.push({
           id: `avail-${avail.id}-${i}`,
@@ -151,7 +126,6 @@ function AdminSchedule() {
       }
     }
 
-    // Bookings for all visible admins (including self)
     for (const visId of visibleAdminIds) {
       const id = Number(visId);
       const isOwn = id === adminId;
@@ -160,21 +134,20 @@ function AdminSchedule() {
       const adminName = nameMap.get(id) || `Admin ${id}`;
 
       for (const b of adminBookings) {
-        if (b.status === 'declined' && new Date(b.bookedAt) < SEVEN_DAYS_AGO) continue;
+        if (b.status === 'Declined' && new Date(b.bookedAt) < SEVEN_DAYS_AGO) continue;
         const personName = b.coachId ? (nameMap.get(b.coachId) || `Coach ${b.coachId}`) : (b.studentId ? (nameMap.get(b.studentId) || `Elev ${b.studentId}`) : '');
-        const typeLabel = b.status === 'pending' ? 'Förfrågan' : b.status === 'accepted' ? 'Godkänd' : b.status === 'rescheduled' ? 'Ombokning' : 'Nekad';
+        const typeLabel = b.status === 'Pending' ? (b.rescheduledBy ? 'Ombokning' : 'Förfrågan') : b.status === 'Accepted' ? 'Godkänd' : 'Nekad';
         result.push({
           id: `booking-${b.id}`,
           title: isOwn ? `${personName} – ${typeLabel}` : `[${adminName}] ${personName} – ${typeLabel}`,
           start: new Date(b.startTime),
           end: new Date(b.endTime),
           allDay: false,
-          resource: { type: b.status as CalendarEvent['resource']['type'], booking: b, color: isOwn ? undefined : color, isOwn },
+          resource: { type: b.status.toLowerCase() as CalendarEvent['resource']['type'], booking: b, color: isOwn ? undefined : color, isOwn },
         });
       }
     }
 
-    // Busy times
     for (const bt of busyTimes) {
       const isOwn = bt.adminId === adminId;
       if (!isOwn && !visibleAdminIds.includes(bt.adminId.toString())) continue;
@@ -188,7 +161,6 @@ function AdminSchedule() {
       });
     }
 
-    // Recurring events
     for (const inst of recurringInstances) {
       result.push({
         id: `recurring-${inst.eventId}-${inst.date}`,
@@ -201,9 +173,8 @@ function AdminSchedule() {
     }
 
     return result;
-  }, [availabilities, bookings, allBookings, visibleAdminIds, adminColorMap, nameMap, adminId, SEVEN_DAYS_AGO, recurringInstances, busyTimes]);
+  }, [availabilities, allBookings, visibleAdminIds, adminColorMap, nameMap, adminId, SEVEN_DAYS_AGO, recurringInstances, busyTimes]);
 
-  // Handlers
   const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
     if (isBefore(startOfDay(start), today)) return;
     setSlotChoiceStart(start);
@@ -214,36 +185,16 @@ function AdminSchedule() {
   const handleSlotChoice = async (choice: 'availability' | 'busy') => {
     setShowSlotChoiceDialog(false);
     if (!slotChoiceStart || !slotChoiceEnd) return;
-    if (choice === 'availability') {
-      addAvailMut.mutate({ adminId, startTime: slotChoiceStart, endTime: slotChoiceEnd });
-    } else {
-      try {
+    try {
+      if (choice === 'availability') {
+        await addAvailMut.mutateAsync({ adminId, startTime: slotChoiceStart, endTime: slotChoiceEnd });
+        toast({ title: 'Tillgänglighet tillagd' });
+      } else {
         await addBusyTimeMut.mutateAsync({ adminId, startTime: slotChoiceStart, endTime: slotChoiceEnd });
         toast({ title: 'Upptagen tid tillagd' });
-      } catch (err) {
-        const conflictErr = err as BusyTimeConflictError;
-        if (conflictErr.conflictData?.type === 'confirm') {
-          setPendingBusyData({ adminId, startTime: slotChoiceStart, endTime: slotChoiceEnd });
-          setBusyConflictBookings(conflictErr.conflictData.bookings || []);
-          setShowBusyConflictConfirm(true);
-        } else {
-          toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte lägga till.', variant: 'destructive' });
-        }
       }
-    }
-  };
-
-  const handleConfirmBusyConflict = async () => {
-    if (!pendingBusyData) return;
-    setShowBusyConflictConfirm(false);
-    try {
-      await addBusyTimeMut.mutateAsync({ ...pendingBusyData, force: true });
-      toast({ title: 'Upptagen tid tillagd' });
     } catch (err) {
       toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte lägga till.', variant: 'destructive' });
-    } finally {
-      setPendingBusyData(null);
-      setBusyConflictBookings([]);
     }
   };
 
@@ -304,7 +255,6 @@ function AdminSchedule() {
         id: selectedAvailability.id,
         startTime: format(newStart, "yyyy-MM-dd'T'HH:mm:ss"),
         endTime: format(newEnd, "yyyy-MM-dd'T'HH:mm:ss"),
-        isBooked: false,
       });
       toast({ title: 'Sparad' });
       setShowEditAvailDialog(false);
@@ -363,92 +313,42 @@ function AdminSchedule() {
     }
   };
 
-  const handleCreateAppointment = async (data: { coachId?: number; studentId?: number; meetingType: string; note: string; startTime: string; endTime: string; force?: boolean }) => {
+  const handleCreateAppointment = async (data: Parameters<React.ComponentProps<typeof AdminBookingDialog>['onSubmit']>[0]) => {
     try {
       await createBooking.mutateAsync({
-        coachId: data.coachId ?? null,
+        coachId: data.coachId,
         studentId: data.studentId ?? null,
         meetingType: data.meetingType,
         note: data.note,
         startTime: data.startTime,
         endTime: data.endTime,
-        force: data.force,
       });
-      toast({ title: 'Möte skapat' });
-    } catch (err) {
-      const conflictErr = err as BookingConflictError;
-      if (conflictErr.conflictData?.type === 'busy-warning') {
-        // Teacher's own busy time — confirm and retry with force
-        if (window.confirm(conflictErr.conflictData.message || 'Du har markerat denna tid som upptagen. Vill du boka ändå?')) {
-          try {
-            await createBooking.mutateAsync({
-              coachId: data.coachId ?? null,
-              studentId: data.studentId ?? null,
-              meetingType: data.meetingType,
-              note: data.note,
-              startTime: data.startTime,
-              endTime: data.endTime,
-              force: true,
-            });
-            toast({ title: 'Möte skapat' });
-            return; // Success — don't re-throw
-          } catch (retryErr) {
-            toast({ title: 'Fel', description: retryErr instanceof Error ? retryErr.message : 'Kunde inte skapa mötet.', variant: 'destructive' });
-          }
-        }
-      } else if (conflictErr.conflictData?.type === 'conflict') {
-        setConflictErrorBookings(conflictErr.conflictData.bookings || []);
-        setShowConflictError(true);
-      } else if (conflictErr.conflictData?.type === 'warning') {
-        setPendingBookingData({ ...data, force: true, coachId: data.coachId ?? null, studentId: data.studentId ?? null });
-        setConflictWarningBookings(conflictErr.conflictData.bookings || []);
-        setShowConflictWarning(true);
-      } else {
-        toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte skapa mötet.', variant: 'destructive' });
-      }
-      throw err; // Let dialog know it failed
-    }
-  };
-
-  const handleConfirmConflictWarning = async () => {
-    if (!pendingBookingData) return;
-    setShowConflictWarning(false);
-    try {
-      await createBooking.mutateAsync(pendingBookingData);
-      toast({ title: 'Möte skapat' });
+      toast({ title: 'Förfrågan skickad' });
     } catch (err) {
       toast({ title: 'Fel', description: err instanceof Error ? err.message : 'Kunde inte skapa mötet.', variant: 'destructive' });
-    } finally {
-      setPendingBookingData(null);
-      setConflictWarningBookings([]);
+      throw err;
     }
   };
 
-  // Sorted admins: self first, then others
   const sortedAdmins = useMemo(() => {
     const self = allAdmins.find((a) => a.id === adminId);
     const others = allAdmins.filter((a) => a.id !== adminId);
     return self ? [self, ...others] : others;
   }, [allAdmins, adminId]);
 
-  // Legend
   const legend = (
     <>
       <div className="flex flex-wrap gap-4 mb-4 text-sm justify-center">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: STATUS_COLORS.pending.bg, opacity: STATUS_COLORS.pending.opacity }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: STATUS_COLORS.Pending.bg, opacity: STATUS_COLORS.Pending.opacity }} />
           <span>Förfrågan</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: STATUS_COLORS.rescheduled.bg, opacity: STATUS_COLORS.rescheduled.opacity }} />
-          <span>Ombokning</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: STATUS_COLORS.accepted.bg }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: STATUS_COLORS.Accepted.bg }} />
           <span>Godkänd</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: STATUS_COLORS.declined.bg }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: STATUS_COLORS.Declined.bg }} />
           <span>Nekad</span>
         </div>
         <div className="flex items-center gap-2">
@@ -479,7 +379,7 @@ function AdminSchedule() {
     <>
       <CalendarShell
         title="Veckoschema & Bokningar"
-        subtitle="Klicka på en tom tid i kalendern för att lägga till tillgänglighet."
+        subtitle="Klicka på en tom tid i kalendern för att lägga till tillgänglighet eller upptagen tid."
         events={events}
         currentDate={currentDate}
         onDateChange={setCurrentDate}
@@ -502,21 +402,19 @@ function AdminSchedule() {
         legend={legend}
       />
 
-      {/* Booking details */}
       <BookingDetailsDialog
         open={showBookingDetails}
         onOpenChange={setShowBookingDetails}
         booking={selectedBooking}
         role="admin"
         nameMap={nameMap}
-        availabilities={availabilities}
         teachers={otherTeachers}
         onAccept={async (id, reason) => {
-          await updateStatus.mutateAsync({ id, status: 'accepted', reason });
+          await updateStatus.mutateAsync({ id, status: 'Accepted', reason });
           toast({ title: 'Godkänd' });
         }}
         onDecline={async (id, reason) => {
-          await updateStatus.mutateAsync({ id, status: 'declined', reason });
+          await updateStatus.mutateAsync({ id, status: 'Declined', reason });
           toast({ title: 'Nekad' });
         }}
         onCancel={async (id, reason) => {
@@ -524,7 +422,7 @@ function AdminSchedule() {
           toast({ title: 'Avbokad' });
         }}
         onReschedule={async (id, startTime, endTime, reason) => {
-          await rescheduleMut.mutateAsync({ id, startTime, endTime, reason, rescheduledBy: 'admin' });
+          await rescheduleMut.mutateAsync({ id, startTime, endTime, reason, rescheduledBy: 'Admin' });
           toast({ title: 'Ombokning skickad' });
         }}
         onTransfer={async (id, targetAdminId) => {
@@ -533,7 +431,6 @@ function AdminSchedule() {
         }}
       />
 
-      {/* Admin booking dialog */}
       <AdminBookingDialog
         open={showAppointmentDialog}
         onOpenChange={setShowAppointmentDialog}
@@ -543,7 +440,6 @@ function AdminSchedule() {
         onSubmit={handleCreateAppointment}
       />
 
-      {/* Recurring event creation */}
       <RecurringEventDialog
         open={showRecurringDialog}
         onOpenChange={setShowRecurringDialog}
@@ -555,7 +451,6 @@ function AdminSchedule() {
         }}
       />
 
-      {/* Recurring event click */}
       <RecurringEventClickDialog
         open={showRecurringClickDialog}
         onOpenChange={setShowRecurringClickDialog}
@@ -591,7 +486,6 @@ function AdminSchedule() {
         }}
       />
 
-      {/* Edit availability */}
       <Dialog open={showEditAvailDialog} onOpenChange={setShowEditAvailDialog}>
         <DialogContent>
           <DialogHeader>
@@ -653,7 +547,6 @@ function AdminSchedule() {
         </DialogContent>
       </Dialog>
 
-      {/* Slot type choice dialog */}
       <Dialog open={showSlotChoiceDialog} onOpenChange={setShowSlotChoiceDialog}>
         <DialogContent className="max-w-xs">
           <DialogHeader>
@@ -672,7 +565,6 @@ function AdminSchedule() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit busy time dialog */}
       <Dialog open={showEditBusyDialog} onOpenChange={setShowEditBusyDialog}>
         <DialogContent>
           <DialogHeader>
@@ -733,50 +625,6 @@ function AdminSchedule() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Busy time booking conflict confirmation */}
-      <Dialog open={showBusyConflictConfirm} onOpenChange={(o) => { setShowBusyConflictConfirm(o); if (!o) { setPendingBusyData(null); setBusyConflictBookings([]); } }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Möten kommer att avbokas</DialogTitle>
-            <DialogDescription>
-              Följande möten överlappar med den upptagna tiden och kommer att avbokas:
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2 py-2">
-            {busyConflictBookings.map((b) => (
-              <div key={b.id} className="flex items-center gap-2 text-sm p-2 border rounded">
-                <span className="font-medium">{b.coachId ? nameMap.get(b.coachId) : b.studentId ? nameMap.get(b.studentId) : 'Okänd'}</span>
-                <span className="text-muted-foreground">
-                  {format(new Date(b.startTime), 'HH:mm')} – {format(new Date(b.endTime), 'HH:mm')}
-                </span>
-                <span className="text-muted-foreground">({b.meetingType})</span>
-              </div>
-            ))}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setShowBusyConflictConfirm(false); setPendingBusyData(null); setBusyConflictBookings([]); }}>Avbryt</Button>
-            <Button variant="destructive" onClick={handleConfirmBusyConflict}>Avboka och fortsätt</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Conflict dialogs */}
-      <ConflictDialog
-        open={showConflictError}
-        onOpenChange={(o) => { setShowConflictError(o); if (!o) setConflictErrorBookings([]); }}
-        type="error"
-        bookings={conflictErrorBookings}
-        nameMap={nameMap}
-      />
-      <ConflictDialog
-        open={showConflictWarning}
-        onOpenChange={(o) => { setShowConflictWarning(o); if (!o) { setPendingBookingData(null); setConflictWarningBookings([]); } }}
-        type="warning"
-        bookings={conflictWarningBookings}
-        nameMap={nameMap}
-        onConfirm={handleConfirmConflictWarning}
-      />
     </>
   );
 }

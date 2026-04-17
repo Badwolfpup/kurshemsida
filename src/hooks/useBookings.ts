@@ -1,49 +1,49 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  getBookingsNew,
-  getAvailabilitiesNew,
+  getBookings,
+  getAvailabilities,
   createBooking,
-  updateBookingStatusNew,
-  cancelBookingNew,
-  rescheduleBookingNew,
+  updateBookingStatus,
+  cancelBooking,
+  rescheduleBooking,
   transferBooking,
-  addAvailabilityNew,
-  updateAvailabilityNew,
-  deleteAvailabilityNew,
+  addAvailability,
+  updateAvailability,
+  deleteAvailability,
   getBusyTimes,
   addBusyTime,
   updateBusyTime,
   deleteBusyTime,
   type CreateBookingData,
 } from '@/api/BookingService';
+import type { BookingActor, BookingStatus } from '@/Types/CalendarTypes';
 
-/** SCENARIO: Any authenticated user fetches bookings; admin=all, coach=own, student=own */
+/** SCENARIO: Authenticated user fetches bookings. Admin sees all; Coach sees own + masked others' accepted. */
 export function useBookings() {
   return useQuery({
     queryKey: ['bookings'],
-    queryFn: getBookingsNew,
+    queryFn: getBookings,
     staleTime: 30_000,
   });
 }
 
-/** SCENARIO: Any authenticated user fetches availability slots; admin/teacher=all, coach/student=unbooked */
+/** SCENARIO: Authenticated user fetches availability overlays (decorative). */
 export function useAvailabilities() {
   return useQuery({
     queryKey: ['availabilities'],
-    queryFn: getAvailabilitiesNew,
+    queryFn: getAvailabilities,
     staleTime: 30_000,
   });
 }
 
 /**
- * SCENARIO: Create a booking — role-detected from JWT (admin=pending appointment, coach=slot booking or suggestion, student=pending with admin)
+ * SCENARIO: Admin/Teacher or Coach creates a booking as a Pending suggestion (non-creator approves).
  * CALLS: POST /api/bookings (BookingEndpoints.cs)
  * SIDE EFFECTS:
- *   - Creates Booking record (backend)
- *   - Marks AdminAvailability.IsBooked = true if fully booked (backend)
+ *   - Creates Booking with Status = Pending (backend)
  *   - Sends email notification via BookingNotifier (backend, EmailService)
- *   - Returns 409 on conflict (hard) or warning (soft, Force=true bypasses)
- *   - Invalidates ["bookings"] and ["availabilities"] cache
+ *   - Throws BookingConflictError on 409 (overlap with Accepted booking)
+ *   - Invalidates ["bookings"] cache
  */
 export function useCreateBooking() {
   const qc = useQueryClient();
@@ -51,67 +51,62 @@ export function useCreateBooking() {
     mutationFn: (data: CreateBookingData) => createBooking(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['bookings'] });
-      qc.invalidateQueries({ queryKey: ['availabilities'] });
     },
   });
 }
 
 /**
- * SCENARIO: Accept or decline a booking — admin/teacher=any, coach=own pending/rescheduled, student=own pending/rescheduled
+ * SCENARIO: Admin/Teacher or Coach responds to a pending booking — accept or decline.
  * CALLS: PUT /api/bookings/{id}/status (BookingEndpoints.cs)
  * SIDE EFFECTS:
  *   - Sets booking Status + Reason (backend)
- *   - If declining: re-evaluates parent availability IsBooked (backend)
  *   - Sends email via BookingNotifier (backend, EmailService)
- *   - Invalidates ["bookings"] and ["availabilities"] cache
+ *   - Invalidates ["bookings"] cache
  */
 export function useUpdateBookingStatus() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status, reason }: { id: number; status: string; reason?: string }) =>
-      updateBookingStatusNew(id, status, reason),
+    mutationFn: ({ id, status, reason }: { id: number; status: BookingStatus; reason?: string }) =>
+      updateBookingStatus(id, status, reason),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['bookings'] });
-      qc.invalidateQueries({ queryKey: ['availabilities'] });
     },
   });
 }
 
 /**
- * SCENARIO: Cancel a booking — sets status to declined. Admin=any, coach=own, student=own
+ * SCENARIO: Cancel a booking — sets Status = Declined. Admin any, Coach own.
  * CALLS: PUT /api/bookings/{id}/cancel (BookingEndpoints.cs)
  * SIDE EFFECTS:
- *   - Sets booking Status = "declined" (backend)
- *   - Re-evaluates parent availability IsBooked (backend)
- *   - Sends email via BookingNotifier — student cancel followup notifies admin + coach (backend, EmailService)
- *   - Invalidates ["bookings"] and ["availabilities"] cache
+ *   - Sets booking Status = Declined (backend)
+ *   - Sends email via BookingNotifier (backend, EmailService)
+ *   - Invalidates ["bookings"] cache
  */
 export function useCancelBooking() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, reason }: { id: number; reason?: string }) =>
-      cancelBookingNew(id, reason),
+      cancelBooking(id, reason),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['bookings'] });
-      qc.invalidateQueries({ queryKey: ['availabilities'] });
     },
   });
 }
 
 /**
- * SCENARIO: Reschedule a booking — sets new times, status=rescheduled
+ * SCENARIO: Reschedule a booking — new times, status flips to Pending for re-approval.
  * CALLS: PUT /api/bookings/{id}/reschedule (BookingEndpoints.cs)
  * SIDE EFFECTS:
- *   - Updates StartTime, EndTime, Reason, Status=rescheduled, RescheduledBy (backend)
+ *   - Updates StartTime, EndTime, Reason; sets Status = Pending, RescheduledBy (backend)
  *   - Sends email via BookingNotifier (backend, EmailService)
  *   - Invalidates ["bookings"] cache
  */
 export function useRescheduleBooking() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, startTime, endTime, reason, rescheduledBy }: {
-      id: number; startTime: string; endTime: string; reason?: string; rescheduledBy?: string;
-    }) => rescheduleBookingNew(id, startTime, endTime, reason, rescheduledBy),
+    mutationFn: ({ id, startTime, endTime, rescheduledBy, reason }: {
+      id: number; startTime: string; endTime: string; rescheduledBy: BookingActor; reason?: string;
+    }) => rescheduleBooking(id, startTime, endTime, rescheduledBy, reason),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['bookings'] });
     },
@@ -119,12 +114,12 @@ export function useRescheduleBooking() {
 }
 
 /**
- * SCENARIO: Transfer a booking to another teacher — admin/teacher only
+ * SCENARIO: Admin/Teacher transfers a booking to another teacher.
  * CALLS: PUT /api/bookings/{id}/transfer (BookingEndpoints.cs)
  * SIDE EFFECTS:
  *   - Updates booking.AdminId to targetAdminId (backend)
- *   - If booking was pending, sets status to "accepted" (backend)
- *   - Sends transfer notification email via BookingNotifier.NotifyTransferred (backend, EmailService)
+ *   - If booking was Pending, sets Status = Accepted (backend)
+ *   - Sends email via BookingNotifier.NotifyTransferred (backend, EmailService)
  *   - Invalidates ["bookings"] cache
  */
 export function useTransferBooking() {
@@ -139,17 +134,17 @@ export function useTransferBooking() {
 }
 
 /**
- * SCENARIO: Admin/Teacher adds an availability slot; adjacent unbooked slots are merged
+ * SCENARIO: Admin/Teacher adds a decorative availability overlay.
  * CALLS: POST /api/availability (AvailabilityEndpoints.cs)
  * SIDE EFFECTS:
- *   - Creates AdminAvailability record, merging with adjacent unbooked slots (backend)
+ *   - Creates AdminAvailability record (backend)
  *   - Invalidates ["availabilities"] cache
  */
 export function useAddAvailability() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: { adminId: number; startTime: Date | string; endTime: Date | string }) =>
-      addAvailabilityNew(data),
+      addAvailability(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['availabilities'] });
     },
@@ -157,17 +152,17 @@ export function useAddAvailability() {
 }
 
 /**
- * SCENARIO: Admin/Teacher updates an availability slot's time or booked status
+ * SCENARIO: Admin/Teacher updates an availability overlay's time window.
  * CALLS: PUT /api/availability/{id} (AvailabilityEndpoints.cs)
  * SIDE EFFECTS:
- *   - Updates StartTime, EndTime, IsBooked on AdminAvailability (backend)
+ *   - Updates StartTime, EndTime on AdminAvailability (backend)
  *   - Invalidates ["availabilities"] cache
  */
 export function useUpdateAvailability() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: { id: number; startTime: string; endTime: string; isBooked: boolean }) =>
-      updateAvailabilityNew(id, data),
+    mutationFn: ({ id, ...data }: { id: number; startTime: string; endTime: string }) =>
+      updateAvailability(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['availabilities'] });
     },
@@ -175,16 +170,16 @@ export function useUpdateAvailability() {
 }
 
 /**
- * SCENARIO: Admin/Teacher deletes an availability slot; linked bookings remain orphaned
+ * SCENARIO: Admin/Teacher deletes an availability overlay. Bookings are unaffected (independent).
  * CALLS: DELETE /api/availability/{id} (AvailabilityEndpoints.cs)
  * SIDE EFFECTS:
- *   - Removes AdminAvailability record; linked Booking.AdminAvailabilityId set to null (cascade, backend)
+ *   - Removes AdminAvailability record (backend)
  *   - Invalidates ["availabilities"] cache
  */
 export function useDeleteAvailability() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => deleteAvailabilityNew(id),
+    mutationFn: (id: number) => deleteAvailability(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['availabilities'] });
     },
@@ -193,7 +188,7 @@ export function useDeleteAvailability() {
 
 // ── Busy Time hooks ──
 
-/** SCENARIO: Any authenticated user fetches all busy time blocks */
+/** SCENARIO: Any authenticated user fetches all busy time blocks. */
 export function useBusyTimes() {
   return useQuery({
     queryKey: ['busyTimes'],
@@ -203,33 +198,28 @@ export function useBusyTimes() {
 }
 
 /**
- * SCENARIO: Admin/Teacher creates a busy time block; overlapping availability is trimmed/split, overlapping bookings require confirmation
+ * SCENARIO: Admin/Teacher creates a busy time block. No conflict checks — admin resolves overlaps visually.
  * CALLS: POST /api/busy-time (BusyTimeEndpoints.cs)
  * SIDE EFFECTS:
- *   - Returns 409 {type:"confirm", bookings} if non-declined bookings overlap (unless force=true)
- *   - With force=true: cancels overlapping bookings, trims/splits availability (backend)
  *   - Creates BusyTime record (backend)
- *   - Invalidates ["busyTimes"], ["availabilities"], ["bookings"] cache
+ *   - Invalidates ["busyTimes"] cache
  */
 export function useAddBusyTime() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { adminId: number; startTime: Date | string; endTime: Date | string; note?: string; force?: boolean }) =>
+    mutationFn: (data: { adminId: number; startTime: Date | string; endTime: Date | string; note?: string }) =>
       addBusyTime(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['busyTimes'] });
-      qc.invalidateQueries({ queryKey: ['availabilities'] });
-      qc.invalidateQueries({ queryKey: ['bookings'] });
     },
   });
 }
 
 /**
- * SCENARIO: Admin/Teacher updates a busy time block's time or note; rejects if overlapping bookings exist
+ * SCENARIO: Admin/Teacher updates a busy time block's time or note. No conflict checks.
  * CALLS: PUT /api/busy-time/{id} (BusyTimeEndpoints.cs)
  * SIDE EFFECTS:
  *   - Updates StartTime, EndTime, Note on BusyTime (backend)
- *   - Returns 409 if new time range overlaps non-declined bookings
  *   - Invalidates ["busyTimes"] cache
  */
 export function useUpdateBusyTime() {
@@ -244,10 +234,10 @@ export function useUpdateBusyTime() {
 }
 
 /**
- * SCENARIO: Admin/Teacher deletes a busy time block
+ * SCENARIO: Admin/Teacher deletes a busy time block.
  * CALLS: DELETE /api/busy-time/{id} (BusyTimeEndpoints.cs)
  * SIDE EFFECTS:
- *   - Removes the BusyTime record (backend)
+ *   - Removes BusyTime record (backend)
  *   - Invalidates ["busyTimes"] cache
  */
 export function useDeleteBusyTime() {

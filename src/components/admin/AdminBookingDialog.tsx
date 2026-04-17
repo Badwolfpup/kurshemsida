@@ -6,11 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 
-import { ALL_TIME_OPTIONS } from '@/components/calendar/calendarUtils';
+import { ALL_TIME_OPTIONS, DAY_NAMES } from '@/components/calendar/calendarUtils';
 import { fourDayRange } from '@/components/calendar/FourDayView';
-import { DAY_NAMES } from '@/components/calendar/calendarUtils';
 import { getDay } from 'date-fns';
 import type UserType from '@/Types/User';
+import type { MeetingType } from '@/Types/CalendarTypes';
 
 interface AdminBookingDialogProps {
   open: boolean;
@@ -19,13 +19,12 @@ interface AdminBookingDialogProps {
   coaches: UserType[];
   students: UserType[];
   onSubmit: (data: {
-    coachId?: number;
+    coachId: number;
     studentId?: number;
-    meetingType: string;
+    meetingType: MeetingType;
     note: string;
     startTime: string;
     endTime: string;
-    force?: boolean;
   }) => Promise<void>;
 }
 
@@ -39,23 +38,21 @@ export default function AdminBookingDialog({
 }: AdminBookingDialogProps) {
   const [coachId, setCoachId] = useState<number | null>(null);
   const [studentId, setStudentId] = useState<number | null>(null);
-  const [meetingType, setMeetingType] = useState<string>('followup');
+  const [meetingType, setMeetingType] = useState<MeetingType>('Followup');
   const [note, setNote] = useState('');
   const [day, setDay] = useState('');
-  const [startHour, setStartHour] = useState(9);
-  const [startMinute, setStartMinute] = useState(0);
+  const [startHour, setStartHour] = useState(8);
+  const [startMinute, setStartMinute] = useState(30);
   const [endHour, setEndHour] = useState(9);
-  const [endMinute, setEndMinute] = useState(30);
+  const [endMinute, setEndMinute] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [showNoteError, setShowNoteError] = useState(false);
+  const [showStudentError, setShowStudentError] = useState(false);
 
   const today = useMemo(() => startOfDay(new Date()), []);
 
-  // Students filtered by selected coach
   const filteredStudents = useMemo(() => {
-    if (coachId) {
-      return students.filter((s) => s.coachId === coachId);
-    }
+    if (coachId) return students.filter((s) => s.coachId === coachId);
     return students;
   }, [coachId, students]);
 
@@ -63,16 +60,20 @@ export default function AdminBookingDialog({
     onOpenChange(false);
     setCoachId(null);
     setStudentId(null);
-    setMeetingType('followup');
+    setMeetingType('Followup');
     setNote('');
     setDay('');
     setShowNoteError(false);
+    setShowStudentError(false);
   };
 
   const handleSubmit = async () => {
-    if (!day) return;
-    if (!coachId) return;
-    if (meetingType === 'other' && !note.trim()) {
+    if (!day || !coachId) return;
+    if (meetingType === 'Followup' && !studentId) {
+      setShowStudentError(true);
+      return;
+    }
+    if (meetingType === 'Other' && !note.trim()) {
       setShowNoteError(true);
       return;
     }
@@ -86,8 +87,8 @@ export default function AdminBookingDialog({
     setSubmitting(true);
     try {
       await onSubmit({
-        coachId: coachId!,
-        studentId: studentId ?? undefined,
+        coachId,
+        studentId: meetingType === 'Followup' && studentId ? studentId : undefined,
         meetingType,
         note,
         startTime: format(startTime, "yyyy-MM-dd'T'HH:mm:ss"),
@@ -104,7 +105,7 @@ export default function AdminBookingDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Föreslå möte</DialogTitle>
-          <DialogDescription>Välj typ av möte och fyll i detaljer.</DialogDescription>
+          <DialogDescription>Välj coach och fyll i detaljer. Coachen godkänner sedan förfrågan.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
@@ -121,27 +122,35 @@ export default function AdminBookingDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Elev {meetingType === 'followup' ? '(krävs)' : '(valfritt)'}</Label>
-            <Select value={studentId?.toString() || ''} onValueChange={(v) => setStudentId(v ? Number(v) : null)}>
-              <SelectTrigger><SelectValue placeholder="Välj elev..." /></SelectTrigger>
+            <Label>Mötestyp</Label>
+            <Select value={meetingType} onValueChange={(v) => { setMeetingType(v as MeetingType); setShowStudentError(false); }}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {filteredStudents.map((s) => (
-                  <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</SelectItem>
-                ))}
+                <SelectItem value="Followup">Uppföljning</SelectItem>
+                <SelectItem value="Other">Annat</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label>Mötestyp</Label>
-            <Select value={meetingType} onValueChange={setMeetingType}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="followup">Uppföljning</SelectItem>
-                <SelectItem value="other">Annat</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {meetingType === 'Followup' && (
+            <div className="space-y-2">
+              <Label>Elev (krävs)</Label>
+              <Select
+                value={studentId?.toString() || ''}
+                onValueChange={(v) => { setStudentId(v ? Number(v) : null); setShowStudentError(false); }}
+              >
+                <SelectTrigger className={showStudentError ? 'border-destructive' : ''}>
+                  <SelectValue placeholder={coachId ? 'Välj elev...' : 'Välj coach först...'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredStudents.map((s) => (
+                    <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {showStudentError && <p className="text-sm text-destructive">Välj en elev för uppföljningsmöte.</p>}
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label>Dag</Label>
@@ -198,7 +207,7 @@ export default function AdminBookingDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Meddelande {meetingType === 'other' ? '(krävs)' : '(valfritt)'}</Label>
+            <Label>Meddelande {meetingType === 'Other' ? '(krävs)' : '(valfritt)'}</Label>
             <Textarea
               placeholder="Lägg till ett meddelande..."
               value={note}
@@ -214,7 +223,7 @@ export default function AdminBookingDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose}>Avbryt</Button>
-          <Button onClick={handleSubmit} disabled={submitting}>Boka</Button>
+          <Button onClick={handleSubmit} disabled={submitting}>Skicka förfrågan</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -5,7 +5,7 @@ import { sv } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './BookingCalendar.css';
 import FourDayView, { localizer, fourDayRange } from './FourDayView';
-import { WORKDAY_START_HOUR, WORKDAY_END_HOUR, DAY_NAMES, RECURRING_EVENT_COLOR, BUSY_TIME_COLOR, STATUS_COLORS } from './calendarUtils';
+import { WORKDAY_START_HOUR, WORKDAY_START_MINUTE, WORKDAY_END_HOUR, WORKDAY_END_MINUTE, DAY_NAMES, RECURRING_EVENT_COLOR, BUSY_TIME_COLOR, STATUS_COLORS } from './calendarUtils';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { CalendarEvent } from '@/Types/CalendarTypes';
@@ -90,14 +90,12 @@ export default function CalendarShell({
         return { style: { ...base, backgroundColor: color, color: '#fff' } };
       }
       case 'pending':
-        return { style: { ...base, backgroundColor: STATUS_COLORS.pending.bg, color: '#fff', opacity: STATUS_COLORS.pending.opacity } };
-      case 'rescheduled':
-        return { style: { ...base, backgroundColor: STATUS_COLORS.rescheduled.bg, color: '#fff', opacity: STATUS_COLORS.rescheduled.opacity } };
+        return { style: { ...base, backgroundColor: STATUS_COLORS.Pending.bg, color: '#fff', opacity: STATUS_COLORS.Pending.opacity } };
       case 'accepted':
-        return { style: { ...base, backgroundColor: STATUS_COLORS.accepted.bg, color: '#fff' } };
+        return { style: { ...base, backgroundColor: STATUS_COLORS.Accepted.bg, color: '#fff' } };
       case 'declined':
         return {
-          style: { ...base, backgroundColor: STATUS_COLORS.declined.bg, color: '#fff', opacity: STATUS_COLORS.declined.opacity },
+          style: { ...base, backgroundColor: STATUS_COLORS.Declined.bg, color: '#fff', opacity: STATUS_COLORS.Declined.opacity },
           className: 'rbc-event--declined',
         };
       default:
@@ -136,7 +134,7 @@ export default function CalendarShell({
 
           {legend}
 
-          <div style={{ height: 600 }}>
+          <div style={{ height: 800 }}>
             {/* @ts-expect-error custom fourDay view not in type defs */}
             <Calendar<CalendarEvent>
               localizer={localizer}
@@ -150,8 +148,8 @@ export default function CalendarShell({
               step={30}
               timeslots={1}
               toolbar={false}
-              min={new Date(1970, 0, 1, WORKDAY_START_HOUR, 0, 0)}
-              max={new Date(1970, 0, 1, WORKDAY_END_HOUR, 0, 0)}
+              min={new Date(1970, 0, 1, WORKDAY_START_HOUR, WORKDAY_START_MINUTE, 0)}
+              max={new Date(1970, 0, 1, WORKDAY_END_HOUR, WORKDAY_END_MINUTE, 0)}
               date={currentDate}
               onNavigate={onDateChange}
               selectable={selectable}

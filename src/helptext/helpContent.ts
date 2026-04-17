@@ -63,19 +63,19 @@ export const helpContent: Record<string, HelpEntry> = {
   "admin-schedule": {
     title: "Kalender & Bokning",
     content: [
-      "Här hanterar du din tillgänglighet och ser bokade möten med coacher och deltagare.",
-      "• Klicka på ett tomt tidsfält i kalendern för att lägga till en tillgänglig tid.",
-      "• Tillgängliga tider visas i blått – coacher och elever kan boka dem för möten.",
-      "• Bokade möten visas med information om vem som har bokat och status.",
-      "• Du kan godkänna, neka eller avboka möten direkt från kalendern.",
-      "• Du kan tacka ja till ett möte och samtidigt överföra det till en annan lärare.",
+      "Här hanterar du din tillgänglighet och ser bokade möten med coacher.",
+      "• Alla nya bokningar är förfrågningar – motparten måste godkänna innan mötet är bekräftat. Det gäller både möten du föreslår och möten coacher föreslår till dig.",
+      "• Klicka på en tom tid i kalendern för att välja mellan \"Tillgänglighet\" och \"Upptagen\".",
+      "• Tillgänglighet (blå) – en visuell markering av när du helst vill ta möten. Coacher kan föreslå möten när som helst, men blå tider signalerar att du föredrar dessa.",
+      "• Upptagen (mörkgrå) – tider du markerat som upptagna. Coacher får en varning om de försöker föreslå möte då, men kan ändå skicka förfrågan. Befintliga bokningar påverkas inte när du lägger till eller ändrar en upptagen tid — du avgör själv om något ska avbokas.",
+      "• Bokade möten visas i kalendern med status (Förfrågan, Godkänd, Nekad). Klicka för att godkänna, neka, avboka eller boka om.",
+      "• Ombokning – om du eller coachen bokar om går förfrågan tillbaka till \"Förfrågan\" och kräver nytt godkännande.",
       "• Överför bokning – en godkänd bokning kan överföras till en annan lärare. Coachen får ett mejl om bytet.",
-      "• Föreslå möte – du kan föreslå ett möte med en coach eller elev. Motparten får ett mejl och kan godkänna eller neka.",
-      "• Fasta intromötestider – vissa tider är reserverade för intromöten och visas med ljusare färg i coachkalendern. Coacher kan bara boka intromöten på dessa tider.",
+      "• Föreslå möte – använd knappen för att skicka en förfrågan till en coach. Välj \"Uppföljning\" för att koppla mötet till en specifik elev, eller \"Annat\" för övriga möten.",
       "• Återkommande event – skapa schemalagda event (t.ex. coachträff) som upprepas varje vecka eller varannan vecka. Välj ansvarig lärare och klassrum.",
-      "• Upptagen tid – klicka på en tom tid och välj \"Upptagen\" för att blockera den. Upptagen tid visas som mörkgrå block och förhindrar att coacher bokar tiden.",
-      "• NoClass-dagar visas med röd bakgrund i kalendern — inga lektioner dessa dagar.",
-      "• Visa kalendrar: Klicka på lärarens namn för att toggla av/på.",
+      "• Visa kalendrar – toggla på flera lärares namn för att jämföra deras bokningar.",
+      "• Röda dagar markerar dagar utan undervisning (NoClass).",
+      "• Kalendern visar tiderna 08:00–16:00, måndag till torsdag.",
     ],
   },
 
@@ -205,19 +205,22 @@ export const helpContent: Record<string, HelpEntry> = {
   "coach-booking": {
     title: "Boka möte",
     content: [
-      "Här kan du boka ett möte med en lärare.",
-      "Alla lärares tillgänglighet visas som standard. Använd flervalslistan ovanför kalendern för att filtrera vilka lärare som visas.",
-      "Klicka på en tillgänglig tid för att boka. Du kan också lägga till en anteckning när du bokar.",
-      "• \"Bara för intromöte\" – vissa tider (ljusare färg) är reserverade för intromöten. Du kan bara välja intromöte på dessa tider.",
-      "Dina bokningar visas i kalendern. Du kan avboka eller begära ombokning direkt från kalendern.",
-      "• Föreslå möte – du kan föreslå ett möte med en lärare, även utanför deras tillgängliga tider. Läraren får ett mejl och måste godkänna mötet.",
-      "• Upptagen tid – tider markerade som \"Upptagen\" (mörkgrå block) kan inte bokas.",
-      "• Återkommande event (t.ex. coachträffar) visas som lila block med klassrumsnamn.",
-      "• NoClass-dagar visas med röd bakgrund — inga lektioner dessa dagar.",
+      "Här föreslår du möten med en lärare.",
+      "• Välj en lärare åt gången via knapparna ovanför kalendern – det är den lärarens kalender du ser och klickar i.",
+      "• Klicka var som helst i kalendern för att föreslå ett möte på den tiden. Läraren får en förfrågan och måste godkänna innan mötet är bekräftat.",
+      "• Blå block (\"Tillgänglig\") är tider läraren föredrar att ta möten på.",
+      "• Klicka på \"Upptagen\" (mörkgrå) eller ett återkommande event – du får en varning men kan ändå skicka förfrågan.",
+      "• En tid som redan är godkänd av en annan coach är helt blockerad – du kan inte föreslå möte där.",
+      "• Andra coachers väntande förfrågningar syns inte för dig.",
+      "• Mötestyp: välj \"Intromöte\", \"Uppföljning\" (kräver elev) eller \"Annat\".",
+      "• Dina bokningar visas i kalendern med status (Förfrågan, Godkänd, Nekad). Klicka för att avboka, boka om eller godkänna en ombokning från läraren.",
+      "• Ombokning – om du eller läraren bokar om går förfrågan tillbaka till \"Förfrågan\" och kräver nytt godkännande.",
+      "• Röda dagar markerar dagar utan undervisning.",
+      "• Kalendern visar tiderna 08:00–16:00, måndag till torsdag.",
     ],
   },
 
-  // ── Student Calendar ─────────────────────────────────────────────────────────
+  // ── Student Calendar (DISABLED — students cannot log in) ─────────────────────
   "student-calendar": {
     title: "Min kalender",
     content: [

@@ -26,7 +26,6 @@ import CoachMyParticipants from './pages/CoachMyParticipants';
 import CoachContact from './pages/CoachContact';
 import CoachProjects from './pages/CoachProjects';
 import CoachBookingView from './pages/CoachBookingView';
-import StudentCalendar from './pages/StudentCalendar';
 import Deltagare from './pages/Deltagare';
 import StudentSchedule from './pages/StudentSchedule';
 import Klassrum from './pages/Klassrum';
@@ -92,7 +91,6 @@ function AppRoutes() {
         {/* <Route path="/meddelanden" element={<MeddelandenPage />} /> */}
         {/* <Route path="/preferenser" element={<Preferenser />} /> */}
         {/* <Route path="/terminal" element={<Terminal />} /> */}
-        {/* <Route path="/student-calendar" element={<ProtectedRoute allow="student"><StudentCalendar /></ProtectedRoute>} /> */}
 
         <Route path="/deltagare" element={<Deltagare />} />
         {/* <Route path="/admin" element={<ProtectedRoute allow="admin"><Admin /></ProtectedRoute>} /> */}{/* Retired — sub-pages promoted to sidebar */}

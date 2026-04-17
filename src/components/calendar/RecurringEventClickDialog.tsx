@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { ALL_TIME_OPTIONS, padTime } from './calendarUtils';
-import type { RecurringEventInstance } from '@/Types/CalendarTypes';
+import type { RecurringEventInstance, RecurringFrequency } from '@/Types/CalendarTypes';
 
 interface RecurringEventClickDialogProps {
   open: boolean;
@@ -16,7 +16,7 @@ interface RecurringEventClickDialogProps {
   canEdit: boolean;
   adminName?: string;
   onEditThis?: (data: { name?: string; startTime?: string; endTime?: string; isDeleted?: boolean; classroom?: number }) => Promise<void>;
-  onEditAll?: (data: { name?: string; startTime?: string; endTime?: string; frequency?: string; classroom?: number }) => Promise<void>;
+  onEditAll?: (data: { name?: string; startTime?: string; endTime?: string; frequency?: RecurringFrequency; classroom?: number }) => Promise<void>;
   onDeleteThis?: () => Promise<void>;
   onDeleteAll?: () => Promise<void>;
 }
@@ -39,7 +39,7 @@ export default function RecurringEventClickDialog({
   const [startMinute, setStartMinute] = useState(0);
   const [endHour, setEndHour] = useState(10);
   const [endMinute, setEndMinute] = useState(0);
-  const [frequency, setFrequency] = useState('weekly');
+  const [frequency, setFrequency] = useState<RecurringFrequency>('Weekly');
   const [classroom, setClassroom] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -68,14 +68,14 @@ export default function RecurringEventClickDialog({
     setSubmitting(true);
     try {
       if (scope === 'this') {
-        await onEditThis({
+        await onEditThis?.({
           name: name !== instance.name ? name : undefined,
           startTime: padTime(startHour, startMinute),
           endTime: padTime(endHour, endMinute),
           classroom: classroom ? Number(classroom) : undefined,
         });
       } else {
-        await onEditAll({
+        await onEditAll?.({
           name,
           startTime: padTime(startHour, startMinute),
           endTime: padTime(endHour, endMinute),
@@ -94,9 +94,9 @@ export default function RecurringEventClickDialog({
     setSubmitting(true);
     try {
       if (scope === 'this') {
-        await onDeleteThis();
+        await onDeleteThis?.();
       } else {
-        await onDeleteAll();
+        await onDeleteAll?.();
       }
       handleClose();
     } finally {
@@ -114,7 +114,7 @@ export default function RecurringEventClickDialog({
           <DialogDescription asChild>
             <div className="space-y-1">
               <p>{format(new Date(instance.start), 'yyyy-MM-dd HH:mm')} – {format(new Date(instance.end), 'HH:mm')}
-              {' '}({instance.frequency === 'weekly' ? 'Varje vecka' : 'Varannan vecka'})</p>
+              {' '}({instance.frequency === 'Weekly' ? 'Varje vecka' : 'Varannan vecka'})</p>
               {adminName && <p><strong>Lärare:</strong> {adminName}</p>}
               {instance.classroom && <p><strong>Sal:</strong> {instance.classroom}</p>}
             </div>
@@ -179,9 +179,9 @@ export default function RecurringEventClickDialog({
             {scope === 'all' && (
               <div className="space-y-2">
                 <Label>Frekvens</Label>
-                <ToggleGroup type="single" value={frequency} onValueChange={(v) => { if (v) setFrequency(v); }}>
-                  <ToggleGroupItem value="weekly">Varje vecka</ToggleGroupItem>
-                  <ToggleGroupItem value="biweekly">Varannan vecka</ToggleGroupItem>
+                <ToggleGroup type="single" value={frequency} onValueChange={(v) => { if (v) setFrequency(v as RecurringFrequency); }}>
+                  <ToggleGroupItem value="Weekly">Varje vecka</ToggleGroupItem>
+                  <ToggleGroupItem value="Biweekly">Varannan vecka</ToggleGroupItem>
                 </ToggleGroup>
               </div>
             )}
