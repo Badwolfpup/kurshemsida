@@ -132,15 +132,46 @@ describe('getFreeSegments()', () => {
     expect(result[0].start.getHours()).toBe(11);
     expect(result[0].end.getHours()).toBe(12);
   });
+
+  it('handles nested booking inside a longer one without leaking a false free segment', () => {
+    // If the cursor guard is removed, a nested booking could rewind cursor
+    // and emit a spurious free segment after the outer booking ends.
+    const avail = makeAvail(1, 9, 13);
+    const outer = makeBooking(1, 9, 12);
+    const inner = makeBooking(1, 10, 11);
+    const result = getFreeSegments(avail, [outer, inner]);
+    expect(result).toHaveLength(1);
+    expect(result[0].start.getHours()).toBe(12);
+    expect(result[0].end.getHours()).toBe(13);
+  });
+
+  it('clamps a booking extending before availability start', () => {
+    const avail = makeAvail(1, 10, 12);
+    // Booking starts at 8 but availability starts at 10
+    const bookings = [makeBooking(1, 8, 11)];
+    const result = getFreeSegments(avail, bookings);
+    expect(result).toHaveLength(1);
+    expect(result[0].start.getHours()).toBe(11);
+    expect(result[0].end.getHours()).toBe(12);
+  });
+
+  it('treats a booking ending exactly at availability start as non-overlapping', () => {
+    const avail = makeAvail(1, 10, 12);
+    // Touching-but-not-overlapping — must not punch a hole
+    const bookings = [makeBooking(1, 9, 10)];
+    const result = getFreeSegments(avail, bookings);
+    expect(result).toHaveLength(1);
+    expect(result[0].start.getHours()).toBe(10);
+    expect(result[0].end.getHours()).toBe(12);
+  });
 });
 
 describe('generate30MinOptions()', () => {
-  it('generates options from WORKDAY_START to WORKDAY_END in 30-min steps', () => {
+  // WORKDAY is 08:30 – 14:30 → 12 half-hour steps + start = 13 options.
+  // If this breaks, the production WORKDAY window changed — review both together.
+  it('produces exactly 13 options for the 08:30–14:30 window', () => {
     const opts = generate30MinOptions();
-    const startTotal = WORKDAY_START_HOUR * 60 + WORKDAY_START_MINUTE;
-    const endTotal = WORKDAY_END_HOUR * 60 + WORKDAY_END_MINUTE;
-    const expected = Math.floor((endTotal - startTotal) / 30) + 1;
-    expect(opts).toHaveLength(expected);
+    expect(opts).toHaveLength(13);
   });
 
   it('first option is WORKDAY_START', () => {
@@ -156,10 +187,21 @@ describe('generate30MinOptions()', () => {
     expect(last.minute).toBe(WORKDAY_END_MINUTE);
   });
 
-  it('formats labels with zero-padded hours and minutes', () => {
+  it('matches the expected full label sequence', () => {
     const opts = generate30MinOptions();
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    expect(opts[0].label).toBe(`${pad(WORKDAY_START_HOUR)}:${pad(WORKDAY_START_MINUTE)}`);
+    expect(opts.map((o) => o.label)).toEqual([
+      '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+      '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+    ]);
+  });
+
+  it('produces correct hour/minute pairs (not just labels)', () => {
+    const opts = generate30MinOptions();
+    // Spot-check an intermediate option that could be wrong if minutes were hardcoded to 0
+    const nineThirty = opts.find((o) => o.label === '09:30');
+    expect(nineThirty).toBeDefined();
+    expect(nineThirty!.hour).toBe(9);
+    expect(nineThirty!.minute).toBe(30);
   });
 });
 
