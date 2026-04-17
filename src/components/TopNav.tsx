@@ -1,6 +1,5 @@
 import { Menu, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { KomIgangDialog } from '@/components/KomIgangDialog';
 import { NewsDialog } from '@/components/NewsDialog';
 import { ChangelogDialog } from '@/components/ChangelogDialog';
 import { NavChat } from '@/components/NavChat';
@@ -48,7 +47,6 @@ export function TopNav({ onMenuToggle }: TopNavProps) {
       {isLoggedIn && <NavChat />}
 
       <div className="topnav__actions">
-        {isLoggedIn && <KomIgangDialog />}
         {isLoggedIn && <ChangelogDialog />}
         {/* {isLoggedIn && <NewsDialog />} */}{/* Students temporarily disabled */}
         {isLoggedIn ? (

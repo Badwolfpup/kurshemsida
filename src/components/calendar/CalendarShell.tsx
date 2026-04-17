@@ -134,7 +134,7 @@ export default function CalendarShell({
 
           {legend}
 
-          <div style={{ height: 600 }}>
+          <div style={{ height: 800 }}>
             {/* @ts-expect-error custom fourDay view not in type defs */}
             <Calendar<CalendarEvent>
               localizer={localizer}

@@ -1,12 +1,11 @@
 {
-  "displaydate": null,
+  "displaydate": "2026-04-17",
   "entries": {
     "admin": [
       "Alla nya bokningar skickas nu som förfrågningar — motparten måste godkänna innan mötet är bekräftat.",
       "Tillgänglighetstider fungerar nu som en visuell markering på kalendern, de styr inte längre vilka tider coacher kan boka.",
       "När du markerar en tid som upptagen påverkas inte befintliga bokningar — du avgör själv om något ska avbokas.",
       "Ombokningar går tillbaka till \"Förfrågan\" och kräver nytt godkännande från motparten.",
-      "Kalendern visar 08:30–14:30 istället för 08:00–15:00 (matchar faktiska lektionstider).",
       "Dialogrutan för bokningskrockar är borttagen — endast hårda krockar med godkända möten blockeras (visas som toast).",
       "Förinställda introtider (Victoria tis 10–11, Adam tor 11–12) är borttagna — intromöten hanteras som vanliga möten.",
       "Dubblerade bokningsendpoints och föråldrad admin-kod har städats bort i bakgrunden."
@@ -15,8 +14,7 @@
       "Välj en handledare åt gången i kalendern och klicka sedan var som helst i tidsfältet för att föreslå ett möte.",
       "Knappen \"Föreslå möte\" är borttagen — all bokning sker nu genom att klicka direkt i kalendern.",
       "Du kan klicka på en upptagen tid eller ett återkommande event och föreslå mötet ändå efter en varning.",
-      "Alla bokningar är förfrågningar som handledaren behöver godkänna innan mötet är bekräftat.",
-      "Du ser bara dina egna förfrågningar; andra coachers väntande förfrågningar är inte längre synliga."
+      "Alla bokningar är förfrågningar som handledaren behöver godkänna innan mötet är bekräftat."
     ],
     "student": []
   }

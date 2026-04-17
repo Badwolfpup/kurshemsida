@@ -336,7 +336,7 @@ function CoachBookingView() {
               {warningKind === 'busy' ? 'Handledaren har markerat denna tid som upptagen' : 'Denna tid krockar med ett återkommande event'}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Vill du föreslå mötet ändå? Handledaren får själv bestämma om förfrågan ska godkännas.
+              Vill du föreslå mötet ändå?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

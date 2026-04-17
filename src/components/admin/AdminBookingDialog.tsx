@@ -17,8 +17,10 @@ interface AdminBookingDialogProps {
   onOpenChange: (open: boolean) => void;
   currentDate: Date;
   coaches: UserType[];
+  students: UserType[];
   onSubmit: (data: {
     coachId: number;
+    studentId?: number;
     meetingType: MeetingType;
     note: string;
     startTime: string;
@@ -31,9 +33,11 @@ export default function AdminBookingDialog({
   onOpenChange,
   currentDate,
   coaches,
+  students,
   onSubmit,
 }: AdminBookingDialogProps) {
   const [coachId, setCoachId] = useState<number | null>(null);
+  const [studentId, setStudentId] = useState<number | null>(null);
   const [meetingType, setMeetingType] = useState<MeetingType>('Followup');
   const [note, setNote] = useState('');
   const [day, setDay] = useState('');
@@ -43,20 +47,32 @@ export default function AdminBookingDialog({
   const [endMinute, setEndMinute] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [showNoteError, setShowNoteError] = useState(false);
+  const [showStudentError, setShowStudentError] = useState(false);
 
   const today = useMemo(() => startOfDay(new Date()), []);
+
+  const filteredStudents = useMemo(() => {
+    if (coachId) return students.filter((s) => s.coachId === coachId);
+    return students;
+  }, [coachId, students]);
 
   const handleClose = () => {
     onOpenChange(false);
     setCoachId(null);
+    setStudentId(null);
     setMeetingType('Followup');
     setNote('');
     setDay('');
     setShowNoteError(false);
+    setShowStudentError(false);
   };
 
   const handleSubmit = async () => {
     if (!day || !coachId) return;
+    if (meetingType === 'Followup' && !studentId) {
+      setShowStudentError(true);
+      return;
+    }
     if (meetingType === 'Other' && !note.trim()) {
       setShowNoteError(true);
       return;
@@ -72,6 +88,7 @@ export default function AdminBookingDialog({
     try {
       await onSubmit({
         coachId,
+        studentId: meetingType === 'Followup' && studentId ? studentId : undefined,
         meetingType,
         note,
         startTime: format(startTime, "yyyy-MM-dd'T'HH:mm:ss"),
@@ -94,7 +111,7 @@ export default function AdminBookingDialog({
         <div className="space-y-4 py-2">
           <div className="space-y-2">
             <Label>Coach</Label>
-            <Select value={coachId?.toString() || ''} onValueChange={(v) => setCoachId(Number(v))}>
+            <Select value={coachId?.toString() || ''} onValueChange={(v) => { setCoachId(Number(v)); setStudentId(null); }}>
               <SelectTrigger><SelectValue placeholder="Välj coach..." /></SelectTrigger>
               <SelectContent>
                 {coaches.map((c) => (
@@ -106,7 +123,7 @@ export default function AdminBookingDialog({
 
           <div className="space-y-2">
             <Label>Mötestyp</Label>
-            <Select value={meetingType} onValueChange={(v) => setMeetingType(v as MeetingType)}>
+            <Select value={meetingType} onValueChange={(v) => { setMeetingType(v as MeetingType); setShowStudentError(false); }}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="Followup">Uppföljning</SelectItem>
@@ -114,6 +131,26 @@ export default function AdminBookingDialog({
               </SelectContent>
             </Select>
           </div>
+
+          {meetingType === 'Followup' && (
+            <div className="space-y-2">
+              <Label>Elev (krävs)</Label>
+              <Select
+                value={studentId?.toString() || ''}
+                onValueChange={(v) => { setStudentId(v ? Number(v) : null); setShowStudentError(false); }}
+              >
+                <SelectTrigger className={showStudentError ? 'border-destructive' : ''}>
+                  <SelectValue placeholder={coachId ? 'Välj elev...' : 'Välj coach först...'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredStudents.map((s) => (
+                    <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {showStudentError && <p className="text-sm text-destructive">Välj en elev för uppföljningsmöte.</p>}
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label>Dag</Label>

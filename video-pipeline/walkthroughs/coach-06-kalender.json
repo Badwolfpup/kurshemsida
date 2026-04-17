@@ -7,72 +7,74 @@
     {
       "id": 1,
       "action": "screenshot_pause",
-      "narration": "Välkommen till kalendern. Här ser du tillgängliga tider och kan boka möten med administratörer.",
-      "pauseMs": 3000
+      "narration": "Välkommen till kalendern. Här föreslår du möten med en lärare. Alla bokningar är förfrågningar som läraren behöver godkänna innan mötet är bekräftat.",
+      "pauseMs": 5000
     },
     {
       "id": 2,
       "action": "screenshot_pause",
-      "narration": "Ovanför kalendern ser du en lista med alla lärare. Alla visas som standard. Du kan klicka på ett namn för att dölja eller visa den lärarens tillgänglighet.",
-      "pauseMs": 4000
+      "narration": "Ovanför kalendern väljer du en lärare åt gången. Det är den lärarens kalender du ser och klickar i. Byt lärare genom att klicka på ett annat namn.",
+      "pauseMs": 4500
     },
     {
       "id": 3,
       "action": "screenshot_pause",
-      "narration": "Kalendern visar fyra dagar i taget. Blå block är tillgängliga tider. Ljusare block markerade 'Bara för intromöte' är reserverade — du kan bara boka intromöten på dessa tider.",
-      "pauseMs": 3500
+      "narration": "Kalendern visar fyra dagar i taget mellan klockan åtta och sexton. Blå block är tider läraren föredrar att ta möten på – men du kan föreslå möte när som helst.",
+      "pauseMs": 5500
     },
     {
       "id": 4,
       "action": "screenshot_pause",
-      "narration": "Dina egna bokningar visas med statusfärger. Du kan se om de väntar på svar, är godkända, ombokade eller nekade.",
-      "pauseMs": 4000
+      "narration": "Mörkgråa block betyder att läraren är upptagen. Klickar du där får du en varning, men du kan ändå skicka en förfrågan. Gråa block är återkommande event som coachträffar – samma regel gäller där.",
+      "pauseMs": 6000
     },
     {
       "id": 5,
       "action": "screenshot_pause",
-      "narration": "Du bokar ett möte genom att klicka på en tillgänglig tid. En dialogruta öppnas där du väljer mötestyp, start- och sluttid. På tider markerade 'Bara för intromöte' kan du bara välja intromöte.",
-      "pauseMs": 4500
+      "narration": "Röda block är tider som redan är bokade av en annan coach. Dem kan du inte klicka på – tiden är upptagen. Andra coachers väntande förfrågningar syns inte alls för dig.",
+      "pauseMs": 5500
     },
     {
       "id": 6,
       "action": "screenshot_pause",
-      "narration": "I dialogrutan väljer du mötestyp. Det finns intromöte och uppföljning. Vid uppföljning väljer du också vilken elev det gäller.",
-      "pauseMs": 4500
+      "narration": "För att föreslå ett möte klickar du var som helst i kalendern på en tid som passar dig. En dialogruta öppnas.",
+      "pauseMs": 4000
     },
     {
       "id": 7,
-      "action": "click",
-      "selector": "button:has-text('Föreslå möte')",
-      "narration": "Du kan också klicka på Föreslå möte om du vill föreslå en tid som inte finns som tillgänglig i kalendern.",
-      "pauseMs": 2500
+      "action": "screenshot_pause",
+      "narration": "I dialogen väljer du mötestyp. Intromöte används för första mötet med en elev. Uppföljning kräver att du också väljer vilken elev det gäller. Annat är för övriga möten.",
+      "pauseMs": 6000
     },
     {
       "id": 8,
-      "action": "wait_for",
-      "selector": "[role='dialog']",
-      "waitMs": 5000,
-      "narration": "En dialogruta öppnas.",
-      "pauseMs": 1500
+      "action": "screenshot_pause",
+      "narration": "Kontrollera start- och sluttid, skriv eventuellt ett meddelande och klicka Skicka förfrågan. Läraren får ett mejl och kan godkänna eller neka i sin kalender.",
+      "pauseMs": 5500
     },
     {
       "id": 9,
       "action": "screenshot_pause",
-      "narration": "Här väljer du handledare, mötestyp, dag och tid. Administratören får en förfrågan som de kan godkänna eller neka.",
-      "pauseMs": 4000
+      "narration": "Dina egna bokningar visas direkt i kalendern med status. Orange betyder Förfrågan – väntar på svar. Grönt betyder Godkänd. Rött betyder Nekad.",
+      "pauseMs": 5500
     },
     {
       "id": 10,
-      "action": "click",
-      "selector": "[role='dialog'] button:has-text('Avbryt')",
-      "narration": "Vi stänger dialogen.",
-      "pauseMs": 1500
+      "action": "screenshot_pause",
+      "narration": "Klicka på en egen bokning för att se detaljer, avboka eller föreslå en annan tid. Om du bokar om går förfrågan tillbaka till Förfrågan igen, så läraren behöver godkänna den nya tiden.",
+      "pauseMs": 6000
     },
     {
       "id": 11,
       "action": "screenshot_pause",
-      "narration": "Du kan klicka på en befintlig bokning i kalendern för att se detaljer och eventuellt avboka.",
-      "pauseMs": 3000
+      "narration": "Om läraren bokar om ett redan godkänt möte får du tillbaka en förfrågan med den nya tiden. Du kan då godkänna eller neka ombokningen.",
+      "pauseMs": 5000
+    },
+    {
+      "id": 12,
+      "action": "screenshot_pause",
+      "narration": "Röda dagar i kalendern markerar dagar utan undervisning. Och det var det viktigaste om hur du bokar möten med dina lärare.",
+      "pauseMs": 5500
     }
   ]
 }

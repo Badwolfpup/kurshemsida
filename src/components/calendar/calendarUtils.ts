@@ -2,9 +2,9 @@ import type { Availability, Booking } from '@/api/BookingService';
 import type { BookingStatus } from '@/Types/CalendarTypes';
 
 export const WORKDAY_START_HOUR = 8;
-export const WORKDAY_START_MINUTE = 30;
-export const WORKDAY_END_HOUR = 14;
-export const WORKDAY_END_MINUTE = 30;
+export const WORKDAY_START_MINUTE = 0;
+export const WORKDAY_END_HOUR = 16;
+export const WORKDAY_END_MINUTE = 0;
 
 export const DAY_NAMES = ['', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'];
 

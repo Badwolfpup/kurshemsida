@@ -91,6 +91,7 @@ function AdminSchedule() {
 
   const allAdmins = useMemo(() => allUsers.filter((u) => u.authLevel <= 2 && u.isActive), [allUsers]);
   const coaches = useMemo(() => allUsers.filter((u) => u.authLevel === 3 && u.isActive), [allUsers]);
+  const students = useMemo(() => allUsers.filter((u) => u.authLevel === 4 && u.isActive), [allUsers]);
   const adminColorMap = useMemo(() => getAdminColorMap(allAdmins), [allAdmins]);
   const otherTeachers = useMemo(() => allAdmins, [allAdmins]);
   const nameMap = useMemo(() => {
@@ -316,6 +317,7 @@ function AdminSchedule() {
     try {
       await createBooking.mutateAsync({
         coachId: data.coachId,
+        studentId: data.studentId ?? null,
         meetingType: data.meetingType,
         note: data.note,
         startTime: data.startTime,
@@ -434,6 +436,7 @@ function AdminSchedule() {
         onOpenChange={setShowAppointmentDialog}
         currentDate={currentDate}
         coaches={coaches}
+        students={students}
         onSubmit={handleCreateAppointment}
       />
 

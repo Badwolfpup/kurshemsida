@@ -112,25 +112,26 @@ const Index = () => {
           <div className="index__about-track">
             <h3>Spår 2: Avancerad Utveckling</h3>
             <p className="index__about-track-sub">
-              För dig som vill ta nästa steg i karriären
+              För dig som vill lära dig bygga riktiga websidor eller program
             </p>
             <p>
-              Har du redan lärt dig grunderna i programmering och känner att du är
-              redo att ta nästa steg? Vårt avancerade spår är utformat för dig som
-              vill förbereda dig för professionell utveckling.
+              Har du redan lärt dig grunderna i programmering och vill ta nästa steg?
+              Spår 2 riktar sig till dig som är intresserad av att jobba som
+              utvecklare och vill lära dig bygga verkliga websidor eller program –
+              inte bara små övningar.
             </p>
-            <h4>Vad du får:</h4>
+            <h4>Vad du får hjälp med:</h4>
             <ul>
-              <li>Mentorskap från erfarna utvecklare</li>
-              <li>Praktiska projekt som speglar verkliga arbetsuppgifter</li>
-              <li>Vägledning mot mentorskap eller praktikplats hos etablerade företag</li>
-              <li>Möjlighet att bygga en professionell portfolio</li>
-              <li>Nätverk med branschkontakter</li>
+              <li>Sätta upp projekt som liknar verkliga applikationer, med till exempel databas och inloggning</li>
+              <li>Grundläggande säkerhetstänk i dina projekt</li>
+              <li>Bygga en portfolio med projekt du kan visa upp</li>
+              <li>Skriva ett CV som speglar vad du faktiskt kan</li>
+              <li>Vi hoppas också kunna erbjuda mentorskap eller praktikplats hos etablerade företag</li>
             </ul>
             <p>
-              <strong>Målet:</strong> Att förbereda dig för en karriär inom
-              mjukvaruutveckling genom praktisk erfarenhet och professionella
-              kontakter.
+              <strong>Målet:</strong> Att du lämnar kursen med praktiska kunskaper
+              och projekt du är stolt över – och en tydligare bild av om
+              utvecklararbete är rätt väg för dig.
             </p>
           </div>
         </div>
