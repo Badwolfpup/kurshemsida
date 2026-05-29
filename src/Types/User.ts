@@ -8,6 +8,7 @@ export default interface UserType {
   isActive: boolean;
   startDate: Date | null;
   course: number | null;
+  status: number;
   coachId: number | null;
   contactId: number | null;
   scheduledMonAm: boolean;

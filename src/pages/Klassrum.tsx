@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import HelpDialog from '@/components/HelpDialog';
 import type UserType from '@/Types/User';
 import type { SeatingAssignment } from '@/api/SeatingService';
+import { isReducedAttendance } from '@/lib/participantStatus';
 
 const DAYS = [
   { value: 1, label: 'Måndag', amKey: 'scheduledMonAm' as keyof UserType, pmKey: 'scheduledMonPm' as keyof UserType },
@@ -20,7 +21,7 @@ const DAYS = [
 
 // Spår 1 layout: which cells have tables (row 1-4, col 1-4)
 // C1 has tables at rows 1, 2, 4. C2-C4 have tables at all rows.
-const SPAR1_LAYOUT: { row: number; col: number }[] = [
+export const SPAR1_LAYOUT: { row: number; col: number }[] = [
   { row: 1, col: 1 }, { row: 1, col: 2 }, { row: 1, col: 3 }, { row: 1, col: 4 },
   { row: 2, col: 1 }, { row: 2, col: 2 }, { row: 2, col: 3 }, { row: 2, col: 4 },
   { row: 3, col: 2 }, { row: 3, col: 3 }, { row: 3, col: 4 },
@@ -29,7 +30,7 @@ const SPAR1_LAYOUT: { row: number; col: number }[] = [
 
 // Spår 2 layout: row 1 has 6 tables in pairs, row 2 has 2 tables at edges
 // Using col 1-6 for the 6 positions in row 1
-const SPAR2_LAYOUT: { row: number; col: number }[] = [
+export const SPAR2_LAYOUT: { row: number; col: number }[] = [
   { row: 1, col: 1 }, { row: 1, col: 2 }, { row: 1, col: 3 }, { row: 1, col: 4 }, { row: 1, col: 5 }, { row: 1, col: 6 },
   { row: 2, col: 1 }, { row: 2, col: 6 },
 ];
@@ -366,7 +367,7 @@ export default function Klassrum() {
   const [dayOfWeek, setDayOfWeek] = useState(1);
 
   const students = useMemo(
-    () => allUsers.filter((u) => u.authLevel === 4 && u.isActive),
+    () => allUsers.filter((u) => u.authLevel === 4 && u.isActive && !isReducedAttendance(u.status)),
     [allUsers]
   );
 

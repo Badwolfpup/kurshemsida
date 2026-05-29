@@ -8,6 +8,7 @@ import { useAttendance } from "@/hooks/useAttendance";
 import { DeltagareList } from "@/components/deltagare/DeltagareList";
 import CoachAttendance from "@/components/admin/CoachAttendance";
 import type UserType from "@/Types/User";
+import { STATUS_ONSITE, STATUS_DISTANCE, STATUS_PAUSED } from "@/lib/participantStatus";
 
 export type Participant = {
   id: number;
@@ -16,6 +17,7 @@ export type Participant = {
   email: string;
   startDate: string;
   track: number; // from user.course
+  status: number;
   coach: string;
   coachId: number | null;
   coachEmail: string;
@@ -77,6 +79,7 @@ function mapUserToParticipant(
       ? new Date(user.startDate).toISOString().split("T")[0]
       : "",
     track: user.course ?? 1,
+    status: user.status ?? STATUS_ONSITE,
     coach: coach ? `${coach.firstName} ${coach.lastName}` : "Ingen coach",
     coachId: user.coachId ?? null,
     coachEmail: coach?.email ?? "",
@@ -91,6 +94,8 @@ function mapUserToParticipant(
 const Deltagare = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedCoachId, setSelectedCoachId] = useState<number>(0);
+  const [selectedStatus, setSelectedStatus] = useState<number>(0);
+  const [selectedTeacherId, setSelectedTeacherId] = useState<number>(0);
   const { data: allUsers = [], isLoading } = useUsers();
 
   const today = useMemo(() => new Date(), []);
@@ -111,17 +116,24 @@ const Deltagare = () => {
   }, [attendanceData]);
 
   const coaches = useMemo(() => allUsers.filter((u) => u.authLevel === 3 && u.isActive), [allUsers]);
+  const teachers = useMemo(() => allUsers.filter((u) => u.authLevel <= 2 && u.isActive), [allUsers]);
 
   const participants = useMemo<Participant[]>(() => {
     let students = allUsers.filter((u) => u.authLevel === 4);
     if (selectedCoachId !== 0) {
       students = students.filter((u) => u.coachId === selectedCoachId);
     }
+    if (selectedTeacherId !== 0) {
+      students = students.filter((u) => u.contactId === selectedTeacherId);
+    }
+    if (selectedStatus !== 0) {
+      students = students.filter((u) => (u.status ?? STATUS_ONSITE) === selectedStatus);
+    }
     return students.map((u) => ({
       ...mapUserToParticipant(u, allUsers, u.id),
       attendance: attendanceMap[u.id] ?? {},
     }));
-  }, [allUsers, selectedCoachId, attendanceMap]);
+  }, [allUsers, selectedCoachId, selectedTeacherId, selectedStatus, attendanceMap]);
 
   const selectedUser = selectedId ? allUsers.find((u) => u.id === selectedId) : null;
 
@@ -152,15 +164,35 @@ const Deltagare = () => {
         </div>
         <h1 className="font-display text-2xl font-bold text-foreground">Deltagare</h1>
         <HelpDialog helpKey="deltagare" />
-        <Select value={selectedCoachId.toString()} onValueChange={(v) => setSelectedCoachId(Number(v))}>
-          <SelectTrigger className="w-48 ml-auto"><SelectValue placeholder="Alla coacher" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="0">Alla coacher</SelectItem>
-            {coaches.map((c) => (
-              <SelectItem key={c.id} value={c.id.toString()}>{c.firstName} {c.lastName}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex flex-wrap gap-2 ml-auto">
+          <Select value={selectedStatus.toString()} onValueChange={(v) => setSelectedStatus(Number(v))}>
+            <SelectTrigger className="w-40"><SelectValue placeholder="Alla statusar" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0">Alla statusar</SelectItem>
+              <SelectItem value={STATUS_ONSITE.toString()}>På plats</SelectItem>
+              <SelectItem value={STATUS_DISTANCE.toString()}>Distans</SelectItem>
+              <SelectItem value={STATUS_PAUSED.toString()}>Paus</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={selectedTeacherId.toString()} onValueChange={(v) => setSelectedTeacherId(Number(v))}>
+            <SelectTrigger className="w-44"><SelectValue placeholder="Alla lärare" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0">Alla lärare</SelectItem>
+              {teachers.map((t) => (
+                <SelectItem key={t.id} value={t.id.toString()}>{t.firstName} {t.lastName}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={selectedCoachId.toString()} onValueChange={(v) => setSelectedCoachId(Number(v))}>
+            <SelectTrigger className="w-44"><SelectValue placeholder="Alla coacher" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0">Alla coacher</SelectItem>
+              {coaches.map((c) => (
+                <SelectItem key={c.id} value={c.id.toString()}>{c.firstName} {c.lastName}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       <DeltagareList participants={participants} onSelect={setSelectedId} />
     </div>

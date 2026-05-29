@@ -16,6 +16,7 @@ import { useNoClasses } from "@/hooks/useNoClass";
 import StudentContextChat from "@/components/messaging/StudentContextChat";
 import type UserType from "@/Types/User";
 import type AttendanceType from "@/Types/Attendance";
+import { isReducedAttendance, statusFullLabel } from "@/lib/participantStatus";
 
 const MOCK_PROJECTS: { name: string; status: "done" | "in-progress" | "not-started" }[][] = [
   [
@@ -291,7 +292,12 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
       ) : (
         <>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h2 className="text-2xl font-bold">{selectedUser ? (authLevel === 1 || authLevel === 2) ? `${selectedUser.firstName} ${selectedUser.lastName}` : `${selectedUser.firstName.charAt(0)}.${selectedUser.lastName.charAt(0)}` : "Elevsida"}</h2>
+            <h2 className="text-2xl font-bold">
+              {selectedUser ? (authLevel === 1 || authLevel === 2) ? `${selectedUser.firstName} ${selectedUser.lastName}` : `${selectedUser.firstName.charAt(0)}.${selectedUser.lastName.charAt(0)}` : "Elevsida"}
+              {selectedUser && statusFullLabel(selectedUser.status) && (
+                <span className="text-base font-normal text-muted-foreground ml-2">({statusFullLabel(selectedUser.status)})</span>
+              )}
+            </h2>
             <div className="flex flex-wrap gap-2">
               {seluser === null && <Select value={selectedUser?.id.toString() || "0"} onValueChange={(value) => { setSelectedUserId(Number(value)); setSelectedUser(users.find((u) => u.id === Number(value)) || null); }}>
                 <SelectTrigger className="w-44 sm:w-48"><SelectValue placeholder="Alla deltagare" /></SelectTrigger>
@@ -368,11 +374,14 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                         <TableCell>{checkInitials(item)}</TableCell>
                         {Array.from({ length: 8 }).map((_, index) => {
                           const dayOffset = index < 4 ? index - 6 : index - 3;
+                          const attended = attendance.filter((x) => x.userId === item.id).filter((dates) => dates.date.some((d) => compareDates(new Date(d), getDate(dayOffset)))).length > 0;
+                          const afterStart = item.startDate !== null && new Date(item.startDate) <= getDate(dayOffset);
+                          const hideEmpty = isReducedAttendance(item.status) && !attended;
                           return (
                           <TableCell key={index} className={`text-center${index === 4 ? " border-l-2 border-border" : ""}`}>
-                            {item.startDate !== null && new Date(item.startDate) <= getDate(dayOffset) && (
+                            {afterStart && !hideEmpty && (
                               <Checkbox
-                                checked={attendance.filter((x) => x.userId === item.id).filter((dates) => dates.date.some((d) => compareDates(new Date(d), getDate(dayOffset)))).length > 0}
+                                checked={attended}
                                 disabled={userType === "Coach" || seluser !== null}
                                 onCheckedChange={() => {}}
                               />

@@ -21,6 +21,14 @@ export function useAddUser() {
     });
 }
 
+/**
+ * SCENARIO: Admin/teacher edits a participant (incl. status: på plats / distans / paus) and saves
+ * CALLS: PUT /api/update-user (UserEndpoints.cs)
+ * SIDE EFFECTS:
+ *   - Updates the provided fields on the target user in the database (backend)
+ *   - Persists participant Status, which drives reduced-attendance UI everywhere it is read
+ *   - Invalidates ["users"] cache so the list, detail, Närvaro, Klassrum, and coach views refresh
+ */
 export function useUpdateUser() {
     const queryClient = useQueryClient();
     return useMutation({

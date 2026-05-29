@@ -1,0 +1,17 @@
+{
+  "displaydate": "2026-05-29",
+  "entries": {
+    "admin": [
+      "Ny status per deltagare — På plats, Distans eller Paus. Välj den i redigeringsdialogen under Hantera användare, där en ny kolumn också visar statusen.",
+      "Deltagare-listan visar en Distans- eller Pausad-tagg bredvid spåret, och du kan nu filtrera deltagare på status och på kontaktlärare (utöver coach).",
+      "Distans- och pausdeltagare får ingen frånvarovarning, flyttas till en egen sektion längst ner under Närvaro, och deras tomma närvaromarkeringar döljs (bara faktisk närvaro visas).",
+      "Distans- och pausdeltagare räknas inte längre med i klassrumsplaceringen.",
+      "Ny sida \"Statistik\" (endast för lärare) med två flikar: Placering visar tilldelade och lediga bord per dag och pass samt antal fullbokade bord (minst 6 av 8 pass), och Närvaro visar snitt/median/min/max och standardavvikelse per veckodag och spår, närvarograd samt unika deltagare per vecka, med valbar datumperiod.",
+      "Deltagarens elevsida visar nu statusen i rubriken, t.ex. \"(studerar på distans)\"."
+    ],
+    "coach": [
+      "Deltagare som studerar på distans eller har en tillfällig paus visas med en tagg och samlas i en egen sektion i \"Mina deltagare\"."
+    ],
+    "student": []
+  }
+}
