@@ -4,8 +4,9 @@ export interface AddUserDto {
   email: string;
   telephone?: string;
   startDate?: Date | null;
-  authLevel: number; 
+  authLevel: number;
   course?: number;
+  status?: number;
   coachId?: number;
   contactId?: number;
 }
@@ -23,9 +24,10 @@ export interface UpdateUserDto {
   authLevel?: number; 
   startDate?: Date | null;
   isActive?: boolean ;
-  course?: number | null;  
-  coachId?: number | null;  
-  contactId?: number | null; 
+  course?: number | null;
+  status?: number;
+  coachId?: number | null;
+  contactId?: number | null;
   scheduledMonAm?: boolean;
   scheduledMonPm?: boolean;
   scheduledTueAm?: boolean;

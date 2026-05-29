@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useUnreadCounts } from "@/hooks/useMessages";
 import { useAttendance } from "@/hooks/useAttendance";
 import type UserType from "@/Types/User";
+import { isReducedAttendance, statusTagLabel } from "@/lib/participantStatus";
 
 
 const ABSENCE_WEEKS = 4;
@@ -20,6 +21,9 @@ function ParticipantRow({ p, unreadStudentIds, onSelect }: { p: UserType; unread
     <TableRow key={p.id} onClick={() => onSelect(p.id)} className="cursor-pointer hover:bg-accent/50">
       <TableCell className="font-medium">
         {p.firstName[0]}.{p.lastName[0]}
+        {statusTagLabel(p.status) && (
+          <Badge variant="outline" className="ml-2 text-xs">{statusTagLabel(p.status)}</Badge>
+        )}
         {unreadStudentIds.has(p.id) && (
           <span className="inline-block w-2 h-2 rounded-full bg-destructive ml-2" />
         )}
@@ -58,8 +62,10 @@ const CoachMyParticipants = () => {
     return ids;
   }, [attendanceData, fourWeeksAgoMs]);
 
-  const activeParticipants = participants.filter((p) => attendedIds.has(p.id));
-  const absentParticipants = participants.filter((p) => !attendedIds.has(p.id));
+  const reducedParticipants = participants.filter((p) => isReducedAttendance(p.status));
+  const normalParticipants = participants.filter((p) => !isReducedAttendance(p.status));
+  const activeParticipants = normalParticipants.filter((p) => attendedIds.has(p.id));
+  const absentParticipants = normalParticipants.filter((p) => !attendedIds.has(p.id));
 
 
 
@@ -129,6 +135,23 @@ const CoachMyParticipants = () => {
                 <Table>
                   <TableBody>
                     {absentParticipants.map((p) => (
+                      <ParticipantRow key={p.id} p={p} unreadStudentIds={unreadStudentIds} onSelect={(id) => { setSelectedParticipant(id); setShowAttendance(true); }} />
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+
+          {reducedParticipants.length > 0 && (
+            <div>
+              <h2 className="font-display font-semibold text-muted-foreground mb-3">
+                Distans &amp; paus ({reducedParticipants.length})
+              </h2>
+              <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
+                <Table>
+                  <TableBody>
+                    {reducedParticipants.map((p) => (
                       <ParticipantRow key={p.id} p={p} unreadStudentIds={unreadStudentIds} onSelect={(id) => { setSelectedParticipant(id); setShowAttendance(true); }} />
                     ))}
                   </TableBody>

@@ -17,6 +17,8 @@ import {
   CalendarCheck,
   Bug,
   LayoutGrid,
+  BarChart3,
+  Laptop,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -46,6 +48,8 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, messagesCount: number, s
       { title: 'Deltagare', url: '/deltagare', icon: Users, badgeCount: studentContextCount },
       { title: 'Deltagarschema', url: '/deltagarschema', icon: CalendarCheck },
       { title: 'Klassrum', url: '/klassrum', icon: LayoutGrid },
+      { title: 'Statistik', url: '/statistik', icon: BarChart3 },
+      { title: 'Datorer', url: '/datorer', icon: Laptop },
       {
         title: 'Kalender & Bokning',
         url: '/admin-schedule',

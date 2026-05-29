@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { hasAbsenceAlert } from '@/components/deltagare/DeltagareList';
 import type { Participant } from '@/pages/Deltagare';
+import { STATUS_DISTANCE, STATUS_PAUSED } from '@/lib/participantStatus';
 
 function daysAgo(n: number): string {
   const d = new Date();
@@ -8,8 +9,8 @@ function daysAgo(n: number): string {
   return d.toISOString().split('T')[0];
 }
 
-function makeParticipant(active: boolean, attendance: Record<string, boolean>): Participant {
-  return { active, attendance } as Participant;
+function makeParticipant(active: boolean, attendance: Record<string, boolean>, status?: number): Participant {
+  return { active, attendance, status } as Participant;
 }
 
 describe('hasAbsenceAlert()', () => {
@@ -43,6 +44,16 @@ describe('hasAbsenceAlert()', () => {
       [daysAgo(2)]: true,
       [daysAgo(7)]: false,
     });
+    expect(hasAbsenceAlert(p)).toBe(false);
+  });
+
+  it('returns false for a distans student despite no recent attendance', () => {
+    const p = makeParticipant(true, { [daysAgo(20)]: true }, STATUS_DISTANCE);
+    expect(hasAbsenceAlert(p)).toBe(false);
+  });
+
+  it('returns false for a paused student despite no attendance records', () => {
+    const p = makeParticipant(true, {}, STATUS_PAUSED);
     expect(hasAbsenceAlert(p)).toBe(false);
   });
 });

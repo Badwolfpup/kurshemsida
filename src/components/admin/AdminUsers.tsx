@@ -29,6 +29,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { STATUS_ONSITE, STATUS_DISTANCE, STATUS_PAUSED } from '@/lib/participantStatus';
 import { useToast } from '@/hooks/use-toast';
 import {
   useUsers,
@@ -51,6 +53,7 @@ const emptyForm = {
   telephone: '',
   startDate: '',
   course: '1',
+  status: STATUS_ONSITE.toString(),
   coachId: '__none__',
   contactId: '__none__',
 };
@@ -226,6 +229,7 @@ export default function AdminUsers() {
         ? new Date(p.startDate).toISOString().split('T')[0]
         : '',
       course: p.course?.toString() || '1',
+      status: p.status?.toString() || STATUS_ONSITE.toString(),
       coachId: p.coachId?.toString() || '__none__',
       contactId: p.contactId?.toString() || '__none__',
     });
@@ -251,6 +255,7 @@ export default function AdminUsers() {
           telephone: form.telephone || null,
           startDate: form.startDate ? new Date(form.startDate) : null,
           course: form.course ? parseInt(form.course) : null,
+          status: parseInt(form.status),
           coachId:
             form.coachId && form.coachId !== '__none__'
               ? parseInt(form.coachId)
@@ -287,6 +292,7 @@ export default function AdminUsers() {
           ...(activeTab === 'deltagare' && {
             startDate: form.startDate ? new Date(form.startDate) : null,
             course: form.course ? parseInt(form.course) : undefined,
+            status: parseInt(form.status),
             coachId:
               form.coachId && form.coachId !== '__none__'
                 ? parseInt(form.coachId)
@@ -445,6 +451,7 @@ export default function AdminUsers() {
                     Startdatum
                   </TableHead>
                   <TableHead className="hidden sm:table-cell">Spår</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Jobbcoach</TableHead>
                   <TableHead>Kontakt</TableHead>
                   <TableHead className="text-right">Åtgärder</TableHead>
@@ -454,7 +461,7 @@ export default function AdminUsers() {
                 {filtered.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={8}
+                      colSpan={9}
                       className="text-center text-muted-foreground py-8"
                     >
                       Inga {showInactive ? 'inaktiva' : 'aktiva'} deltagare.
@@ -478,6 +485,15 @@ export default function AdminUsers() {
                     <TableCell className="hidden sm:table-cell">
                       <Badge variant="outline">
                         {p.course ? `Spår ${p.course}` : '—'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={p.status === STATUS_ONSITE ? 'outline' : 'secondary'}>
+                        {p.status === STATUS_DISTANCE
+                          ? 'Distans'
+                          : p.status === STATUS_PAUSED
+                            ? 'Paus'
+                            : 'På plats'}
                       </Badge>
                     </TableCell>
                     <TableCell>{getCoachName(p.coachId)}</TableCell>
@@ -609,6 +625,25 @@ export default function AdminUsers() {
                       <SelectItem value="3">Spår 3</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label>Status</Label>
+                  <ToggleGroup
+                    type="single"
+                    value={form.status}
+                    onValueChange={(v) => v && setForm({ ...form, status: v })}
+                    className="justify-start"
+                  >
+                    <ToggleGroupItem value={STATUS_ONSITE.toString()}>
+                      På plats
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value={STATUS_DISTANCE.toString()}>
+                      Distans
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value={STATUS_PAUSED.toString()}>
+                      Paus
+                    </ToggleGroupItem>
+                  </ToggleGroup>
                 </div>
                 <div className="space-y-1">
                   <Label>Jobbcoach</Label>

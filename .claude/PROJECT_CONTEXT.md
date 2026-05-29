@@ -82,7 +82,7 @@ Projekt.tsx → useAddProject() → projectService.addProject(dto) → POST /api
 ## Key Shared Components
 - `AppLayout` — flex container (sidebar + topnav + content)
 - `AppSidebar` — collapsible nav, role-based menu items, unread badges
-- `TopNav` — header with hamburger, chat icon, profile avatar
+- `TopNav` — header with hamburger, Ändringar (changelog) button, profile avatar
 - `ProtectedRoute` — route guard checking `allow="admin"` or `allow="student"`
 - `CardDialog` — generic add/edit form dialog
 - `CodeEditor` — Monaco wrapper for exercise/project code
@@ -105,6 +105,8 @@ Auth-based conditional rendering: not logged in → Login (except public routes 
 | `/admin-schedule` | AdminSchedule | allow="admin" |
 | `/deltagarschema` | StudentSchedule | allow="admin" |
 | `/klassrum` | Klassrum | allow="admin" |
+| `/statistik` | Statistik | allow="admin" |
+| `/datorer` | Datorer | allow="admin" |
 | `/student-calendar` | StudentCalendar | allow="student" |
 | `/mina-deltagare` | CoachMyParticipants | — |
 | `/kontakt` | CoachContact | — |
@@ -127,7 +129,9 @@ See `.claude/PAGE_MAP.md` for detailed per-page, per-role functionality breakdow
 
 | Entity | Key Fields |
 |--------|-----------|
-| User | id, firstName, lastName, email, authLevel, coachId, schedule bools, emailNotifications |
+| User | id, firstName, lastName, email, authLevel, isActive, status (1=på plats/2=distans/3=paus), coachId, contactId, schedule bools, emailNotifications |
+| Computer | id, number, isActive, ownerStudentId (nullable), takesHome |
+| ComputerAssignment | id, computerId, studentId, dayOfWeek (1-4), period (am/pm) |
 | Project | id, title, description, html, css, js, difficulty, projectType |
 | Exercise | id, title, description, js, expectedResult, difficulty, exerciseType, clues |
 | Booking | id, adminId, coachId, studentId, startTime, endTime, status, meetingType, note, seen, reason, rescheduledBy, createdByRole |
@@ -185,9 +189,25 @@ See `.claude/PAGE_MAP.md` for detailed per-page, per-role functionality breakdow
 - Hooks: `src/hooks/useSeating.ts` — `useSeatingAssignments`, `useAssignSeat`, `useClearSeat`
 - Service: `src/api/SeatingService.ts` — GET/PUT/DELETE `/api/seating`
 - Backend: `SeatingEndpoints.cs` — CRUD with input validation, unique constraint per seat/day/period
-- Two layouts: Spår 1 (classroomId=1, 15 tables) and Spår 2 (classroomId=2, 8 tables)
-- Students filtered by `user.course` matching classroomId
+- Two layouts: Spår 1 (classroomId=1, 15 tables) and Spår 2 (classroomId=2, 8 tables). `SPAR1_LAYOUT`/`SPAR2_LAYOUT` are **exported** from `Klassrum.tsx` and reused by Statistik for capacity.
+- Students filtered by `user.course` matching classroomId; **distans/paus students are excluded** from seating
 - Overview tab shows free seats and scheduled student counts per day/block
+
+## Participant Status
+- `User.status` (number): 1 = På plats (default), 2 = Distans, 3 = Paus. Mirrors backend `ParticipantStatus` enum (int).
+- Shared helper `src/lib/participantStatus.ts`: `isReducedAttendance()`, `statusTagLabel()` (Distans/Pausad), `statusFullLabel()` ("studerar på distans"/"har en tillfällig paus").
+- "Reduced attendance" (distans + paus) treatment: no absence warning (suppressed in `DeltagareList.hasAbsenceAlert` + `AdminAttendance`), hidden empty attendance circles in `CoachAttendance`, own "Distans & paus" section in Närvaro + coach Mina deltagare, excluded from Klassrum seating, status tag in lists + label on the detail view.
+- Set via the status toggle in `AdminUsers` edit dialog (`PUT /api/update-user`). Deltagare filters by status + assigned teacher (contactId).
+
+## Statistik (teacher-only)
+- Page `src/pages/Statistik.tsx`, three tabs: `SeatingStats`, `ComputerStats`, `AttendanceStats` (in `src/components/statistik/`).
+- Pure math in `src/lib/statistics.ts` (mean/median/min/max/stdDev/summarize, isClassDay, seatOccupancy, countFullyBookedTables) — unit-tested.
+- Placering: designated/available seats per Spår × day × FM/EM + fullbokade tables (≥6/8 slots). Datorer: total/dedicated/shared computer counts + assigned/available shared computers per pass. Närvaro: attendance stats over a date range (default last 4 weeks).
+
+## Computers (Datorer, teacher-only)
+- Page `src/pages/Datorer.tsx`; service `src/api/ComputerService.ts`; hooks `src/hooks/useComputers.ts`; types `src/Types/Computer.ts`.
+- A global pool of borrowable computers (by number). Each is **shared** (per day·period `ComputerAssignment` slots) or **dedicated** to one student (owner) with a take-home flag. A student belongs to at most one computer — already-assigned students are filtered out of other computers' pickers.
+- Backend: `ComputerEndpoints.cs`, query keys `['computers']` + `['computer-assignments']`.
 
 ## Student Schedule Page
 - Page: `src/pages/StudentSchedule.tsx` — read-only view of student schedules per day
@@ -203,11 +223,8 @@ See `.claude/PAGE_MAP.md` for detailed per-page, per-role functionality breakdow
 - Email sent via `SendEmailFireAndForget` (Resend API, no-op in dev), body HTML-encoded
 - Coach Mina deltagare (`CoachMyParticipants.tsx`): participant list split by attendance — active students on top, absent 4+ weeks in separate section
 
-## AI Exercise & Project System
-- Students generate exercises/projects via AI (Grok), then submit feedback which saves to history
-- Endpoints in `ExerciseEndpoints.cs`: GET `exercise-history`, GET `project-history`, POST `exercise-feedback`, POST `project-feedback`
-- Shared test runner: `src/lib/exerciseTestRunner.ts` — `parseAsserts()` and `runTests()` used by both AI-generera and Sparade views
-- Sparade tabs show student's own history (not shared catalogue) with filters matching generation options
+## AI Exercise & Project System (dormant — AI removed)
+- **All AI was removed 2026-05-29** (backend Anthropic/DeepSeek/Grok endpoints + services + the navbar helpbot). The student exercise/project AI-generation UI (`OvningarAIGenerate.tsx`, `ProjektAIGenerate.tsx`, `AssertService.ts`) and the `exerciseTestRunner.ts` still exist but are **unreachable** — the student Övningar/Projekt routes are disabled and the generation endpoints no longer exist. Re-enabling these would require re-adding an AI backend.
 
 ## Changelog System (`src/changelogs/`)
 - One JSON file per feature/fix: `src/changelogs/<YYYY-MM-DD>-<slug>.json`
@@ -220,7 +237,7 @@ See `.claude/PAGE_MAP.md` for detailed per-page, per-role functionality breakdow
 ## Help System
 - `HelpDialog` (`src/components/HelpDialog.tsx`): per-page popover with static help text + optional video thumbnail
 - `HelpVideoModal` (`src/components/HelpVideoModal.tsx`): fullscreen YouTube embed
-- `NavChat` (`src/components/NavChat.tsx`): persistent AI chatbot in TopNav, uses `useHelpbot` hook
+- The navbar AI helpbot chatbox (`NavChat` + `useHelpbot` + `HelpbotService`) was **removed 2026-05-29** along with all backend AI endpoints — only the static per-page `HelpDialog` remains.
 
 ## SCENARIO Comment Convention
 Add to mutation hooks (frontend) and endpoint registrations (backend) after implementing features. Used by `/static-trace` to verify code matches intent.

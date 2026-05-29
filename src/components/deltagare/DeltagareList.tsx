@@ -4,8 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import type { Participant } from "@/pages/Deltagare";
 import { useUnreadCounts } from "@/hooks/useMessages";
 import { AbsenceWarningDialog } from "./AbsenceWarningDialog";
+import { isReducedAttendance, statusTagLabel } from "@/lib/participantStatus";
 
 export function hasAbsenceAlert(p: Participant): boolean {
+  if (isReducedAttendance(p.status)) return false;
   const today = new Date();
   const twoWeeksAgo = new Date(today);
   twoWeeksAgo.setDate(today.getDate() - 14);
@@ -67,10 +69,18 @@ export function DeltagareList({
             <p className="px-5 py-4 text-sm text-muted-foreground italic">Inga aktiva deltagare.</p>
           )}
           {active.map((p) => (
-            <button
+            <div
               key={p.id}
+              role="button"
+              tabIndex={0}
               onClick={() => onSelect(p.id)}
-              className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/50 transition-colors text-left"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelect(p.id);
+                }
+              }}
+              className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/50 transition-colors text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
             >
               <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                 <div className="w-9 h-9 rounded-full gradient-hero flex items-center justify-center text-primary-foreground text-sm font-semibold shrink-0">
@@ -106,12 +116,17 @@ export function DeltagareList({
                 </div>
               </div>
               <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                {statusTagLabel(p.status) && (
+                  <Badge variant="outline" className="text-xs hidden sm:inline-flex">
+                    {statusTagLabel(p.status)}
+                  </Badge>
+                )}
                 <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
                   Spår {p.track}
                 </Badge>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </div>
-            </button>
+            </div>
           ))}
         </div>
       </div>

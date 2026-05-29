@@ -34,3 +34,6 @@ AGENTS.md
 .claude/skills/gitnexus/
 Claude-Sessions/
 video-pipeline/Claude-Sessions/
+
+# Playwright MCP session artifacts
+.playwright-mcp/
