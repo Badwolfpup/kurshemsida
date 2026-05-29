@@ -37,10 +37,12 @@ const NONE = "_none";
 
 function ComputerCard({
   computer,
+  computers,
   assignments,
   students,
 }: {
   computer: Computer;
+  computers: Computer[];
   assignments: ComputerAssignment[];
   students: UserType[];
 }) {
@@ -49,6 +51,19 @@ function ComputerCard({
   const setOwner = useSetComputerOwner();
   const assignSlot = useAssignComputerSlot();
   const clearSlot = useClearComputerSlot();
+
+  // A student belongs to at most one computer — hide anyone already assigned
+  // (as owner or in a slot) to a *different* computer from this computer's pickers.
+  const availableStudents = useMemo(() => {
+    const takenByOthers = new Set<number>();
+    for (const c of computers) {
+      if (c.id !== computer.id && c.ownerStudentId != null) takenByOthers.add(c.ownerStudentId);
+    }
+    for (const a of assignments) {
+      if (a.computerId !== computer.id) takenByOthers.add(a.studentId);
+    }
+    return students.filter((s) => !takenByOthers.has(s.id));
+  }, [computers, assignments, students, computer.id]);
 
   const studentName = (id: number) => {
     const s = students.find((u) => u.id === id);
@@ -86,7 +101,7 @@ function ComputerCard({
             <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value={SHARED}>Delad (ingen ägare)</SelectItem>
-              {students.map((s) => (
+              {availableStudents.map((s) => (
                 <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</SelectItem>
               ))}
             </SelectContent>
@@ -142,7 +157,7 @@ function ComputerCard({
                           <SelectTrigger className="h-8 text-xs w-32"><SelectValue placeholder="—" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value={NONE}>—</SelectItem>
-                            {students.map((s) => (
+                            {availableStudents.map((s) => (
                               <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</SelectItem>
                             ))}
                           </SelectContent>
@@ -232,7 +247,7 @@ export default function Datorer() {
       ) : (
         <div className="space-y-4">
           {computers.map((c) => (
-            <ComputerCard key={c.id} computer={c} assignments={assignments} students={students} />
+            <ComputerCard key={c.id} computer={c} computers={computers} assignments={assignments} students={students} />
           ))}
         </div>
       )}
