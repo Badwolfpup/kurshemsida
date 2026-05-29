@@ -1,0 +1,13 @@
+{
+  "displaydate": "2026-05-29",
+  "entries": {
+    "admin": [
+      "AI-hjälpchatten i navigeringsfältet är borttagen.",
+      "Statistik har en ny flik \"Datorer\" som visar antal tilldelade och lediga delade datorer per pass."
+    ],
+    "coach": [
+      "AI-hjälpchatten i navigeringsfältet är borttagen."
+    ],
+    "student": []
+  }
+}
