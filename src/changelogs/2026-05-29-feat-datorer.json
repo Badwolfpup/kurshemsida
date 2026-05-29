@@ -1,0 +1,12 @@
+{
+  "displaydate": "2026-05-29",
+  "entries": {
+    "admin": [
+      "Ny sida \"Datorer\" (endast för lärare) för att hålla koll på lånedatorer. Lägg till och ta bort datorer med deras nummer.",
+      "Tilldela delade datorer per pass (förmiddag/eftermiddag, måndag–torsdag) så att olika deltagare kan dela samma dator vid olika tider.",
+      "Ge en hel dator till en enskild deltagare som sin egen, med en \"Tar hem\"-markering för datorer som tas med hem."
+    ],
+    "coach": [],
+    "student": []
+  }
+}

@@ -30,6 +30,7 @@ import Deltagare from './pages/Deltagare';
 import StudentSchedule from './pages/StudentSchedule';
 import Klassrum from './pages/Klassrum';
 import Statistik from './pages/Statistik';
+import Datorer from './pages/Datorer';
 import MeddelandenPage from './pages/MeddelandenPage';
 import Kodsidor from './pages/Kodsidor';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -102,6 +103,7 @@ function AppRoutes() {
         <Route path="/deltagarschema" element={<ProtectedRoute allow="admin"><StudentSchedule /></ProtectedRoute>} />
         <Route path="/klassrum" element={<ProtectedRoute allow="admin"><Klassrum /></ProtectedRoute>} />
         <Route path="/statistik" element={<ProtectedRoute allow="admin"><Statistik /></ProtectedRoute>} />
+        <Route path="/datorer" element={<ProtectedRoute allow="admin"><Datorer /></ProtectedRoute>} />
         {/* Coach routes */}
         <Route path="/mina-deltagare" element={<CoachMyParticipants />} />
         <Route path="/kontakt" element={<CoachContact />} />
