@@ -11,8 +11,13 @@ Complete reference of every page, tab, and role-specific behavior in the app.
 
 ## Sidebar Navigation by Role
 
-**Admin/Teacher:** Startsida, Hantera användare, Närvaro, Deltagare (unread badge), Kalender & Bokning, [bottom] Buggar & Idéer, Profil, Logout
+**Admin/Teacher:** Startsida, Hantera användare, Närvaro, Deltagare (unread badge), Deltagarschema, Klassrum, Statistik, Datorer, Kalender & Bokning, [bottom] Buggar & Idéer, Profil, Logout
 <!-- Disabled: Admin Panel (retired), Övningar, Projekt, Terminal, Meddelanden — students temporarily disabled -->
+<!-- Note: the navbar AI helpbot chatbox (NavChat) was removed 2026-05-29 -->
+<!-- Note: Statistik and Datorer are teacher/admin-only (ProtectedRoute allow="admin") -->
+
+### Participant status (2026-05-29)
+Each student (`User.status`) is **På plats** (default) / **Distans** / **Paus**. Distans + Paus = "reduced attendance": no absence warning, hidden empty attendance circles, own section in Närvaro, excluded from Klassrum seating, tagged in lists. Set via Hantera användare. Helper: `src/lib/participantStatus.ts`.
 
 **Coach:** Startsida, Mina deltagare (unread badge), Meddelanden (unread badge), Kalender: Boka mote, Kontakt, [bottom] Profil, Logout
 
@@ -114,10 +119,11 @@ Complete reference of every page, tab, and role-specific behavior in the app.
 **Component:** `pages/Deltagare.tsx`
 **Hooks:** `useUsers`, `useUnreadCounts`
 
-- Coach filter dropdown (top-right): filter participants by coach, shows active coaches only
-- Table of all student participants (filtered by selected coach, or all)
-- Columns: name, unread message indicator (red dot), track badge
-- Click row → `CoachAttendance` detail view with attendance chart + chat (`showChat=true`)
+- Filter dropdowns (top-right): **status** (på plats/distans/paus), **lärare** (by contactId), and **coach** (active coaches)
+- Table of all student participants (filtered by the selected dropdowns)
+- Columns: name, unread message indicator (red dot), Distans/Pausad tag (left of the Spår tag), track badge
+- Distans/paus students show no absence warning; their empty attendance circles are hidden in the detail view
+- Click row → `CoachAttendance` detail view (heading shows e.g. "(studerar på distans)") with attendance chart + chat (`showChat=true`)
 - Back button to return to list
 
 ---
@@ -128,6 +134,7 @@ Complete reference of every page, tab, and role-specific behavior in the app.
 **Component:** `pages/HanteraAnvandare.tsx` → `AdminUsers`
 
 - User CRUD table — add, edit, delete, toggle active, assign coach
+- Deltagare tab has a **Status** column; the edit dialog has a På plats / Distans / Paus toggle (ToggleGroup)
 
 ---
 
@@ -137,6 +144,47 @@ Complete reference of every page, tab, and role-specific behavior in the app.
 **Component:** `pages/Narvaro.tsx` → `AdminAttendance`
 
 - Attendance by date — toggle present/absent per student
+- On-site students first; **distans/paus students** in a separate "Distans & paus" section at the bottom, excluded from the 2-week absence warning (no triangle/red banner) but still markable
+
+---
+
+## /klassrum — Klassrum
+
+**Roles:** Admin/Teacher only (ProtectedRoute allow="admin")
+**Component:** `pages/Klassrum.tsx`
+**Hooks:** `useUsers`, `useSeatingAssignments`, `useAssignSeat`, `useClearSeat`
+
+- Visual table-seating planner for Spår 1 (15 tables) and Spår 2 (8 tables), per weekday (Mån–Tor)
+- Översikt tab + per-spår tabs with FM/EM seat selects per table
+- Distans/paus students are excluded from seating lists/counts
+- Layouts (`SPAR1_LAYOUT`, `SPAR2_LAYOUT`) are exported and reused by Statistik
+
+---
+
+## /statistik — Statistik
+
+**Roles:** Admin/Teacher only (ProtectedRoute allow="admin")
+**Component:** `pages/Statistik.tsx`
+**Hooks:** `useUsers`, `useAttendance`, `useNoClasses`, `useSeatingAssignments`, `useComputers`, `useComputerAssignments`
+
+Three tabs:
+- **Placering** (`SeatingStats`): designated/available tables per Spår × day × FM/EM, + count of "fullbokade" tables (≥6/8 slots)
+- **Datorer** (`ComputerStats`): three summary rows (Total / Tilldelade / Delade datorer) and a per-pass grid of assigned vs available **shared** computers (denominated by the shared count)
+- **Närvaro** (`AttendanceStats`): date-range picker (default last 4 weeks, end defaults to today); avg/median/min/max/std-dev of daily attendance overall, per weekday and per spår; total attendance rate; unique attendees per week. Excludes paus/distans students and NoClass days.
+
+Pure stat helpers live in `src/lib/statistics.ts`.
+
+---
+
+## /datorer — Datorer
+
+**Roles:** Admin/Teacher only (ProtectedRoute allow="admin")
+**Component:** `pages/Datorer.tsx`
+**Hooks:** `useComputers`, `useComputerAssignments`, `useAddComputer`, `useRemoveComputer`, `useSetComputerOwner`, `useAssignComputerSlot`, `useClearComputerSlot`
+
+- Manage a global pool of borrowable computers (added/removed by id number)
+- Per computer: either **shared** (assign a student per day·period in an FM/EM × Mån–Tor grid) or **dedicated** to one student (owner select) with a **Tar hem** (take-home) checkbox
+- A student can belong to only one computer — students already assigned (as owner or in a slot) to another computer are filtered out of the pickers
 
 ---
 
