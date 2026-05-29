@@ -42,11 +42,13 @@ export default function ComputerStats() {
 
   return (
     <div className="space-y-4">
+      <div className="text-sm space-y-0.5">
+        <p>Total antal datorer: <strong>{total}</strong></p>
+        <p>Antal tilldelade datorer: <strong>{dedicated}</strong></p>
+        <p>Antal delade datorer: <strong>{shared}</strong></p>
+      </div>
       <p className="text-sm text-muted-foreground">
-        Antal tilldelade och lediga datorer per pass. Egna datorer räknas alltid som upptagna.
-      </p>
-      <p className="text-sm">
-        Totalt <strong>{total}</strong> {total === 1 ? "dator" : "datorer"} — {dedicated} egna (fullt tilldelade), {shared} delade.
+        Tilldelade och lediga delade datorer per pass.
       </p>
       <div className="bg-card rounded-2xl shadow-card border border-border overflow-x-auto">
         <Table>
@@ -66,7 +68,7 @@ export default function ComputerStats() {
                   const sharedAssigned = assignments.filter(
                     (a) => a.dayOfWeek === d.value && a.period === period.key
                   ).length;
-                  const occ = seatOccupancy(dedicated + sharedAssigned, total);
+                  const occ = seatOccupancy(sharedAssigned, shared);
                   return (
                     <TableCell key={d.value} className="text-center">
                       <span className={utilClass(occ.pct)}>
