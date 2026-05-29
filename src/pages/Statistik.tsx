@@ -2,6 +2,7 @@ import { BarChart3 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SeatingStats from "@/components/statistik/SeatingStats";
 import AttendanceStats from "@/components/statistik/AttendanceStats";
+import ComputerStats from "@/components/statistik/ComputerStats";
 
 export default function Statistik() {
   return (
@@ -15,10 +16,14 @@ export default function Statistik() {
       <Tabs defaultValue="placering">
         <TabsList className="mb-4">
           <TabsTrigger value="placering">Placering</TabsTrigger>
+          <TabsTrigger value="datorer">Datorer</TabsTrigger>
           <TabsTrigger value="narvaro">Närvaro</TabsTrigger>
         </TabsList>
         <TabsContent value="placering">
           <SeatingStats />
+        </TabsContent>
+        <TabsContent value="datorer">
+          <ComputerStats />
         </TabsContent>
         <TabsContent value="narvaro">
           <AttendanceStats />
