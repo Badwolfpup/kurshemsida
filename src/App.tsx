@@ -19,7 +19,6 @@ import Preferenser from './pages/Preferenser';
 import CoachSettings from './pages/CoachSettings';
 import CoachMyParticipants from './pages/CoachMyParticipants';
 import CoachContact from './pages/CoachContact';
-import CoachProjects from './pages/CoachProjects';
 import CoachBookingView from './pages/CoachBookingView';
 import Deltagare from './pages/Deltagare';
 import StudentSchedule from './pages/StudentSchedule';
@@ -95,7 +94,6 @@ function AppRoutes() {
         <Route path="/kontakt" element={<CoachContact />} />
         <Route path="/coach-installningar" element={<CoachSettings />} />
         <Route path="/profil" element={<Preferenser />} />
-        <Route path="/coach-projekt" element={<CoachProjects />} />
         <Route path="/coach-booking" element={<CoachBookingView />} />
         <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="*" element={<NotFound />} />

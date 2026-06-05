@@ -112,15 +112,6 @@ export const helpContent: Record<string, HelpEntry> = {
     ],
   },
 
-  // ── Coach Projekt ─────────────────────────────────────────────────────────────
-  "coach-projekt": {
-    title: "Projekt",
-    content: [
-      "Här ser du alla tillgängliga projekt i systemet.",
-      "Projekten visar titel, beskrivning, projekttyp och svårighetsgrad. Använd den här sidan som referens när du handleder dina deltagare.",
-    ],
-  },
-
   // ── Inställningar (Student/Admin) ─────────────────────────────────────────────
   "preferenser": {
     title: "Inställningar",
