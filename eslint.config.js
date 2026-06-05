@@ -50,9 +50,11 @@ export default defineConfig([
 
       // TypeScript already checks these, and the core versions produce false
       // positives (no-undef flags JSX's `React`, Node/vitest globals; core
-      // no-unused-vars duplicates the @typescript-eslint version).
+      // no-unused-vars duplicates the @typescript-eslint version; no-redeclare
+      // flags TS type+value sharing a name, which is legal).
       'no-undef': 'off',
       'no-unused-vars': 'off',
+      'no-redeclare': 'off',
 
       // This project types props with TypeScript, not React PropTypes.
       'react/prop-types': 'off',

@@ -90,7 +90,7 @@ export default function AdminProjects() {
         {filtered.map((p) => (
           <div key={p.id} className="border rounded-lg p-3 bg-card">
             <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 cursor-pointer" onClick={() => { const s = new Set(expanded); s.has(p.id) ? s.delete(p.id) : s.add(p.id); setExpanded(s); }}>
+              <div className="flex-1 cursor-pointer" onClick={() => { const s = new Set(expanded); if (s.has(p.id)) s.delete(p.id); else s.add(p.id); setExpanded(s); }}>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold">{p.title}</span>
                   <Badge variant="outline" className="text-xs">{TYPE_LABELS[p.projectType] || p.projectType}</Badge>

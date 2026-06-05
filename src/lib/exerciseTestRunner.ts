@@ -22,6 +22,7 @@ export function parseAsserts(assertsJson: string | null): ParsedAssert[] {
 export function runTests(userCode: string, asserts: ParsedAssert[]): TestResult[] {
   return asserts.map((a) => {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-implied-eval -- intentional sandboxed execution of user exercise code
       const wrapped = new Function(`
         ${userCode}
         let __passed = true;

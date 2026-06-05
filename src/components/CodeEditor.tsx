@@ -96,8 +96,8 @@ export function combineCode(tabs: Record<TabId, string>, category: string): stri
   }
   if (tabs.js?.trim()) {
     combined = combined.includes('</body>')
-      ? combined.replace('</body>', `<script>\n${tabs.js}\n<\/script>\n</body>`)
-      : `${combined}\n<script>\n${tabs.js}\n<\/script>`;
+      ? combined.replace('</body>', `<script>\n${tabs.js}\n</script>\n</body>`)
+      : `${combined}\n<script>\n${tabs.js}\n</script>`;
   }
   return combined;
 }
@@ -144,7 +144,7 @@ export default function CodeEditor({
       setShowPreview(true);
       setShowConsole(true);
       const combined = getCombinedCode();
-      const consoleCapture = `<script>(function(){var _l=console.log,_e=console.error,_w=console.warn;function s(t,a){try{window.parent.postMessage({type:'console',method:t,args:Array.from(a).map(function(x){return typeof x==='object'?JSON.stringify(x,null,2):String(x)})},'*')}catch(e){}}console.log=function(){s('log',arguments);_l.apply(console,arguments)};console.error=function(){s('error',arguments);_e.apply(console,arguments)};console.warn=function(){s('warn',arguments);_w.apply(console,arguments)};window.onerror=function(m,u,l){s('error',['Error: '+m+' (rad '+l+')'])}})();<\/script>`;
+      const consoleCapture = `<script>(function(){var _l=console.log,_e=console.error,_w=console.warn;function s(t,a){try{window.parent.postMessage({type:'console',method:t,args:Array.from(a).map(function(x){return typeof x==='object'?JSON.stringify(x,null,2):String(x)})},'*')}catch(e){}}console.log=function(){s('log',arguments);_l.apply(console,arguments)};console.error=function(){s('error',arguments);_e.apply(console,arguments)};console.warn=function(){s('warn',arguments);_w.apply(console,arguments)};window.onerror=function(m,u,l){s('error',['Error: '+m+' (rad '+l+')'])}})();</script>`;
       let doc = combined;
       if (doc.includes('<head>'))
         doc = doc.replace('<head>', `<head>${consoleCapture}`);
@@ -437,7 +437,7 @@ export default function CodeEditor({
                     <div
                       className={`flex items-center justify-center text-muted-foreground text-sm ${isFullscreen ? 'h-full' : 'min-h-[300px]'}`}
                     >
-                      Klicka "Kör" för att se resultatet
+                      Klicka &quot;Kör&quot; för att se resultatet
                     </div>
                   )}
                 </div>

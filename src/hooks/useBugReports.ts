@@ -23,7 +23,7 @@ export function useSubmitBugReport() {
 export function useBugReports() {
   return useQuery({
     queryKey: ["bugReports"],
-    queryFn: bugReportService.getBugReports,
+    queryFn: () => bugReportService.getBugReports(),
     staleTime: 30_000,
     refetchOnWindowFocus: true,
   });

@@ -216,7 +216,7 @@ export default function AdminBookingDialog({
               className={showNoteError ? 'border-destructive' : ''}
             />
             {showNoteError && (
-              <p className="text-sm text-destructive">Du måste ange ett meddelande för mötestyp "Annat".</p>
+              <p className="text-sm text-destructive">Du måste ange ett meddelande för mötestyp &quot;Annat&quot;.</p>
             )}
           </div>
         </div>

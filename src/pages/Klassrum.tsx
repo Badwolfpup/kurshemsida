@@ -179,6 +179,7 @@ function ClassroomGrid({ classroomId, students: allStudents, dayOfWeek }: { clas
     return allStudents.filter((s) => (s.course ?? 0) === 1);
   }, [classroomId, allStudents]);
 
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises -- handler manages its own errors via try/catch
   const handleAssign: SeatSelectProps['onAssign'] = async (data) => {
     try {
       await assignMut.mutateAsync(data);
@@ -187,6 +188,7 @@ function ClassroomGrid({ classroomId, students: allStudents, dayOfWeek }: { clas
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises -- handler manages its own errors via try/catch
   const handleClear: SeatSelectProps['onClear'] = async (data) => {
     try {
       await clearMut.mutateAsync(data);

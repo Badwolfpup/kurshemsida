@@ -174,7 +174,7 @@ const OvningarSaved = () => {
                             <div className="space-y-2">
                               {asserts.map((a, i) => (
                                 <div key={i} className="bg-muted rounded-lg p-3">
-                                  <p className="text-xs text-muted-foreground mb-1">// {a.comment}</p>
+                                  <p className="text-xs text-muted-foreground mb-1">{`// ${a.comment}`}</p>
                                   <pre className="text-sm text-foreground font-mono">{a.code}</pre>
                                 </div>
                               ))}
@@ -212,7 +212,7 @@ const OvningarSaved = () => {
                                         : <XCircle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 shrink-0" />
                                       }
                                       <div className="min-w-0">
-                                        <p className="text-xs text-muted-foreground mb-1">// {r.comment}</p>
+                                        <p className="text-xs text-muted-foreground mb-1">{`// ${r.comment}`}</p>
                                         <pre className="text-sm font-mono text-foreground whitespace-pre-wrap">{r.code}</pre>
                                         {r.error && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{r.error}</p>}
                                       </div>

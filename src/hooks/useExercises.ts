@@ -5,7 +5,7 @@ import type { AddExerciseDto, UpdateExerciseDto } from '../Types/Dto/ExerciseDto
 export function useExercises() {
     return useQuery({
         queryKey: ['exercises'],
-        queryFn: exerciseService.fetchExercises,
+        queryFn: () => exerciseService.fetchExercises(),
         staleTime: 5 * 60 * 1000, // 5 minutes
     })
 }

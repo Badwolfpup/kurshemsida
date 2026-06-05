@@ -114,7 +114,7 @@ export default function AdminExercises() {
         {filtered.map((ex) => (
           <div key={ex.id} className="border rounded-lg p-3 bg-card">
             <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 cursor-pointer" onClick={() => { const s = new Set(expanded); s.has(ex.id) ? s.delete(ex.id) : s.add(ex.id); setExpanded(s); }}>
+              <div className="flex-1 cursor-pointer" onClick={() => { const s = new Set(expanded); if (s.has(ex.id)) s.delete(ex.id); else s.add(ex.id); setExpanded(s); }}>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold">{ex.title}</span>
                   <Badge variant="outline" className="text-xs">{TYPE_LABELS[ex.exerciseType] || ex.exerciseType}</Badge>

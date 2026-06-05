@@ -59,7 +59,7 @@ const ProjektAIGenerate = () => {
         const htmlWithImages = (AIProject.solutionHtml || "")
         .replace(/\{image:(\w+)\}/g, (_: string, name: string) => getImage(name));
         doc.open();
-        doc.write(`<html><head><style>${AIProject.solutionCss || ""}</style></head><body style="background-color: #faf3e8;">${htmlWithImages}<script>${AIProject.solutionJs || ""}<\/script></body></html>`);
+        doc.write(`<html><head><style>${AIProject.solutionCss || ""}</style></head><body style="background-color: #faf3e8;">${htmlWithImages}<script>${AIProject.solutionJs || ""}</script></body></html>`);
         doc.close();
       }
     }

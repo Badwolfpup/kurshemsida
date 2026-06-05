@@ -5,7 +5,7 @@ import { exerciseService } from '../api/ExerciseService';
 export function useExerciseHistory() {
     return useQuery({
         queryKey: ['exerciseHistory'],
-        queryFn: exerciseService.fetchExerciseHistory,
+        queryFn: () => exerciseService.fetchExerciseHistory(),
         staleTime: 5 * 60 * 1000,
     });
 }

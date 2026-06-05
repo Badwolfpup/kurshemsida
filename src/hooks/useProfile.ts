@@ -23,6 +23,7 @@ export function useProfile() {
   return {
     profile,
     loading: false,
+    // eslint-disable-next-line @typescript-eslint/require-await -- stub; awaits the Kursserver API call once implemented
     updateProfile: async (updates: Record<string, any>) => {
       console.log("Profile update requested:", updates);
       // TODO: Implement profile update API call to Kursserver

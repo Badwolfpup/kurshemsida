@@ -74,7 +74,7 @@ const ProjektSaved = () => {
         const htmlWithImages = (expandedProject.solutionHtml || "")
           .replace(/\{image:(\w+)\}/g, (_: string, name: string) => getImage(name));
         doc.open();
-        doc.write(`<html><head><style>${expandedProject.solutionCss || ""}</style></head><body style="background-color: #faf3e8;">${htmlWithImages}<script>${expandedProject.solutionJs || ""}<\/script></body></html>`);
+        doc.write(`<html><head><style>${expandedProject.solutionCss || ""}</style></head><body style="background-color: #faf3e8;">${htmlWithImages}<script>${expandedProject.solutionJs || ""}</script></body></html>`);
         doc.close();
       }
     }
