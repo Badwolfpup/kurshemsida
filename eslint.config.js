@@ -6,6 +6,17 @@ import prettierConfig from 'eslint-config-prettier';
 import reactHooks from 'eslint-plugin-react-hooks';
 import { defineConfig } from 'eslint/config';
 
+// The `any`-unsafe family — turned off for files where untyped values are
+// inherent (tests/mocks, dynamic code) or the module is legacy and won't be typed.
+const UNSAFE_RULES_OFF = {
+  '@typescript-eslint/no-explicit-any': 'off',
+  '@typescript-eslint/no-unsafe-assignment': 'off',
+  '@typescript-eslint/no-unsafe-member-access': 'off',
+  '@typescript-eslint/no-unsafe-call': 'off',
+  '@typescript-eslint/no-unsafe-return': 'off',
+  '@typescript-eslint/no-unsafe-argument': 'off',
+};
+
 export default defineConfig([
   // Not part of the React app: build output and the standalone Node
   // video-pipeline tool (its own runtime — Playwright/edge-tts/ffmpeg).
@@ -66,5 +77,25 @@ export default defineConfig([
         { checksVoidReturn: { attributes: false } },
       ],
     },
+  },
+
+  // Config/build files are not app code — don't type-check them.
+  {
+    files: ['**/*.config.{js,ts,cjs,mjs}'],
+    extends: [tseslint.configs.disableTypeChecked],
+  },
+
+  // Tests & mocks legitimately use `any` for fixtures and stubs.
+  {
+    files: ['**/*.test.{ts,tsx}', 'src/__tests__/**', 'src/mocks/**'],
+    rules: UNSAFE_RULES_OFF,
+  },
+
+  // Legacy / inherently-untyped modules, exempt from the unsafe-any family:
+  // imageUtils (the Quill image pipeline — legacy, being retired) and
+  // exerciseTestRunner (executes user-submitted code dynamically via Function).
+  {
+    files: ['src/utils/imageUtils.tsx', 'src/lib/exerciseTestRunner.ts'],
+    rules: UNSAFE_RULES_OFF,
   },
 ]);
