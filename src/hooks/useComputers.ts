@@ -49,7 +49,8 @@ export function useRemoveComputer() {
 }
 
 /**
- * SCENARIO: Admin/Teacher dedicates a computer to one student (with take-home) or clears the owner
+ * SCENARIO: Admin/Teacher dedicates a computer to one borrower — a student or a staff member
+ *           (admin/teacher) — with take-home, or clears the owner
  * CALLS: PUT /api/computers/owner (ComputerEndpoints.cs)
  * SIDE EFFECTS: sets/clears owner + takesHome; clears the computer's shared slots when an owner is set;
  *               invalidates ["computers"] + ["computer-assignments"]
@@ -66,7 +67,7 @@ export function useSetComputerOwner() {
 }
 
 /**
- * SCENARIO: Admin/Teacher assigns a student to a shared computer for a day/period
+ * SCENARIO: Admin/Teacher assigns a borrower (student or staff member) to a shared computer for a day/period
  * CALLS: PUT /api/computer-assignments/assign (ComputerEndpoints.cs)
  * SIDE EFFECTS: upserts a ComputerAssignment; invalidates ["computer-assignments"]
  */

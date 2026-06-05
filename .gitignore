@@ -17,6 +17,14 @@ dist-ssr
 .claude/worktrees/
 .claude/task-plans/
 
+# Personal context/instruction docs — solo dev, kept local, no longer shared via git
+/CLAUDE.md
+.claude/PROJECT_CONTEXT.md
+.claude/PAGE_MAP.md
+.claude/INTENT.md
+.claude/SETUP_TESTING.md
+.claude/commands/changelog.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

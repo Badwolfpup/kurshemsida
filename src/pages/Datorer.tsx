@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import HelpDialog from "@/components/HelpDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -41,11 +41,15 @@ function ComputerCard({
   computers,
   assignments,
   students,
+  staff,
 }: {
   computer: Computer;
   computers: Computer[];
   assignments: ComputerAssignment[];
   students: UserType[];
+  // Admins/teachers may also borrow a computer, and aren't limited to one — so
+  // they're always shown (never filtered by the one-per-student availability rule).
+  staff: UserType[];
 }) {
   const { toast } = useToast();
   const removeComputer = useRemoveComputer();
@@ -66,10 +70,22 @@ function ComputerCard({
     return students.filter((s) => !takenByOthers.has(s.id));
   }, [computers, assignments, students, computer.id]);
 
-  const studentName = (id: number) => {
-    const s = students.find((u) => u.id === id);
-    return s ? `${s.firstName} ${s.lastName}` : "Okänd";
+  const personName = (id: number) => {
+    const p = students.find((u) => u.id === id) ?? staff.find((u) => u.id === id);
+    return p ? `${p.firstName} ${p.lastName}` : "Okänd";
   };
+
+  // Separator + grouped staff entries, appended below the students in every picker.
+  const staffOptions =
+    staff.length > 0 ? (
+      <SelectGroup>
+        <SelectSeparator />
+        <SelectLabel>Lärare &amp; admin</SelectLabel>
+        {staff.map((s) => (
+          <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</SelectItem>
+        ))}
+      </SelectGroup>
+    ) : null;
 
   const slotStudentId = (dayOfWeek: number, period: string): number | null =>
     assignments.find((a) => a.computerId === computer.id && a.dayOfWeek === dayOfWeek && a.period === period)?.studentId ?? null;
@@ -105,6 +121,7 @@ function ComputerCard({
               {availableStudents.map((s) => (
                 <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</SelectItem>
               ))}
+              {staffOptions}
             </SelectContent>
           </Select>
         </div>
@@ -123,7 +140,7 @@ function ComputerCard({
 
       {computer.ownerStudentId != null ? (
         <p className="text-sm text-muted-foreground">
-          Egen dator för {studentName(computer.ownerStudentId)}
+          Egen dator för {personName(computer.ownerStudentId)}
           {computer.takesHome ? " — tas med hem" : ""}.
         </p>
       ) : (
@@ -161,6 +178,7 @@ function ComputerCard({
                             {availableStudents.map((s) => (
                               <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</SelectItem>
                             ))}
+                            {staffOptions}
                           </SelectContent>
                         </Select>
                       </TableCell>
@@ -188,6 +206,15 @@ export default function Datorer() {
     () =>
       users
         .filter((u) => u.authLevel === 4 && u.isActive)
+        .sort((a, b) => a.firstName.localeCompare(b.firstName, "sv")),
+    [users]
+  );
+
+  // Admins (authLevel 1) and teachers (authLevel 2) — borrowable too, listed below a separator.
+  const staff = useMemo(
+    () =>
+      users
+        .filter((u) => (u.authLevel === 1 || u.authLevel === 2) && u.isActive)
         .sort((a, b) => a.firstName.localeCompare(b.firstName, "sv")),
     [users]
   );
@@ -261,7 +288,7 @@ export default function Datorer() {
             ) : (
               <div className="space-y-4">
                 {sharedComputers.map((c) => (
-                  <ComputerCard key={c.id} computer={c} computers={computers} assignments={assignments} students={students} />
+                  <ComputerCard key={c.id} computer={c} computers={computers} assignments={assignments} students={students} staff={staff} />
                 ))}
               </div>
             )}
@@ -273,7 +300,7 @@ export default function Datorer() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {ownedComputers.map((c) => (
-                  <ComputerCard key={c.id} computer={c} computers={computers} assignments={assignments} students={students} />
+                  <ComputerCard key={c.id} computer={c} computers={computers} assignments={assignments} students={students} staff={staff} />
                 ))}
               </div>
             )}

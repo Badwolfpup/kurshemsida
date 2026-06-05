@@ -1,0 +1,10 @@
+{
+  "displaydate": "2026-06-05",
+  "entries": {
+    "admin": [
+      "Lärare och administratörer kan nu också tilldelas lånedatorer på sidan \"Datorer\". De visas längst ned i väljaren, under en avdelare från deltagarna, och kan – till skillnad från deltagare – låna fler än en dator."
+    ],
+    "coach": [],
+    "student": []
+  }
+}
