@@ -1,17 +1,11 @@
 import {
   Home,
-  // FolderKanban, // disabled student feature
-  // Dumbbell,
-  // Briefcase,
   Users,
   Settings,
-  // ShieldCheck, // unused
   LogOut,
   Mail,
   ChevronLeft,
-  // TerminalIcon, // disabled student feature
   X,
-  // MessageSquare, // disabled student feature
   Contact,
   Calendar as CalendarIcon,
   CalendarCheck,
@@ -19,33 +13,29 @@ import {
   LayoutGrid,
   BarChart3,
   Laptop,
+  type LucideIcon,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
-import { useUnreadCounts } from '@/hooks/useMessages';
 import './AppSidebar.css';
 
 interface NavItem {
   title: string;
   url: string;
-  icon: any;
-  badgeCount?: number;
+  icon: LucideIcon;
 }
 
-function getMainNav(isAdmin: boolean, isCoach: boolean, messagesCount: number, studentContextCount: number): NavItem[] {
+function getMainNav(isAdmin: boolean, isCoach: boolean): NavItem[] {
   const items: NavItem[] = [{ title: 'Startsida', url: '/', icon: Home }];
 
   if (isAdmin) {
     items.push(
-      // { title: 'Admin Panel', url: '/admin', icon: ShieldCheck }, // Retired — sub-pages promoted to sidebar
       { title: 'Hantera användare', url: '/hantera-anvandare', icon: Users },
       { title: 'Närvaro', url: '/narvaro', icon: CalendarCheck },
-      // { title: 'Övningar', url: '/ovningar', icon: Dumbbell }, // Students temporarily disabled
-      // { title: 'Projekt', url: '/projekt', icon: FolderKanban }, // Students temporarily disabled
-      { title: 'Deltagare', url: '/deltagare', icon: Users, badgeCount: studentContextCount },
+      { title: 'Deltagare', url: '/deltagare', icon: Users },
       { title: 'Deltagarschema', url: '/deltagarschema', icon: CalendarCheck },
       { title: 'Klassrum', url: '/klassrum', icon: LayoutGrid },
       { title: 'Statistik', url: '/statistik', icon: BarChart3 },
@@ -54,34 +44,19 @@ function getMainNav(isAdmin: boolean, isCoach: boolean, messagesCount: number, s
         title: 'Kalender & Bokning',
         url: '/admin-schedule',
         icon: CalendarIcon,
-      },
-      // { title: 'Profil', url: '/profil', icon: UserCircle },
-      // { title: 'Terminal', url: '/terminal', icon: TerminalIcon }, // Students temporarily disabled
-      // { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, badgeCount: messagesCount } // GDPR review — temporarily suspended
+      }
     );
   } else if (isCoach) {
     items.push(
-      { title: 'Mina deltagare', url: '/mina-deltagare', icon: Users, badgeCount: studentContextCount },
-      // { title: 'Meddelanden', url: '/meddelanden', icon: MessageSquare, badgeCount: messagesCount }, // GDPR review — temporarily suspended
+      { title: 'Mina deltagare', url: '/mina-deltagare', icon: Users },
       {
         title: 'Kalender: Boka möte',
         url: '/coach-booking',
         icon: CalendarIcon,
       },
       { title: 'Kontakt', url: '/kontakt', icon: Contact }
-      // { title: 'Profil', url: '/profil', icon: UserCircle }
     );
   }
-  // Student nav — temporarily disabled (students cannot log in)
-  // else {
-  //   items.push(
-  //     { title: 'Projekt', url: '/projekt', icon: FolderKanban },
-  //     { title: 'Övningar', url: '/ovningar', icon: Dumbbell },
-  //     { title: 'Portfolio', url: '/portfolio', icon: Briefcase },
-  //     { title: 'Min kalender', url: '/student-calendar', icon: CalendarIcon },
-  //     { title: 'Terminal', url: '/terminal', icon: TerminalIcon }
-  //   );
-  // }
 
   return items;
 }
@@ -110,7 +85,6 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
   const navigate = useNavigate();
   const { signOut, isLoggedIn } = useAuth();
   const { isAdmin, isCoach } = useUserRole();
-  const { messagesCount, studentContextCount } = useUnreadCounts();
 
   // Hooks must run before any early return — keep these above the
   // `!isLoggedIn` guard so the hook order is identical on every render.
@@ -135,7 +109,7 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
     void navigate('/login');
   };
 
-  const mainNav = getMainNav(isAdmin, isCoach, messagesCount, studentContextCount);
+  const mainNav = getMainNav(isAdmin, isCoach);
   const bottomNav = getBottomNav(isAdmin, isCoach);
 
   const isActive = (path: string) =>
@@ -187,14 +161,7 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
               activeClassName=""
             >
               <item.icon className="sidebar__link-icon" />
-              {(!collapsed || mobileOpen) && (
-                <>
-                  <span>{item.title}</span>
-                  {!!item.badgeCount && (
-                    <span className="sidebar__unread-badge">{item.badgeCount}</span>
-                  )}
-                </>
-              )}
+              {(!collapsed || mobileOpen) && <span>{item.title}</span>}
             </NavLink>
           ))}
         </nav>
