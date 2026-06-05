@@ -22,7 +22,7 @@ export function useAssignSeat() {
   return useMutation({
     mutationFn: assignSeat,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['seating'] });
+      void qc.invalidateQueries({ queryKey: ['seating'] });
     },
   });
 }
@@ -39,7 +39,7 @@ export function useClearSeat() {
   return useMutation({
     mutationFn: clearSeat,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['seating'] });
+      void qc.invalidateQueries({ queryKey: ['seating'] });
     },
   });
 }

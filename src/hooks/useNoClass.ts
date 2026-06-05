@@ -14,7 +14,7 @@ export function useUpdateNoClasses() {
     return useMutation({
         mutationFn: (date: string) => noClassService.updateNoClasses(date),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['noClasses'] });
+            void queryClient.invalidateQueries({ queryKey: ['noClasses'] });
         },
     });
 }

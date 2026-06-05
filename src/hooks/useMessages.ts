@@ -41,9 +41,9 @@ export function useSendMessage() {
   return useMutation({
     mutationFn: (dto: SendMessageDto) => messageService.sendMessage(dto),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["threads"] });
-      queryClient.invalidateQueries({ queryKey: ["threadMessages", data.threadId] });
-      queryClient.invalidateQueries({ queryKey: ["unreadCount"] });
+      void queryClient.invalidateQueries({ queryKey: ["threads"] });
+      void queryClient.invalidateQueries({ queryKey: ["threadMessages", data.threadId] });
+      void queryClient.invalidateQueries({ queryKey: ["unreadCount"] });
     },
   });
 }
@@ -60,8 +60,8 @@ export function useMarkThreadViewed() {
   return useMutation({
     mutationFn: (threadId: number) => messageService.markThreadViewed(threadId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["threads"] });
-      queryClient.invalidateQueries({ queryKey: ["unreadCount"] });
+      void queryClient.invalidateQueries({ queryKey: ["threads"] });
+      void queryClient.invalidateQueries({ queryKey: ["unreadCount"] });
     },
   });
 }

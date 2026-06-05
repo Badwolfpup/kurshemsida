@@ -32,7 +32,7 @@ export function useCreateRecurringEvent() {
   return useMutation({
     mutationFn: (data: CreateRecurringEventData) => createRecurringEvent(data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['recurringEvents'] });
+      void qc.invalidateQueries({ queryKey: ['recurringEvents'] });
     },
   });
 }
@@ -50,7 +50,7 @@ export function useUpdateRecurringEvent() {
     mutationFn: ({ id, ...data }: UpdateRecurringEventData & { id: number }) =>
       updateRecurringEvent(id, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['recurringEvents'] });
+      void qc.invalidateQueries({ queryKey: ['recurringEvents'] });
     },
   });
 }
@@ -67,7 +67,7 @@ export function useDeleteRecurringEvent() {
   return useMutation({
     mutationFn: (id: number) => deleteRecurringEvent(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['recurringEvents'] });
+      void qc.invalidateQueries({ queryKey: ['recurringEvents'] });
     },
   });
 }
@@ -85,7 +85,7 @@ export function useSetRecurringEventException() {
     mutationFn: ({ id, date, ...data }: RecurringEventExceptionData & { id: number; date: string }) =>
       setRecurringEventException(id, date, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['recurringEvents'] });
+      void qc.invalidateQueries({ queryKey: ['recurringEvents'] });
     },
   });
 }
@@ -103,7 +103,7 @@ export function useRemoveRecurringEventException() {
     mutationFn: ({ id, date }: { id: number; date: string }) =>
       removeRecurringEventException(id, date),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['recurringEvents'] });
+      void qc.invalidateQueries({ queryKey: ['recurringEvents'] });
     },
   });
 }

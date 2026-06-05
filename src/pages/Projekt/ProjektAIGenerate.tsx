@@ -99,7 +99,7 @@ const ProjektAIGenerate = () => {
       setPendingGenerate(true);
       return;
     }
-    generate();
+    void generate();
   };
 
   const handleFeedbackSubmit = async (feedback: { isPositive: boolean; reason?: string; comment?: string }) => {
@@ -133,7 +133,7 @@ const ProjektAIGenerate = () => {
 
     if (pendingGenerate) {
       setPendingGenerate(false);
-      generate();
+      void generate();
     }
   };
 

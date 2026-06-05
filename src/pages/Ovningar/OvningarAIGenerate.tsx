@@ -128,7 +128,7 @@ const OvningarAIGenerate = () => {
         return;
       }
     }
-    generate();
+    void generate();
   };
 
   const handleFeedbackSubmit = async (feedback: { isPositive: boolean; reason?: string; comment?: string }) => {
@@ -159,7 +159,7 @@ const OvningarAIGenerate = () => {
 
     if (pendingGenerate) {
       setPendingGenerate(false);
-      generate();
+      void generate();
     }
   };
 

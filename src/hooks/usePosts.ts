@@ -15,7 +15,7 @@ export function useAddPost() {
     return useMutation({
         mutationFn: (post: AddPostDto) => postService.addPost(post),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['posts'] });
+            void queryClient.invalidateQueries({ queryKey: ['posts'] });
         },
     });
 }
@@ -25,7 +25,7 @@ export function useUpdatePost() {
     return useMutation({
         mutationFn: (post: UpdatePostDto) => postService.updatePost(post),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['posts'] });
+            void queryClient.invalidateQueries({ queryKey: ['posts'] });
         },
     }); 
 }
@@ -35,7 +35,7 @@ export function useDeletePost() {
     return useMutation({
         mutationFn: (id: number) => postService.deletePost(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['posts'] });
+            void queryClient.invalidateQueries({ queryKey: ['posts'] });
         },
     });
 }

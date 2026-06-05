@@ -70,7 +70,7 @@ const Preferenser = () => {
           onSuccess: () => {
             toast({ title: "Ändringar sparade", duration: 3000 });
             setIsEditing(false);
-            login();
+            void login();
           },
           onError: () => {
             toast({
@@ -88,7 +88,7 @@ const Preferenser = () => {
           onSuccess: () => {
             toast({ title: "Sparad", description: "Dina uppgifter har uppdaterats." });
             setIsEditing(false);
-            login();
+            void login();
           },
           onError: () => {
             toast({

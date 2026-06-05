@@ -15,7 +15,7 @@ export function useAddProject() {
     return useMutation({
         mutationFn: (project: AddProjectDto) => projectService.addProject(project),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['projects'] });
+            void queryClient.invalidateQueries({ queryKey: ['projects'] });
         },
     });
 }   
@@ -25,7 +25,7 @@ export function useUpdateProject() {
     return useMutation({
         mutationFn: (project: UpdateProjectDto) => projectService.updateProject(project),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['projects'] });
+            void queryClient.invalidateQueries({ queryKey: ['projects'] });
         },
     }); 
 }
@@ -35,7 +35,7 @@ export function useDeleteProject() {
     return useMutation({
         mutationFn: (data: { id: number; title: string }) => projectService.deleteProject(data.id, data.title),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['projects'] });
+            void queryClient.invalidateQueries({ queryKey: ['projects'] });
         },
     });
 }

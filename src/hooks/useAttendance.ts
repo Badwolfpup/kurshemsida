@@ -15,7 +15,7 @@ export function useUpdateAttendance() {
     return useMutation({
         mutationFn: (attendance: UpdateAttendanceDto) => attendanceService.updateAttendance(attendance),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['attendance'] });
+            void queryClient.invalidateQueries({ queryKey: ['attendance'] });
         }
     });
 }

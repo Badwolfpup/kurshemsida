@@ -132,7 +132,7 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
 
   const handleLogout = async () => {
     await signOut();
-    navigate('/login');
+    void navigate('/login');
   };
 
   const mainNav = getMainNav(isAdmin, isCoach, messagesCount, studentContextCount);

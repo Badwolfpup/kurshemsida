@@ -50,7 +50,7 @@ export function useCreateBooking() {
   return useMutation({
     mutationFn: (data: CreateBookingData) => createBooking(data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['bookings'] });
+      void qc.invalidateQueries({ queryKey: ['bookings'] });
     },
   });
 }
@@ -69,7 +69,7 @@ export function useUpdateBookingStatus() {
     mutationFn: ({ id, status, reason }: { id: number; status: BookingStatus; reason?: string }) =>
       updateBookingStatus(id, status, reason),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['bookings'] });
+      void qc.invalidateQueries({ queryKey: ['bookings'] });
     },
   });
 }
@@ -88,7 +88,7 @@ export function useCancelBooking() {
     mutationFn: ({ id, reason }: { id: number; reason?: string }) =>
       cancelBooking(id, reason),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['bookings'] });
+      void qc.invalidateQueries({ queryKey: ['bookings'] });
     },
   });
 }
@@ -108,7 +108,7 @@ export function useRescheduleBooking() {
       id: number; startTime: string; endTime: string; rescheduledBy: BookingActor; reason?: string;
     }) => rescheduleBooking(id, startTime, endTime, rescheduledBy, reason),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['bookings'] });
+      void qc.invalidateQueries({ queryKey: ['bookings'] });
     },
   });
 }
@@ -128,7 +128,7 @@ export function useTransferBooking() {
     mutationFn: ({ id, targetAdminId, reason }: { id: number; targetAdminId: number; reason?: string }) =>
       transferBooking(id, targetAdminId, reason),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['bookings'] });
+      void qc.invalidateQueries({ queryKey: ['bookings'] });
     },
   });
 }
@@ -146,7 +146,7 @@ export function useAddAvailability() {
     mutationFn: (data: { adminId: number; startTime: Date | string; endTime: Date | string }) =>
       addAvailability(data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['availabilities'] });
+      void qc.invalidateQueries({ queryKey: ['availabilities'] });
     },
   });
 }
@@ -164,7 +164,7 @@ export function useUpdateAvailability() {
     mutationFn: ({ id, ...data }: { id: number; startTime: string; endTime: string }) =>
       updateAvailability(id, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['availabilities'] });
+      void qc.invalidateQueries({ queryKey: ['availabilities'] });
     },
   });
 }
@@ -181,7 +181,7 @@ export function useDeleteAvailability() {
   return useMutation({
     mutationFn: (id: number) => deleteAvailability(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['availabilities'] });
+      void qc.invalidateQueries({ queryKey: ['availabilities'] });
     },
   });
 }
@@ -210,7 +210,7 @@ export function useAddBusyTime() {
     mutationFn: (data: { adminId: number; startTime: Date | string; endTime: Date | string; note?: string }) =>
       addBusyTime(data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['busyTimes'] });
+      void qc.invalidateQueries({ queryKey: ['busyTimes'] });
     },
   });
 }
@@ -228,7 +228,7 @@ export function useUpdateBusyTime() {
     mutationFn: ({ id, ...data }: { id: number; startTime: string; endTime: string; note?: string | null }) =>
       updateBusyTime(id, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['busyTimes'] });
+      void qc.invalidateQueries({ queryKey: ['busyTimes'] });
     },
   });
 }
@@ -245,7 +245,7 @@ export function useDeleteBusyTime() {
   return useMutation({
     mutationFn: (id: number) => deleteBusyTime(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['busyTimes'] });
+      void qc.invalidateQueries({ queryKey: ['busyTimes'] });
     },
   });
 }

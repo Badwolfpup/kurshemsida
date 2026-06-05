@@ -14,7 +14,7 @@ export function useSubmitBugReport() {
   return useMutation({
     mutationFn: (dto: AddBugReportDto) => bugReportService.submitBugReport(dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["bugReports"] });
+      void queryClient.invalidateQueries({ queryKey: ["bugReports"] });
     },
   });
 }

@@ -16,7 +16,7 @@ export function useAddUser() {
     return useMutation({
         mutationFn: (user: AddUserDto) => userService.addUser(user),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] });
+            void queryClient.invalidateQueries({ queryKey: ['users'] });
         },
     });
 }
@@ -34,7 +34,7 @@ export function useUpdateUser() {
     return useMutation({
         mutationFn: (user: UpdateUserDto) => userService.updateUser(user),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] });
+            void queryClient.invalidateQueries({ queryKey: ['users'] });
         },
     });
 }
@@ -45,7 +45,7 @@ export function useUpdateMySettings() {
         mutationFn: (dto: { emailNotifications?: boolean; telephone?: string }) =>
             userService.updateMySettings(dto),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] });
+            void queryClient.invalidateQueries({ queryKey: ['users'] });
         },
     });
 }
@@ -55,7 +55,7 @@ export function useUpdateActivityStatus() {
     return useMutation({
         mutationFn: (userId: number) => userService.updateActivity(userId),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] });
+            void queryClient.invalidateQueries({ queryKey: ['users'] });
         },
     });
 }
@@ -76,7 +76,7 @@ export function useUpdateStudentProfile() {
         mutationFn: (data: { email: string; telephone: string }) =>
             userService.updateStudentProfile(data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] });
+            void queryClient.invalidateQueries({ queryKey: ['users'] });
         },
     });
 }
@@ -93,7 +93,7 @@ export function useDeleteUser() {
     return useMutation({
         mutationFn: (user: DeleteUserDto) => userService.deleteUser(user),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] });
+            void queryClient.invalidateQueries({ queryKey: ['users'] });
         },
     });
 }

@@ -105,9 +105,9 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null }) => 
   const isFetching = isUsersFetching || isAttendanceRefetching || isNoClassesRefetching;
 
   const refetch = () => {
-    if (isUsersError) refetchUsers();
-    if (isAttendanceError) refetchAttendance();
-    if (isNoClassesError) refetchNoClasses();
+    if (isUsersError) void refetchUsers();
+    if (isAttendanceError) void refetchAttendance();
+    if (isNoClassesError) void refetchNoClasses();
   };
 
   const handleUpdateUser = (u: UserType, update: boolean) => {

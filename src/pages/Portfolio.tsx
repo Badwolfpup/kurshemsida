@@ -43,7 +43,7 @@ const Portfolio = () => {
       }
       setLoading(false);
     };
-    fetchData();
+    void fetchData();
   }, [user]);
 
   const getTypeColor = (type: string) => {

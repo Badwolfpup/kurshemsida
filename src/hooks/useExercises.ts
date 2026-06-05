@@ -15,7 +15,7 @@ export function useAddExercise() {
     return useMutation({
         mutationFn: (exercise: AddExerciseDto) => exerciseService.addExercise(exercise),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['exercises'] });
+            void queryClient.invalidateQueries({ queryKey: ['exercises'] });
         },
     });
 }
@@ -25,7 +25,7 @@ export function useUpdateExercise() {
     return useMutation({
         mutationFn: (exercise: UpdateExerciseDto) => exerciseService.updateExercise(exercise),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['exercises'] });
+            void queryClient.invalidateQueries({ queryKey: ['exercises'] });
         },
     });
 }
@@ -34,7 +34,7 @@ export function useDeleteExercise() {
     return useMutation({
         mutationFn: (data: { id: number; title: string }) => exerciseService.deleteExercise(data.id, data.title),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['exercises'] });
+            void queryClient.invalidateQueries({ queryKey: ['exercises'] });
         }
     });
 }
