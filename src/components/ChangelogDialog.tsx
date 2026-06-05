@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { History } from 'lucide-react';
-import type { ChangelogItem } from '@/hooks/useChangelog';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,

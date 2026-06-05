@@ -4,7 +4,7 @@ import { format, getDay, addWeeks, subWeeks, addDays, startOfWeek, startOfDay, i
 import { sv } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './BookingCalendar.css';
-import FourDayView, { localizer, fourDayRange } from './FourDayView';
+import FourDayView, { localizer } from './FourDayView';
 import { WORKDAY_START_HOUR, WORKDAY_START_MINUTE, WORKDAY_END_HOUR, WORKDAY_END_MINUTE, DAY_NAMES, RECURRING_EVENT_COLOR, BUSY_TIME_COLOR, STATUS_COLORS } from './calendarUtils';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

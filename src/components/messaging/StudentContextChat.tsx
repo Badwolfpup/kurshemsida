@@ -1,6 +1,5 @@
 import { useThreads } from "@/hooks/useMessages";
 import ChatThread from "./ChatThread";
-import { useAuth } from "@/contexts/AuthContext";
 
 interface StudentContextChatProps {
   studentId: number;
@@ -8,7 +7,6 @@ interface StudentContextChatProps {
 }
 
 export default function StudentContextChat({ studentId, recipientId }: StudentContextChatProps) {
-  const { user } = useAuth();
   const { data: threads = [] } = useThreads();
 
   // Find the thread for this student context (one per coach+student pair)

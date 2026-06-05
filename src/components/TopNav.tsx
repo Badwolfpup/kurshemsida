@@ -1,6 +1,6 @@
 import { Menu, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { NewsDialog } from '@/components/NewsDialog';
+// import { NewsDialog } from '@/components/NewsDialog'; // hidden — temporarily disabled
 import { ChangelogDialog } from '@/components/ChangelogDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
@@ -23,7 +23,7 @@ interface TopNavProps {
 }
 
 export function TopNav({ onMenuToggle }: TopNavProps) {
-  const { isLoggedIn, isGuest, user } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const { profile } = useProfile();
   const navigate = useNavigate();
 

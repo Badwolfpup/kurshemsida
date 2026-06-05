@@ -104,7 +104,7 @@ export default function AttendanceStats() {
     for (const d of classDays) {
       const wk = mondayKey(d);
       if (!weekMap.has(wk)) weekMap.set(wk, new Set());
-      const set = weekMap.get(wk)!;
+      const set = weekMap.get(wk);
       const key = dateKey(d);
       for (const u of students) if (inRange(u).has(key)) set.add(u.id);
     }

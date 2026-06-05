@@ -41,7 +41,7 @@ export const authService = {
       }
       const data = await response.json();
       return { ok: true, data };
-    } catch (error) {
+    } catch {
       return { ok: false, error: "Kunde inte nå servern." };
     }
   },

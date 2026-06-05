@@ -116,7 +116,7 @@ const Terminal = () => {
           if (arg in node) { addOutput(`mkdir: ${arg}: finns redan`, "error"); break; }
           const newFs = deepClone(fs);
           let curr = newFs;
-          for (const p of cwd) curr = curr[p] as FsNode;
+          for (const p of cwd) curr = curr[p];
           curr[arg] = {};
           setFs(newFs);
           addOutput(`Mapp '${arg}' skapad`, "success");
@@ -129,7 +129,7 @@ const Terminal = () => {
         if (node && typeof node === "object") {
           const newFs = deepClone(fs);
           let curr = newFs;
-          for (const p of cwd) curr = curr[p] as FsNode;
+          for (const p of cwd) curr = curr[p];
           curr[arg] = null;
           setFs(newFs);
           addOutput(`Fil '${arg}' skapad`, "success");

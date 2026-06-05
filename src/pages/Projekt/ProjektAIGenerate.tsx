@@ -7,11 +7,11 @@ import {
 } from "@/components/ui/select";
 import type AssertProjectType from "@/Types/AssertProjectType";
 import type { AssertProjectResponse } from "@/Types/AssertProjectType";
-import dummyPic from "@/assets/images/dummypic";
+// import dummyPic from "@/assets/images/dummypic"; // disabled student feature
 import imageMap from "@/assets/images/imagemap";
 import { assertService } from "@/api/AssertService";
 import ExerciseFeedbackDialog from "@/components/ExerciseFeedbackDialog";
-import noimage from "@/assets/images/noimage.png";
+// import noimage from "@/assets/images/noimage.png"; // disabled student feature
 
 const PROJECT_FEEDBACK_REASONS = [
   "Projektet var för svårt",

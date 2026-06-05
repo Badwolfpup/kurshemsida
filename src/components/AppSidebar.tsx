@@ -1,17 +1,17 @@
 import {
   Home,
-  FolderKanban,
-  Dumbbell,
-  Briefcase,
+  // FolderKanban, // disabled student feature
+  // Dumbbell,
+  // Briefcase,
   Users,
   Settings,
-  ShieldCheck,
+  // ShieldCheck, // unused
   LogOut,
   Mail,
   ChevronLeft,
-  TerminalIcon,
+  // TerminalIcon, // disabled student feature
   X,
-  MessageSquare,
+  // MessageSquare, // disabled student feature
   Contact,
   Calendar as CalendarIcon,
   CalendarCheck,
@@ -112,6 +112,22 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
   const { isAdmin, isCoach } = useUserRole();
   const { messagesCount, studentContextCount } = useUnreadCounts();
 
+  // Hooks must run before any early return — keep these above the
+  // `!isLoggedIn` guard so the hook order is identical on every render.
+  useEffect(() => {
+    onMobileClose();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- close on route change only; onMobileClose prop isn't memoized
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onMobileClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileOpen, onMobileClose]);
+
   if (!isLoggedIn) return null;
 
   const handleLogout = async () => {
@@ -126,19 +142,6 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
     path === '/'
       ? location.pathname === '/'
       : location.pathname.startsWith(path);
-
-  useEffect(() => {
-    onMobileClose();
-  }, [location.pathname]);
-
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onMobileClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [mobileOpen, onMobileClose]);
 
   return (
     <>

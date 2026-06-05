@@ -5,19 +5,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, Clock } from "lucide-react";
+// Disabled progression/chat UI — re-enable with the commented JSX below.
+// import { Progress } from "@/components/ui/progress";
+// import { Badge } from "@/components/ui/badge";
+// import { CheckCircle2, Circle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUsers, useUpdateUser } from "@/hooks/useUsers";
 import { useAttendance, useGetWeek } from "@/hooks/useAttendance";
 import { useNoClasses } from "@/hooks/useNoClass";
-import StudentContextChat from "@/components/messaging/StudentContextChat";
+// import StudentContextChat from "@/components/messaging/StudentContextChat"; // disabled chat UI
 import type UserType from "@/Types/User";
 import type AttendanceType from "@/Types/Attendance";
 import { isReducedAttendance, statusFullLabel } from "@/lib/participantStatus";
 
+/* Disabled student feature — referenced only in the commented progression JSX further down.
 const MOCK_PROJECTS: { name: string; status: "done" | "in-progress" | "not-started" }[][] = [
   [
     { name: "HTML Portfolio", status: "done" },
@@ -51,13 +53,14 @@ const MOCK_EXERCISES: { name: string; completed: boolean }[][] = [
     { name: "Python Loopar", completed: false },
   ],
 ];
+*/
 
 interface CoachAttendanceProps {
   seluser: UserType;
-  showChat?: boolean;
+  showChat?: boolean; // gates the disabled chat tab (commented-out JSX below)
 }
 
-const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showChat = false }) => {
+const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null }) => {
   const { user } = useAuth();
   const userId = user?.id || 0;
   const authLevel = user?.authLevel || 5;
@@ -90,10 +93,12 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
   const updateUserMutation = useUpdateUser();
   const { data: week } = useGetWeek(date, 2);
 
+  /* Disabled chat feature — used only in the commented JSX below (GDPR review suspended).
   const chatPartnerId = userType === "Admin"
     ? selectedUser?.coachId
     : users.find((u) => u.authLevel === 1 || u.authLevel === 2)?.id;
   const hasChat = showChat && !!chatPartnerId && !!selectedUser;
+  */
 
   const isLoading = isUsersLoading || isAttendanceLoading || isNoClassesLoading;
   const isError = isUsersError || isAttendanceError || isNoClassesError;
@@ -141,12 +146,14 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
     return date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate();
   };
 
+  /* Unused helper — kept for reference.
   const styleAttendanceButtons = (user: UserType, date: Date): string => {
     const isNoClass = noClasses.filter((d) => compareDates(new Date(d), date)).length > 0;
     if (isNoClass) return "bg-gray-300";
     const result = attendance.filter((x) => x.userId === user.id).filter((dates) => dates.date.some((d) => compareDates(new Date(d), date))).length > 0;
     return result ? "bg-green-500" : "";
   };
+  */
 
   const dateFormatted = (d: Date): string => d.toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
 

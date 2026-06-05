@@ -28,6 +28,7 @@ export default function ChatThread({ threadId, recipientId, studentContextId }: 
       markViewed.mutate(threadId);
     }
     prevMessageCountRef.current = 0;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mark viewed on thread open; markViewed mutation ref isn't stable
   }, [threadId]);
 
   useEffect(() => {
@@ -38,6 +39,7 @@ export default function ChatThread({ threadId, recipientId, studentContextId }: 
       markViewed.mutate(threadId);
     }
     prevMessageCountRef.current = messages.length;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally keyed on messages.length to detect newly-arrived messages
   }, [messages.length]);
 
   // Auto-scroll to bottom when messages change

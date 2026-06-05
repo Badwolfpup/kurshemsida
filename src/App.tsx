@@ -12,14 +12,15 @@ import AdminSchedule from './components/admin/AdminSchedule';
 import Login from './pages/login';
 import NotFound from './pages/NotFound';
 import Index from './pages/Index';
-import Projekt from './pages/Projekt';
-import Ovningar from './pages/Ovningar';
-import Portfolio from './pages/Portfolio';
+// Student features — temporarily disabled (re-enable with the routes below)
+// import Projekt from './pages/Projekt';
+// import Ovningar from './pages/Ovningar';
+// import Portfolio from './pages/Portfolio';
 // import Admin from './pages/Admin'; // Retired — sub-pages promoted to sidebar
 import HanteraAnvandare from './pages/HanteraAnvandare';
 import Narvaro from './pages/Narvaro';
 import Buggar from './pages/Buggar';
-import Terminal from './pages/Terminal';
+// import Terminal from './pages/Terminal'; // temporarily disabled
 import Preferenser from './pages/Preferenser';
 import CoachSettings from './pages/CoachSettings';
 import CoachMyParticipants from './pages/CoachMyParticipants';
@@ -31,7 +32,7 @@ import StudentSchedule from './pages/StudentSchedule';
 import Klassrum from './pages/Klassrum';
 import Statistik from './pages/Statistik';
 import Datorer from './pages/Datorer';
-import MeddelandenPage from './pages/MeddelandenPage';
+// import MeddelandenPage from './pages/MeddelandenPage'; // temporarily disabled
 import Kodsidor from './pages/Kodsidor';
 import ProtectedRoute from './components/ProtectedRoute';
 

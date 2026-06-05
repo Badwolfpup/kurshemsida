@@ -44,7 +44,7 @@ export default function AdminAttendance() {
   const students = useMemo(() => allUsers.filter((u) => u.isActive && u.authLevel === 4), [allUsers]);
   const { data: attendanceData = [], isLoading: attendanceLoading } = useAttendance(weekStartDate, 2);
   const updateAttendance = useUpdateAttendance();
-  const { data: noClasses = [], isLoading: noClassesLoading } = useNoClasses();
+  const { data: noClasses = [] } = useNoClasses();
   const updateNoClasses = useUpdateNoClasses();
 
   const countAttendedOnDate = (date: Date): number => {
@@ -96,6 +96,7 @@ export default function AdminAttendance() {
     const diff = countAttendanceLastNWeeks(b.id, 3) - countAttendanceLastNWeeks(a.id, 3);
     if (diff !== 0) return diff;
     return a.firstName.localeCompare(b.firstName);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- countAttendanceLastNWeeks only closes over attendanceData, already a dep
   }), [students, attendanceData]);
 
   const lastDateKey = dates.length > 0 ? dateKey(dates[dates.length - 1]) : '';

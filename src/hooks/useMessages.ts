@@ -18,7 +18,7 @@ export function useThreads() {
 export function useThreadMessages(threadId: number | null, take: number) {
   return useQuery({
     queryKey: ["threadMessages", threadId, take],
-    queryFn: () => messageService.getThreadMessages(threadId!, take),
+    queryFn: () => messageService.getThreadMessages(threadId, take),
     enabled: threadId !== null,
     staleTime: 10_000,
     refetchInterval: 10_000,

@@ -124,6 +124,7 @@ export default function MeddelandenPage() {
         setSelectedThread(realThread);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on threads to promote a virtual thread once it becomes real; no loop
   }, [threads]);
 
   const handleSelectThread = (thread: ThreadType) => {

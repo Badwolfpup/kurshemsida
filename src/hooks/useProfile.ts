@@ -16,6 +16,7 @@ export function useProfile() {
             phone: null,
           }
         : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- memo reads only id/email/role, which are the listed deps
     [user?.id, user?.email, user?.role],
   );
 

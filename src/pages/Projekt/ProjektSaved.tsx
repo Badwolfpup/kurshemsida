@@ -78,6 +78,7 @@ const ProjektSaved = () => {
         doc.close();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- granular solution html/css/js deps are intentional
   }, [expandedId, expandedProject?.solutionHtml, expandedProject?.solutionCss, expandedProject?.solutionJs]);
 
   if (isLoading) {
