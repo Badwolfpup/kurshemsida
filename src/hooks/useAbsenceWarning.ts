@@ -8,7 +8,7 @@ import { absenceWarningService } from "@/api/AbsenceWarningService";
 export function useLastAttendedDate(studentId: number | null) {
   return useQuery({
     queryKey: ["lastAttendedDate", studentId],
-    queryFn: () => absenceWarningService.getLastAttendedDate(studentId!),
+    queryFn: () => absenceWarningService.getLastAttendedDate(studentId),
     enabled: !!studentId,
     staleTime: 5 * 60 * 1000,
   });

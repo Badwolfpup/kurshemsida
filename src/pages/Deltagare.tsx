@@ -151,7 +151,7 @@ const Deltagare = () => {
         <Button variant="ghost" size="sm" onClick={() => setSelectedId(null)} className="gap-2 text-muted-foreground mb-6">
           <ArrowLeft className="h-4 w-4" /> Alla deltagare
         </Button>
-        <CoachAttendance seluser={selectedUser} showChat />
+        <CoachAttendance seluser={selectedUser} />
       </div>
     );
   }

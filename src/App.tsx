@@ -12,26 +12,19 @@ import AdminSchedule from './components/admin/AdminSchedule';
 import Login from './pages/login';
 import NotFound from './pages/NotFound';
 import Index from './pages/Index';
-import Projekt from './pages/Projekt';
-import Ovningar from './pages/Ovningar';
-import Portfolio from './pages/Portfolio';
-// import Admin from './pages/Admin'; // Retired — sub-pages promoted to sidebar
 import HanteraAnvandare from './pages/HanteraAnvandare';
 import Narvaro from './pages/Narvaro';
 import Buggar from './pages/Buggar';
-import Terminal from './pages/Terminal';
 import Preferenser from './pages/Preferenser';
 import CoachSettings from './pages/CoachSettings';
 import CoachMyParticipants from './pages/CoachMyParticipants';
 import CoachContact from './pages/CoachContact';
-import CoachProjects from './pages/CoachProjects';
 import CoachBookingView from './pages/CoachBookingView';
 import Deltagare from './pages/Deltagare';
 import StudentSchedule from './pages/StudentSchedule';
 import Klassrum from './pages/Klassrum';
 import Statistik from './pages/Statistik';
 import Datorer from './pages/Datorer';
-import MeddelandenPage from './pages/MeddelandenPage';
 import Kodsidor from './pages/Kodsidor';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -86,16 +79,8 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/kodsidor" element={<Kodsidor />} />
-        {/* Student routes — temporarily disabled (students cannot log in) */}
-        {/* <Route path="/projekt" element={<Projekt />} /> */}
-        {/* <Route path="/ovningar" element={<Ovningar />} /> */}
-        {/* <Route path="/portfolio" element={<Portfolio />} /> */}
-        {/* <Route path="/meddelanden" element={<MeddelandenPage />} /> */}
-        {/* <Route path="/preferenser" element={<Preferenser />} /> */}
-        {/* <Route path="/terminal" element={<Terminal />} /> */}
 
         <Route path="/deltagare" element={<Deltagare />} />
-        {/* <Route path="/admin" element={<ProtectedRoute allow="admin"><Admin /></ProtectedRoute>} /> */}{/* Retired — sub-pages promoted to sidebar */}
         <Route path="/hantera-anvandare" element={<ProtectedRoute allow="admin"><HanteraAnvandare /></ProtectedRoute>} />
         <Route path="/narvaro" element={<ProtectedRoute allow="admin"><Narvaro /></ProtectedRoute>} />
         <Route path="/buggar" element={<ProtectedRoute allow="admin"><Buggar /></ProtectedRoute>} />
@@ -109,7 +94,6 @@ function AppRoutes() {
         <Route path="/kontakt" element={<CoachContact />} />
         <Route path="/coach-installningar" element={<CoachSettings />} />
         <Route path="/profil" element={<Preferenser />} />
-        <Route path="/coach-projekt" element={<CoachProjects />} />
         <Route path="/coach-booking" element={<CoachBookingView />} />
         <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="*" element={<NotFound />} />

@@ -42,8 +42,8 @@ export function useRemoveComputer() {
   return useMutation({
     mutationFn: (id: number) => removeComputer(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["computers"] });
-      qc.invalidateQueries({ queryKey: ["computer-assignments"] });
+      void qc.invalidateQueries({ queryKey: ["computers"] });
+      void qc.invalidateQueries({ queryKey: ["computer-assignments"] });
     },
   });
 }
@@ -60,8 +60,8 @@ export function useSetComputerOwner() {
   return useMutation({
     mutationFn: setComputerOwner,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["computers"] });
-      qc.invalidateQueries({ queryKey: ["computer-assignments"] });
+      void qc.invalidateQueries({ queryKey: ["computers"] });
+      void qc.invalidateQueries({ queryKey: ["computer-assignments"] });
     },
   });
 }

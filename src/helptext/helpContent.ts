@@ -4,18 +4,6 @@ export type HelpEntry = {
 };
 
 export const helpContent: Record<string, HelpEntry> = {
-  // ── Admin Panel ──────────────────────────────────────────────────────────────
-  "admin.menu": {
-    title: "Administration",
-    content: [
-      "Administrationsfunktionerna finns direkt i sidomenyn:",
-      "• Hantera användare – lägg till, redigera eller inaktivera konton för alla roller",
-      "• Närvaro – registrera och se närvaro för deltagare",
-      "• Buggar & Idéer – se inskickade buggrapporter och idéer från användare",
-      "• Deltagare – lista med alla deltagare, coach-filter och frånvarovarningar",
-      "• Kalender – hantera tillgänglighet, bokningar och upptagen tid",
-    ],
-  },
   "admin.users": {
     title: "Hantera deltagare",
     content: [
@@ -23,39 +11,11 @@ export const helpContent: Record<string, HelpEntry> = {
       "Du kan skapa nya deltagarkonton, tilldela coach och kurs, samt aktivera eller inaktivera konton.",
     ],
   },
-  "admin.exercises": {
-    title: "Hantera övningar",
-    content: [
-      "Här skapar och redigerar du övningsuppgifter som tilldelas deltagare.",
-      "Du kan ange titel, beskrivning, svårighetsgrad och kategori. Övningar som skapas här blir tillgängliga för deltagare under fliken Sparade i Övningar.",
-    ],
-  },
-  "admin.projects": {
-    title: "Hantera projekt",
-    content: [
-      "Här skapar och redigerar du projektuppgifter.",
-      "Du kan ange titel, beskrivning, svårighetsgrad och projekttyp. Projekt som skapas här blir tillgängliga för deltagare under fliken Sparade i Projekt.",
-    ],
-  },
-  "admin.posts": {
-    title: "Nyheter & Event",
-    content: [
-      "Här publicerar du nyheter och evenemang som visas på startsidan för alla användare.",
-      "Skriv en rubrik och ett innehåll, välj om det är en nyhet eller ett event, och publicera. Du kan även redigera och ta bort befintliga inlägg.",
-    ],
-  },
   "admin.attendance": {
     title: "Närvarohantering",
     content: [
       "Här registrerar du närvaro för deltagare. Välj datum och markera vilka deltagare som var närvarande.",
       "Historisk närvaro visas i en översikt per deltagare.",
-    ],
-  },
-  "admin.coach-attendance": {
-    title: "Deltagarprofiler",
-    content: [
-      "Här kan du se detaljerade profiler för enskilda deltagare, inklusive närvarodata och tilldelad coach.",
-      "Klicka på en deltagare för att se deras fullständiga profil.",
     ],
   },
 
@@ -76,74 +36,6 @@ export const helpContent: Record<string, HelpEntry> = {
       "• Visa kalendrar – toggla på flera lärares namn för att jämföra deras bokningar.",
       "• Röda dagar markerar dagar utan undervisning (NoClass).",
       "• Kalendern visar tiderna 08:00–16:00, måndag till torsdag.",
-    ],
-  },
-
-  // ── Övningar ──────────────────────────────────────────────────────────────────
-  "ovningar.ai": {
-    title: "Övningar – AI-generera",
-    content: [
-      "Här kan du generera övningsuppgifter med hjälp av AI. Beskriv vad du vill öva på så skapar AI en skräddarsydd uppgift åt dig.",
-      "Du kan välja ämne, svårighetsgrad och typ av uppgift. Genererade övningar kan sparas för att komma åt dem senare.",
-    ],
-  },
-  "ovningar.saved.student": {
-    title: "Övningar – Sparade",
-    content: [
-      "Här ser du övningar som din coach eller lärare har tilldelat dig.",
-      "Klicka på en övning för att se instruktionerna och arbeta med uppgiften.",
-    ],
-  },
-  "ovningar.saved.admin": {
-    title: "Övningar – Sparade",
-    content: [
-      "Här ser du alla övningar som finns i systemet.",
-      "Du kan redigera befintliga övningar och skapa nya direkt härifrån. Övningarna är tillgängliga för deltagare under deras sparade flik.",
-    ],
-  },
-
-  // ── Projekt ───────────────────────────────────────────────────────────────────
-  "projekt.ai": {
-    title: "Projekt – AI-generera",
-    content: [
-      "Här kan du generera projektidéer med hjälp av AI. Beskriv vad du vill bygga eller vilket ämne du vill utforska, så föreslår AI ett projekt.",
-      "Du kan anpassa förslaget efter din nivå och dina intressen. Genererade projekt kan sparas för att komma åt dem senare.",
-    ],
-  },
-  "projekt.saved": {
-    title: "Projekt – Sparade",
-    content: [
-      "Här ser du projekt som din coach eller lärare har tilldelat dig, samt projekt du har sparat från AI-generatorn.",
-      "Klicka på ett projekt för att se beskrivningen och börja arbeta.",
-    ],
-  },
-
-  // ── Portfolio ─────────────────────────────────────────────────────────────────
-  "portfolio": {
-    title: "Min portfolio",
-    content: [
-      "Här ser du en sammanställning av alla övningar och projekt som har tilldelats dig.",
-      "Portfolion ger dig en snabb överblick över hur mycket material du har tillgång till och inom vilka teknikområden.",
-    ],
-  },
-
-  // ── Terminal ──────────────────────────────────────────────────────────────────
-  "terminal": {
-    title: "Terminal",
-    content: [
-      "Här kan du öva på grundläggande terminalkommandon i en säker miljö. Terminalen simulerar ett riktigt filsystem utan att påverka din dator.",
-      "Följ lektionerna i panelen till vänster för guidad träning, eller utforska fritt med kommandon som ls, cd, mkdir, touch och pwd.",
-      "Skriv help i terminalen för att se alla tillgängliga kommandon.",
-    ],
-  },
-
-  // ── Meddelanden ─────────────────────────────────────────────────────────────
-  "meddelanden": {
-    title: "Meddelanden",
-    content: [
-      "Här ser du alla dina konversationer med andra användare.",
-      "Klicka på en konversation i listan för att öppna chatten. Du kan skicka meddelanden, visa äldre meddelanden med 'Visa fler' och se vem som skrivit vad.",
-      "Olästa konversationer markeras med en röd prick. Antalet olästa visas även i sidomenyn.",
     ],
   },
 
@@ -217,28 +109,6 @@ export const helpContent: Record<string, HelpEntry> = {
       "• Ombokning – om du eller läraren bokar om går förfrågan tillbaka till \"Förfrågan\" och kräver nytt godkännande.",
       "• Röda dagar markerar dagar utan undervisning.",
       "• Kalendern visar tiderna 08:00–16:00, måndag till torsdag.",
-    ],
-  },
-
-  // ── Student Calendar (DISABLED — students cannot log in) ─────────────────────
-  "student-calendar": {
-    title: "Min kalender",
-    content: [
-      "Här ser du dina bokade möten och återkommande event.",
-      "• Boka handledning – klicka på knappen för att boka ett möte med en lärare.",
-      "• Dina bokningar visas med status (förfrågan, godkänd, ombokning, nekad).",
-      "• Klicka på en bokning för att se detaljer, godkänna/neka ombokning eller avboka.",
-      "• Återkommande event (t.ex. coachträffar) visas som lila block – klicka för att se detaljer.",
-      "• Röda dagar i kalendern markerar dagar utan undervisning.",
-    ],
-  },
-
-  // ── Coach Projekt ─────────────────────────────────────────────────────────────
-  "coach-projekt": {
-    title: "Projekt",
-    content: [
-      "Här ser du alla tillgängliga projekt i systemet.",
-      "Projekten visar titel, beskrivning, projekttyp och svårighetsgrad. Använd den här sidan som referens när du handleder dina deltagare.",
     ],
   },
 
@@ -316,27 +186,6 @@ export const helpContent: Record<string, HelpEntry> = {
     title: "Deltagarprofil – Lärare på kursen",
     content: [
       "Här ser du vilken lärare som är ansvarig för deltagarens kurs.",
-    ],
-  },
-  "attendance.progression": {
-    title: "Deltagarprofil – Progression",
-    content: [
-      "Här ser du en översikt av deltagarens framsteg, inklusive tilldelade övningar och projekt.",
-    ],
-  },
-  "attendance.statistik": {
-    title: "Deltagarprofil – Statistik",
-    content: [
-      "Här ser du sammanställd närvaro­statistik för den valda deltagaren.",
-      "Statistiken visar antal närvarodagar och frånvaro över tid.",
-    ],
-  },
-
-  "attendance.meddelanden": {
-    title: "Deltagarprofil – Meddelanden",
-    content: [
-      "Här kan du skicka meddelanden till den valda deltagaren.",
-      "Konversationen visas i en chattvy. Skriv ett meddelande och klicka på skicka.",
     ],
   },
 

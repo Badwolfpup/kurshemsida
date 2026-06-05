@@ -15,6 +15,7 @@ describe('cn()', () => {
   });
 
   it('ignores falsy conditional classes', () => {
+    // eslint-disable-next-line no-constant-binary-expression -- intentionally testing a falsy conditional class
     expect(cn('base', false && 'hidden', undefined)).toBe('base');
   });
 

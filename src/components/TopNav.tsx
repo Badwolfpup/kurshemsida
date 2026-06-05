@@ -1,6 +1,5 @@
 import { Menu, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { NewsDialog } from '@/components/NewsDialog';
 import { ChangelogDialog } from '@/components/ChangelogDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
@@ -23,7 +22,7 @@ interface TopNavProps {
 }
 
 export function TopNav({ onMenuToggle }: TopNavProps) {
-  const { isLoggedIn, isGuest, user } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const { profile } = useProfile();
   const navigate = useNavigate();
 
@@ -40,12 +39,10 @@ export function TopNav({ onMenuToggle }: TopNavProps) {
         >
           <Menu />
         </button>
-        {/* <h2 className='topnav__title'>CUL Programmering</h2> */}
       </div>
 
       <div className="topnav__actions">
         {isLoggedIn && <ChangelogDialog />}
-        {/* {isLoggedIn && <NewsDialog />} */}{/* Students temporarily disabled */}
         {isLoggedIn ? (
           avatarUrl ? (
             <img

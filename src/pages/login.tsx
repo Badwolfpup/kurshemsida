@@ -60,12 +60,12 @@ export default function Login() {
     }
 
     await login();
-    navigate("/");
+    void navigate("/");
   };
 
   const handleGuest = () => {
     enterAsGuest();
-    navigate("/");
+    void navigate("/");
   };
 
   return (

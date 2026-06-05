@@ -7,7 +7,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useState, useMemo } from "react";
 import CoachAttendance from "@/components/admin/CoachAttendance";
 import { Button } from "@/components/ui/button";
-import { useUnreadCounts } from "@/hooks/useMessages";
 import { useAttendance } from "@/hooks/useAttendance";
 import type UserType from "@/Types/User";
 import { isReducedAttendance, statusTagLabel } from "@/lib/participantStatus";
@@ -16,16 +15,13 @@ import { isReducedAttendance, statusTagLabel } from "@/lib/participantStatus";
 const ABSENCE_WEEKS = 4;
 const ABSENCE_DAYS = ABSENCE_WEEKS * 7;
 
-function ParticipantRow({ p, unreadStudentIds, onSelect }: { p: UserType; unreadStudentIds: Set<number>; onSelect: (id: number) => void }) {
+function ParticipantRow({ p, onSelect }: { p: UserType; onSelect: (id: number) => void }) {
   return (
     <TableRow key={p.id} onClick={() => onSelect(p.id)} className="cursor-pointer hover:bg-accent/50">
       <TableCell className="font-medium">
         {p.firstName[0]}.{p.lastName[0]}
         {statusTagLabel(p.status) && (
           <Badge variant="outline" className="ml-2 text-xs">{statusTagLabel(p.status)}</Badge>
-        )}
-        {unreadStudentIds.has(p.id) && (
-          <span className="inline-block w-2 h-2 rounded-full bg-destructive ml-2" />
         )}
       </TableCell>
     </TableRow>
@@ -37,7 +33,6 @@ const CoachMyParticipants = () => {
   const { data: users = [], isLoading } = useUsers();
   const [showAttendance, setShowAttendance] = useState<boolean>(false);
   const [selectedParticipant, setSelectedParticipant] = useState<number | null>(null);
-  const { unreadStudentIds } = useUnreadCounts();
 
   const participants = users.filter(
     (u) => u.authLevel === 4 && u.isActive && u.coachId === user?.id
@@ -84,7 +79,7 @@ const CoachMyParticipants = () => {
         <Button variant="ghost" size="sm" onClick={() => { setShowAttendance(false); setSelectedParticipant(null); }} className="gap-2 text-muted-foreground mb-6">
           <ArrowLeft className="h-4 w-4" /> Tillbaka
         </Button>
-        <CoachAttendance seluser={participant} showChat />
+        <CoachAttendance seluser={participant} />
       </div>
     )
   }
@@ -115,7 +110,7 @@ const CoachMyParticipants = () => {
               </TableHeader>
               <TableBody>
                 {activeParticipants.map((p) => (
-                  <ParticipantRow key={p.id} p={p} unreadStudentIds={unreadStudentIds} onSelect={(id) => { setSelectedParticipant(id); setShowAttendance(true); }} />
+                  <ParticipantRow key={p.id} p={p} onSelect={(id) => { setSelectedParticipant(id); setShowAttendance(true); }} />
                 ))}
                 {activeParticipants.length === 0 && (
                   <TableRow>
@@ -135,7 +130,7 @@ const CoachMyParticipants = () => {
                 <Table>
                   <TableBody>
                     {absentParticipants.map((p) => (
-                      <ParticipantRow key={p.id} p={p} unreadStudentIds={unreadStudentIds} onSelect={(id) => { setSelectedParticipant(id); setShowAttendance(true); }} />
+                      <ParticipantRow key={p.id} p={p} onSelect={(id) => { setSelectedParticipant(id); setShowAttendance(true); }} />
                     ))}
                   </TableBody>
                 </Table>
@@ -152,7 +147,7 @@ const CoachMyParticipants = () => {
                 <Table>
                   <TableBody>
                     {reducedParticipants.map((p) => (
-                      <ParticipantRow key={p.id} p={p} unreadStudentIds={unreadStudentIds} onSelect={(id) => { setSelectedParticipant(id); setShowAttendance(true); }} />
+                      <ParticipantRow key={p.id} p={p} onSelect={(id) => { setSelectedParticipant(id); setShowAttendance(true); }} />
                     ))}
                   </TableBody>
                 </Table>

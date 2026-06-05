@@ -199,8 +199,8 @@ describe('generate30MinOptions()', () => {
     const opts = generate30MinOptions();
     const nineThirty = opts.find((o) => o.label === '09:30');
     expect(nineThirty).toBeDefined();
-    expect(nineThirty!.hour).toBe(9);
-    expect(nineThirty!.minute).toBe(30);
+    expect(nineThirty.hour).toBe(9);
+    expect(nineThirty.minute).toBe(30);
   });
 });
 

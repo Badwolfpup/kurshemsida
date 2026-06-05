@@ -5,59 +5,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUsers, useUpdateUser } from "@/hooks/useUsers";
 import { useAttendance, useGetWeek } from "@/hooks/useAttendance";
 import { useNoClasses } from "@/hooks/useNoClass";
-import StudentContextChat from "@/components/messaging/StudentContextChat";
 import type UserType from "@/Types/User";
 import type AttendanceType from "@/Types/Attendance";
 import { isReducedAttendance, statusFullLabel } from "@/lib/participantStatus";
 
-const MOCK_PROJECTS: { name: string; status: "done" | "in-progress" | "not-started" }[][] = [
-  [
-    { name: "HTML Portfolio", status: "done" },
-    { name: "CSS Layouts", status: "in-progress" },
-    { name: "JavaScript Quiz", status: "not-started" },
-  ],
-  [
-    { name: "React Todo App", status: "in-progress" },
-    { name: "API Integration", status: "not-started" },
-  ],
-  [
-    { name: "Python Basics", status: "in-progress" },
-    { name: "Flask API", status: "not-started" },
-  ],
-];
-
-const MOCK_EXERCISES: { name: string; completed: boolean }[][] = [
-  [
-    { name: "HTML Grunderna", completed: true },
-    { name: "CSS Flexbox", completed: true },
-    { name: "JS Variabler", completed: false },
-    { name: "JS Funktioner", completed: false },
-  ],
-  [
-    { name: "React Basics", completed: true },
-    { name: "State Management", completed: false },
-    { name: "useEffect", completed: false },
-  ],
-  [
-    { name: "Python Variabler", completed: true },
-    { name: "Python Loopar", completed: false },
-  ],
-];
-
 interface CoachAttendanceProps {
   seluser: UserType;
-  showChat?: boolean;
 }
 
-const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showChat = false }) => {
+const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null }) => {
   const { user } = useAuth();
   const userId = user?.id || 0;
   const authLevel = user?.authLevel || 5;
@@ -90,19 +51,14 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
   const updateUserMutation = useUpdateUser();
   const { data: week } = useGetWeek(date, 2);
 
-  const chatPartnerId = userType === "Admin"
-    ? selectedUser?.coachId
-    : users.find((u) => u.authLevel === 1 || u.authLevel === 2)?.id;
-  const hasChat = showChat && !!chatPartnerId && !!selectedUser;
-
   const isLoading = isUsersLoading || isAttendanceLoading || isNoClassesLoading;
   const isError = isUsersError || isAttendanceError || isNoClassesError;
   const isFetching = isUsersFetching || isAttendanceRefetching || isNoClassesRefetching;
 
   const refetch = () => {
-    if (isUsersError) refetchUsers();
-    if (isAttendanceError) refetchAttendance();
-    if (isNoClassesError) refetchNoClasses();
+    if (isUsersError) void refetchUsers();
+    if (isAttendanceError) void refetchAttendance();
+    if (isNoClassesError) void refetchNoClasses();
   };
 
   const handleUpdateUser = (u: UserType, update: boolean) => {
@@ -139,13 +95,6 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
 
   const compareDates = (date1: Date, date2: Date): boolean => {
     return date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate();
-  };
-
-  const styleAttendanceButtons = (user: UserType, date: Date): string => {
-    const isNoClass = noClasses.filter((d) => compareDates(new Date(d), date)).length > 0;
-    if (isNoClass) return "bg-gray-300";
-    const result = attendance.filter((x) => x.userId === user.id).filter((dates) => dates.date.some((d) => compareDates(new Date(d), date))).length > 0;
-    return result ? "bg-green-500" : "";
   };
 
   const dateFormatted = (d: Date): string => d.toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
@@ -281,10 +230,8 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                 <TabsList className="h-auto flex-wrap">
                   <TabsTrigger value="narvaro">Närvaro</TabsTrigger>
                   <TabsTrigger value="schema">Schemalagda dagar</TabsTrigger>
-                  {/* {hasChat && <TabsTrigger value="meddelanden">Meddelanden</TabsTrigger>} */}{/* GDPR review — temporarily suspended */}
                   <TabsTrigger value="kontaktinfo">Kontaktinfo</TabsTrigger>
                   <TabsTrigger value="larare">{userType === "Admin" ? "Lärarkontakt" : "Lärare på kursen"}</TabsTrigger>
-                  {/* <TabsTrigger value="progression">Progression</TabsTrigger> */}{/* Students temporarily disabled */}
                 </TabsList>
                 <HelpDialog helpKey={activeTab === "narvaro" && userType === "Coach" ? "attendance.narvaro.coach" : `attendance.${activeTab}`} />
               </div>
@@ -466,12 +413,6 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                   </>
                 )}
               </TabsContent>
-              {/* GDPR review — temporarily suspended
-              {hasChat && (
-                <TabsContent value="meddelanden" className="h-[calc(100vh-16rem)]">
-                  <StudentContextChat studentId={selectedUser.id} recipientId={chatPartnerId!} />
-                </TabsContent>
-              )} */}
               <TabsContent value="kontaktinfo">
                 <div className="overflow-x-auto">
                 <Table>
@@ -492,55 +433,6 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                 </Table>
                 </div>
               </TabsContent>
-              {/* Students temporarily disabled — Progression tab content
-              <TabsContent value="progression">
-                {userType === "Admin" && selectedUser && (() => {
-                  const students = users.filter((u) => u.authLevel === 4);
-                  const studentIndex = students.findIndex((u) => u.id === selectedUser.id);
-                  const projects = MOCK_PROJECTS[(studentIndex >= 0 ? studentIndex : 0) % MOCK_PROJECTS.length];
-                  const exercises = MOCK_EXERCISES[(studentIndex >= 0 ? studentIndex : 0) % MOCK_EXERCISES.length];
-                  const exercisesDone = exercises.filter((e) => e.completed).length;
-                  return (
-                    <div className="space-y-5">
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-muted-foreground">Övningar</span>
-                          <span className="font-medium text-foreground">{exercisesDone}/{exercises.length}</span>
-                        </div>
-                        <Progress value={exercises.length ? (exercisesDone / exercises.length) * 100 : 0} className="h-2" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-2">Projekt</p>
-                        <div className="space-y-2">
-                          {projects.map((pr) => (
-                            <div key={pr.name} className="flex items-center gap-2 text-sm">
-                              {pr.status === "done" && <CheckCircle2 className="h-4 w-4 text-accent" />}
-                              {pr.status === "in-progress" && <Clock className="h-4 w-4 text-primary" />}
-                              {pr.status === "not-started" && <Circle className="h-4 w-4 text-muted-foreground" />}
-                              <span className="text-foreground">{pr.name}</span>
-                              <Badge variant="outline" className="ml-auto text-[10px]">
-                                {pr.status === "done" ? "Klar" : pr.status === "in-progress" ? "Pågår" : "Ej startad"}
-                              </Badge>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-2">Övningar</p>
-                        <div className="space-y-1.5">
-                          {exercises.map((e) => (
-                            <div key={e.name} className="flex items-center gap-2 text-sm">
-                              {e.completed ? <CheckCircle2 className="h-4 w-4 text-accent" /> : <Circle className="h-4 w-4 text-muted-foreground" />}
-                              <span className={e.completed ? "text-foreground" : "text-muted-foreground"}>{e.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </TabsContent>
-              */}
             </Tabs>
           )}
 

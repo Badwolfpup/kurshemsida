@@ -53,7 +53,7 @@ const CoachSettings = () => {
         onSuccess: () => {
           toast({ title: "Sparad", description: "Dina uppgifter har uppdaterats." });
           setIsEditing(false);
-          login();
+          void login();
         },
         onError: () => {
           toast({

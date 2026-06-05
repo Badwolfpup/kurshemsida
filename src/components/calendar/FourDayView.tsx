@@ -2,7 +2,6 @@ import React from 'react';
 import { dateFnsLocalizer, type NavigateAction } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay, addDays } from 'date-fns';
 import { sv } from 'date-fns/locale';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 import TimeGrid from 'react-big-calendar/lib/TimeGrid';
 
 export const localizer = dateFnsLocalizer({

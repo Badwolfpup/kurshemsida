@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    login().finally(() => setLoading(false));
+    void login().finally(() => setLoading(false));
   }, []);
 
   const signOut = async () => {

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { AlertTriangle, ChevronRight, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Participant } from "@/pages/Deltagare";
-import { useUnreadCounts } from "@/hooks/useMessages";
 import { AbsenceWarningDialog } from "./AbsenceWarningDialog";
 import { isReducedAttendance, statusTagLabel } from "@/lib/participantStatus";
 
@@ -28,7 +27,6 @@ export function DeltagareList({
   participants: Participant[];
   onSelect: (id: number) => void;
 }) {
-  const { unreadStudentIds } = useUnreadCounts();
   const [warningTarget, setWarningTarget] = useState<Participant | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const nameSort = (a: Participant, b: Participant) =>
@@ -89,9 +87,6 @@ export function DeltagareList({
                 <div className="min-w-0">
                   <p className="font-medium text-foreground text-sm flex items-center gap-1.5">
                     <span className="truncate">{p.firstName} {p.lastName}</span>
-                    {unreadStudentIds.has(p.id) && (
-                      <span className="w-2 h-2 rounded-full bg-destructive shrink-0" />
-                    )}
                     {hasAbsenceAlert(p) && (
                       <>
                         <AlertTriangle className="inline h-3.5 w-3.5 text-destructive shrink-0" />
