@@ -36,6 +36,15 @@ export default function ComputerStats() {
   const dedicated = computers.filter((c) => c.ownerStudentId != null).length;
   const shared = total - dedicated;
 
+  // Split the shared computers by booking state so we can see at a glance how many
+  // are free to lend: "delvis bokade" have at least one slot booked, "helt obokade"
+  // have none at all and can be lent out without disturbing anyone.
+  const bookedComputerIds = new Set(assignments.map((a) => a.computerId));
+  const partiallyBooked = computers.filter(
+    (c) => c.ownerStudentId == null && bookedComputerIds.has(c.id)
+  ).length;
+  const fullyUnbooked = shared - partiallyBooked;
+
   if (total === 0) {
     return <Card className="p-8 text-center text-muted-foreground">Inga datorer tillagda ännu.</Card>;
   }
@@ -44,8 +53,9 @@ export default function ComputerStats() {
     <div className="space-y-4">
       <div className="text-sm space-y-0.5">
         <p>Total antal datorer: <strong>{total}</strong></p>
-        <p>Antal tilldelade datorer: <strong>{dedicated}</strong></p>
-        <p>Antal delade datorer: <strong>{shared}</strong></p>
+        <p>Antal utlånade: <strong>{dedicated}</strong></p>
+        <p>Antal delvis bokade: <strong>{partiallyBooked}</strong></p>
+        <p>Antal helt obokade: <strong>{fullyUnbooked}</strong></p>
       </div>
       <p className="text-sm text-muted-foreground">
         Tilldelade och lediga delade datorer per pass.

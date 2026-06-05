@@ -1,0 +1,21 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Spår 2 i klassrumsvyn har nu tre bordsrader — en ny mittenrad med ett bord vid högra väggen och ett nytt bord i mitten av nedersta raden.",
+      "Datorer-sidan är uppdelad i två flikar: \"Delade datorer\" och \"Egen dator\", där egna datorer visas två kort per rad.",
+      "Statistik → Datorer: \"Antal tilldelade datorer\" heter nu \"Antal utlånade\", \"Antal delade datorer\" heter \"Antal delvis bokade\", och en ny rad \"Antal helt obokade\" visar hur många datorer som är lediga att låna ut.",
+      "Statistik → Närvaro: kolumnen för standardavvikelse är borttagen.",
+      "Statistik-fliken under Deltagare är borttagen — Startdatum, Senaste närvarodag och Närvaro per månad visas nu direkt under Närvaro-fliken.",
+      "Närvaro per månad visar nu månaderna som rader med två kolumner: antal närvarodagar och närvaro i procent utifrån schemalagda dagar.",
+      "Buggfix: \"Senaste närvarodag\" tittar nu tillbaka hela vägen till deltagarens startdatum istället för bara de senaste veckorna.",
+      "Buggfix: när ett möte tackas ja till å en annan lärares vägnar får nu den läraren ett e-postmeddelande om att mötet tilldelats hen (tidigare fick bara coachen besked)."
+    ],
+    "coach": [
+      "Statistik-fliken för dina deltagare är borttagen — startdatum, senaste närvarodag och närvaro per månad visas nu under Närvaro-fliken istället.",
+      "Närvaro per månad visar nu månaderna som rader med antal närvarodagar och närvaro i procent utifrån schemalagda dagar.",
+      "Buggfix: \"Senaste närvarodag\" tittar nu tillbaka hela vägen till deltagarens startdatum istället för bara de senaste veckorna."
+    ],
+    "student": []
+  }
+}

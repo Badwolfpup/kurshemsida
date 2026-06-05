@@ -147,7 +147,6 @@ export default function AttendanceStats() {
       <TableCell className="text-center">{fmt(s.median)}</TableCell>
       <TableCell className="text-center">{fmt(s.min)}</TableCell>
       <TableCell className="text-center">{fmt(s.max)}</TableCell>
-      <TableCell className="text-center">{fmt(s.stdDev)}</TableCell>
     </TableRow>
   );
 
@@ -189,7 +188,6 @@ export default function AttendanceStats() {
                     <TableHead className="text-center">Median</TableHead>
                     <TableHead className="text-center">Min</TableHead>
                     <TableHead className="text-center">Max</TableHead>
-                    <TableHead className="text-center">Std.avv</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>{stats.perWeekday.map((w) => renderSummaryRow(w.label, w.summary))}</TableBody>
@@ -208,7 +206,6 @@ export default function AttendanceStats() {
                     <TableHead className="text-center">Median</TableHead>
                     <TableHead className="text-center">Min</TableHead>
                     <TableHead className="text-center">Max</TableHead>
-                    <TableHead className="text-center">Std.avv</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>{stats.perSpar.map((s) => renderSummaryRow(s.label, s.summary))}</TableBody>
