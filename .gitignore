@@ -22,6 +22,8 @@ dist-ssr
 .claude/PROJECT_CONTEXT.md
 .claude/PAGE_MAP.md
 .claude/INTENT.md
+.claude/SETUP_TESTING.md
+.claude/commands/changelog.md
 
 # Editor directories and files
 .vscode/*
