@@ -28,11 +28,13 @@ export const SPAR1_LAYOUT: { row: number; col: number }[] = [
   { row: 4, col: 1 }, { row: 4, col: 2 }, { row: 4, col: 3 }, { row: 4, col: 4 },
 ];
 
-// Spår 2 layout: row 1 has 6 tables in pairs, row 2 has 2 tables at edges
-// Using col 1-6 for the 6 positions in row 1
+// Spår 2 layout: row 1 has 6 tables in pairs, row 2 (middle) has 1 table at the right wall,
+// row 3 has tables at both walls plus one in the middle.
+// Using col 1-6 for the 6 positions in row 1.
 export const SPAR2_LAYOUT: { row: number; col: number }[] = [
   { row: 1, col: 1 }, { row: 1, col: 2 }, { row: 1, col: 3 }, { row: 1, col: 4 }, { row: 1, col: 5 }, { row: 1, col: 6 },
-  { row: 2, col: 1 }, { row: 2, col: 6 },
+  { row: 2, col: 6 },
+  { row: 3, col: 1 }, { row: 3, col: 3 }, { row: 3, col: 6 },
 ];
 
 function hasTable(row: number, col: number, layout: { row: number; col: number }[]): boolean {
@@ -264,9 +266,10 @@ function ClassroomGrid({ classroomId, students: allStudents, dayOfWeek }: { clas
     );
   }
 
-  // Spår 2: wider room, 2 rows
+  // Spår 2: wider room, 3 rows
   // Row 1: 3 pairs of facing tables with gaps between pairs (col 1-2, 3-4, 5-6)
-  // Row 2: table at col 1 and col 6 only
+  // Row 2 (middle): table at the right wall (col 6) only
+  // Row 3: tables at both walls (col 1, col 6) plus one in the middle (col 3)
   return (
     <div className="flex gap-8">
       <div className="flex-1">
@@ -284,8 +287,8 @@ function ClassroomGrid({ classroomId, students: allStudents, dayOfWeek }: { clas
             <div key={`1-${col}`}><TableCell row={1} col={col} {...props} /></div>,
           ])}
 
-          {/* Row 2: col 1 and col 6 only */}
-          <div key="2-1"><TableCell row={2} col={1} {...props} /></div>
+          {/* Row 2 (middle): right wall (col 6) only */}
+          <div key="2-1" />
           <div key="2-2" />
           <div key="2-gap1" />
           <div key="2-3" />
@@ -293,6 +296,16 @@ function ClassroomGrid({ classroomId, students: allStudents, dayOfWeek }: { clas
           <div key="2-gap2" />
           <div key="2-5" />
           <div key="2-6"><TableCell row={2} col={6} {...props} /></div>
+
+          {/* Row 3: left wall (col 1), middle (col 3), right wall (col 6) */}
+          <div key="3-1"><TableCell row={3} col={1} {...props} /></div>
+          <div key="3-2" />
+          <div key="3-gap1" />
+          <div key="3-3"><TableCell row={3} col={3} {...props} /></div>
+          <div key="3-4" />
+          <div key="3-gap2" />
+          <div key="3-5" />
+          <div key="3-6"><TableCell row={3} col={6} {...props} /></div>
 
           {/* Footer */}
           <div className="col-span-8 text-xs text-muted-foreground text-center mt-1">FM / EM per bord</div>

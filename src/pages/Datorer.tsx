@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import HelpDialog from "@/components/HelpDialog";
@@ -191,6 +192,9 @@ export default function Datorer() {
     [users]
   );
 
+  const sharedComputers = useMemo(() => computers.filter((c) => c.ownerStudentId == null), [computers]);
+  const ownedComputers = useMemo(() => computers.filter((c) => c.ownerStudentId != null), [computers]);
+
   const handleAdd = () => {
     const num = parseInt(newNumber, 10);
     if (!num || num < 1) {
@@ -245,11 +249,36 @@ export default function Datorer() {
       {computers.length === 0 ? (
         <Card className="p-8 text-center text-muted-foreground">Inga datorer tillagda ännu.</Card>
       ) : (
-        <div className="space-y-4">
-          {computers.map((c) => (
-            <ComputerCard key={c.id} computer={c} computers={computers} assignments={assignments} students={students} />
-          ))}
-        </div>
+        <Tabs defaultValue="shared">
+          <TabsList>
+            <TabsTrigger value="shared">Delade datorer ({sharedComputers.length})</TabsTrigger>
+            <TabsTrigger value="owned">Egen dator ({ownedComputers.length})</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="shared" className="mt-4">
+            {sharedComputers.length === 0 ? (
+              <Card className="p-8 text-center text-muted-foreground">Inga delade datorer.</Card>
+            ) : (
+              <div className="space-y-4">
+                {sharedComputers.map((c) => (
+                  <ComputerCard key={c.id} computer={c} computers={computers} assignments={assignments} students={students} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="owned" className="mt-4">
+            {ownedComputers.length === 0 ? (
+              <Card className="p-8 text-center text-muted-foreground">Inga egna datorer.</Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {ownedComputers.map((c) => (
+                  <ComputerCard key={c.id} computer={c} computers={computers} assignments={assignments} students={students} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   );

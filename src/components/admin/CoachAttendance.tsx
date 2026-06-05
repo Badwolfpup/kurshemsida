@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import HelpDialog from "@/components/HelpDialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -68,11 +68,24 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
   const [selectedUserId, setSelectedUserId] = useState<number>(seluser?.id || 0);
   const [selectedCoachId, setSelectedCoachId] = useState<number>(seluser?.coachId ?? 0);
   const [activeTab, setActiveTab] = useState("narvaro");
+  // Stable "today" anchor for the wide stats query below (a fresh Date() each render
+  // would change the query key and refetch in a loop).
+  const [statsAnchor] = useState(() => new Date());
 
   const { toast } = useToast();
 
   const { data: users = [], isLoading: isUsersLoading, isError: isUsersError, error: usersError, refetch: refetchUsers, isFetching: isUsersFetching } = useUsers();
   const { data: attendance = [] as AttendanceType[], isLoading: isAttendanceLoading, isError: isAttendanceError, error: attendanceError, refetch: refetchAttendance, isRefetching: isAttendanceRefetching } = useAttendance(date, 2);
+  // The grid query above only spans 2 weeks. The summary below the grid (Senaste
+  // närvarodag, Närvaro per månad) needs the participant's full history, so fetch a
+  // window wide enough to reach back to their start date (weeks = whole enrolment,
+  // floored at 16 to always cover the 3-month table, capped at ~5 years).
+  const statsWeeks = Math.min(260, Math.max(16,
+    selectedUser?.startDate
+      ? Math.ceil((statsAnchor.getTime() - new Date(selectedUser.startDate).getTime()) / (7 * 86_400_000)) + 1
+      : 0
+  ));
+  const { data: statsAttendance = [] as AttendanceType[] } = useAttendance(statsAnchor, statsWeeks);
   const { data: noClasses = [] as Date[], isLoading: isNoClassesLoading, isError: isNoClassesError, error: noClassesError, refetch: refetchNoClasses, isRefetching: isNoClassesRefetching } = useNoClasses();
   const updateUserMutation = useUpdateUser();
   const { data: week } = useGetWeek(date, 2);
@@ -200,82 +213,22 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
     const scheduledSet = new Set(
       getScheduledDatesInRange(start, end).map((d) => d.toISOString().slice(0, 10))
     );
-    return attendance
+    return statsAttendance
       .filter((att) => att.userId === selectedUser.id)
       .flatMap((att) => att.date)
       .map((d) => new Date(d))
       .filter((d) => d >= start && d <= end && scheduledSet.has(d.toISOString().slice(0, 10)));
   };
 
-  const printScheduledDays = (offset: number): string => {
-    if (!selectedUser) return "";
+  const monthStats = (offset: number): { attended: number; scheduled: number; pct: number } => {
+    if (!selectedUser) return { attended: 0, scheduled: 0, pct: 0 };
     const start = getFirstDayOfMonth(offset);
     const end = getLastDayOfMonth(offset);
-    const attendedDays = getAttendedDatesInRange(start, end).length;
-    const totalScheduled = getScheduledDatesInRange(start, end).length;
-    return `${attendedDays} / ${totalScheduled} (${totalScheduled > 0 ? Math.round((attendedDays / totalScheduled) * 100) : 0}%)`;
+    const attended = getAttendedDatesInRange(start, end).length;
+    const scheduled = getScheduledDatesInRange(start, end).length;
+    const pct = scheduled > 0 ? Math.round((attended / scheduled) * 100) : 0;
+    return { attended, scheduled, pct };
   };
-
-  // Memoize 3-month stats to avoid recomputing on every render
-  const threeMonthStats = useMemo(() => {
-    if (!selectedUser) return null;
-    const start = getFirstDayOfMonth(-2);
-    const end = getLastDayOfMonth(0);
-    const scheduled = getScheduledDatesInRange(start, end);
-    const attended = getAttendedDatesInRange(start, end);
-    const attendedSet = new Set(attended.map((d) => d.toISOString().slice(0, 10)));
-
-    // Aggregate
-    const pct = scheduled.length > 0 ? Math.round((attended.length / scheduled.length) * 100) : 0;
-    const aggregate = `${attended.length} / ${scheduled.length} (${pct}%)`;
-
-    // Absence by weekday
-    const weekdays = ["måndag", "tisdag", "onsdag", "torsdag"];
-    const labels = ["Måndag", "Tisdag", "Onsdag", "Torsdag"];
-    const absenceByWeekday = weekdays
-      .map((wd, i) => {
-        const total = scheduled.filter((d) => getWeekday(d) === wd).length;
-        if (total === 0) return null;
-        const present = attended.filter((d) => getWeekday(d) === wd).length;
-        return { label: labels[i], missed: total - present, total };
-      })
-      .filter(Boolean) as { label: string; missed: number; total: number }[];
-
-    // Longest absence streak
-    const sorted = [...scheduled].sort((a, b) => a.getTime() - b.getTime());
-    let maxAbsence = 0;
-    let absenceRun = 0;
-    for (const d of sorted) {
-      if (!attendedSet.has(d.toISOString().slice(0, 10))) {
-        absenceRun++;
-        maxAbsence = Math.max(maxAbsence, absenceRun);
-      } else {
-        absenceRun = 0;
-      }
-    }
-
-    // Attendance streaks (up to today)
-    const today = new Date();
-    const scheduledToToday = sorted.filter((d) => d <= today);
-    let longestAttendance = 0;
-    let attendanceRun = 0;
-    for (const d of scheduledToToday) {
-      if (attendedSet.has(d.toISOString().slice(0, 10))) {
-        attendanceRun++;
-        longestAttendance = Math.max(longestAttendance, attendanceRun);
-      } else {
-        attendanceRun = 0;
-      }
-    }
-    let currentAttendance = 0;
-    for (let i = scheduledToToday.length - 1; i >= 0; i--) {
-      if (attendedSet.has(scheduledToToday[i].toISOString().slice(0, 10))) currentAttendance++;
-      else break;
-    }
-
-    return { aggregate, absenceByWeekday, longestAbsenceStreak: maxAbsence, currentAttendanceStreak: currentAttendance, longestAttendanceStreak: longestAttendance };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedUser?.id, attendance, noClasses]);
 
   return (
     <div className="space-y-4">
@@ -332,7 +285,6 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                   <TabsTrigger value="kontaktinfo">Kontaktinfo</TabsTrigger>
                   <TabsTrigger value="larare">{userType === "Admin" ? "Lärarkontakt" : "Lärare på kursen"}</TabsTrigger>
                   {/* <TabsTrigger value="progression">Progression</TabsTrigger> */}{/* Students temporarily disabled */}
-                  <TabsTrigger value="statistik">Statistik</TabsTrigger>
                 </TabsList>
                 <HelpDialog helpKey={activeTab === "narvaro" && userType === "Coach" ? "attendance.narvaro.coach" : `attendance.${activeTab}`} />
               </div>
@@ -391,6 +343,41 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                         })}
                       </TableRow>
                     ))}
+                  </TableBody>
+                </Table>
+                </div>
+
+                <div className="mt-6 space-y-1">
+                  <p className="text-sm"><strong>Startdatum:</strong> {selectedUser.startDate ? new Date(selectedUser.startDate).toLocaleDateString("sv-SE") : "Ej angivet"}</p>
+                  <p className="text-sm"><strong>Senaste närvarodag:</strong> {(() => {
+                    const dates = statsAttendance.filter((x) => x.userId === selectedUser.id).flatMap((a) => a.date);
+                    if (dates.length === 0) return "Aldrig närvarat";
+                    const latest = dates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
+                    return new Date(latest).toLocaleDateString("sv-SE");
+                  })()}</p>
+                </div>
+
+                <h3 className="text-sm font-semibold mt-4 mb-2">Närvaro per månad</h3>
+                <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Månad</TableHead>
+                      <TableHead className="text-center">Antal närvaro dagar</TableHead>
+                      <TableHead className="text-center">Närvaro i procent utifrån schemalagda dagar</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {[0, -1, -2].map((offset) => {
+                      const m = monthStats(offset);
+                      return (
+                        <TableRow key={offset}>
+                          <TableCell className="font-medium">{getMonthName(offset)}</TableCell>
+                          <TableCell className="text-center">{m.attended}</TableCell>
+                          <TableCell className="text-center">{m.pct}%</TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
                 </div>
@@ -475,58 +462,6 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null, showC
                         ))}
                       </TableBody>
                     </Table>
-                    </div>
-                  </>
-                )}
-              </TabsContent>
-              <TabsContent value="statistik">
-                <p className="text-sm"><strong>Startdatum:</strong> {selectedUser?.startDate ? new Date(selectedUser.startDate).toLocaleDateString("sv-SE") : "Ej angivet"}</p>
-                <p className="text-sm"><strong>Senaste närvarodag:</strong> {(() => {
-                  const dates = attendance.filter((x) => x.userId === selectedUser.id).flatMap((a) => a.date);
-                  if (dates.length === 0) return "Aldrig närvarat";
-                  const latest = dates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
-                  return new Date(latest).toLocaleDateString("sv-SE");
-                })()}</p>
-
-                <h3 className="text-sm font-semibold mt-4 mb-2">Närvaro per månad</h3>
-                <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader><TableRow><TableHead></TableHead><TableHead>{getMonthName(0)}</TableHead><TableHead>{getMonthName(-1)}</TableHead><TableHead>{getMonthName(-2)}</TableHead></TableRow></TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>Närvaro utifrån schema:</TableCell>
-                      <TableCell>{printScheduledDays(0)}</TableCell>
-                      <TableCell>{printScheduledDays(-1)}</TableCell>
-                      <TableCell>{printScheduledDays(-2)}</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-                </div>
-
-                {threeMonthStats && (
-                  <>
-                    <p className="text-sm mt-4"><strong>Totalt senaste 3 månader:</strong> {threeMonthStats.aggregate}</p>
-
-                    <h3 className="text-sm font-semibold mt-4 mb-2">Frånvaro per veckodag</h3>
-                    <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader><TableRow><TableHead>Veckodag</TableHead><TableHead>Missat</TableHead><TableHead>Schemalagt</TableHead></TableRow></TableHeader>
-                      <TableBody>
-                        {threeMonthStats.absenceByWeekday.map((row) => (
-                          <TableRow key={row.label}>
-                            <TableCell>{row.label}</TableCell>
-                            <TableCell>{row.missed}</TableCell>
-                            <TableCell>{row.total}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                    </div>
-
-                    <div className="mt-4 space-y-1">
-                      <p className="text-sm"><strong>Längsta frånvarosvit:</strong> {threeMonthStats.longestAbsenceStreak} schemalagda dagar</p>
-                      <p className="text-sm"><strong>Nuvarande närvarosvit:</strong> {threeMonthStats.currentAttendanceStreak} schemalagda dagar</p>
-                      <p className="text-sm"><strong>Längsta närvarosvit:</strong> {threeMonthStats.longestAttendanceStreak} schemalagda dagar</p>
                     </div>
                   </>
                 )}
