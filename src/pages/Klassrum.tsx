@@ -28,11 +28,11 @@ export const SPAR1_LAYOUT: { row: number; col: number }[] = [
   { row: 4, col: 1 }, { row: 4, col: 2 }, { row: 4, col: 3 }, { row: 4, col: 4 },
 ];
 
-// Spår 2 layout: row 1 has 6 tables in pairs, row 2 (middle) has 1 table at the right wall,
+// Spår 2 layout: row 1 has 5 tables (col 5 empty), row 2 (middle) has 1 table at the right wall,
 // row 3 has tables at both walls plus one in the middle.
-// Using col 1-6 for the 6 positions in row 1.
+// Using col 1-6 for the positions in row 1.
 export const SPAR2_LAYOUT: { row: number; col: number }[] = [
-  { row: 1, col: 1 }, { row: 1, col: 2 }, { row: 1, col: 3 }, { row: 1, col: 4 }, { row: 1, col: 5 }, { row: 1, col: 6 },
+  { row: 1, col: 1 }, { row: 1, col: 2 }, { row: 1, col: 3 }, { row: 1, col: 4 }, { row: 1, col: 6 },
   { row: 2, col: 6 },
   { row: 3, col: 1 }, { row: 3, col: 3 }, { row: 3, col: 6 },
 ];
@@ -53,6 +53,7 @@ interface SeatSelectProps {
   students: UserType[];
   overflowStudents?: UserType[];
   overflowSourceAssignments?: SeatingAssignment[];
+  crossAssignments?: SeatingAssignment[];
   assignments: SeatingAssignment[];
   row: number;
   col: number;
@@ -63,15 +64,17 @@ interface SeatSelectProps {
   onClear: (data: { classroomId: number; dayOfWeek: number; period: string; row: number; column: number }) => void;
 }
 
-function SeatSelect({ students, overflowStudents, overflowSourceAssignments, assignments, row, col, period, classroomId, dayOfWeek, onAssign, onClear }: SeatSelectProps) {
+function SeatSelect({ students, overflowStudents, overflowSourceAssignments, crossAssignments, assignments, row, col, period, classroomId, dayOfWeek, onAssign, onClear }: SeatSelectProps) {
   const current = getAssignment(assignments, row, col, period);
   const assignedIds = getAssignedStudentIds(assignments, period);
+  const crossAssignedIds = crossAssignments ? getAssignedStudentIds(crossAssignments, period) : new Set<number>();
   const day = DAYS.find((d) => d.value === dayOfWeek);
   const isScheduled = (s: UserType) => day ? (period === 'am' ? !!s[day.amKey] : !!s[day.pmKey]) : false;
 
   const available = students.filter((s) => {
     if (current && s.id === current.studentId) return true;
     if (assignedIds.has(s.id)) return false;
+    if (crossAssignedIds.has(s.id)) return false;
     return isScheduled(s);
   }).sort((a, b) => a.firstName.localeCompare(b.firstName, 'sv'));
 
@@ -134,6 +137,7 @@ interface TableCellProps {
   students: UserType[];
   overflowStudents?: UserType[];
   overflowSourceAssignments?: SeatingAssignment[];
+  crossAssignments?: SeatingAssignment[];
   assignments: SeatingAssignment[];
   classroomId: number;
   dayOfWeek: number;
@@ -142,7 +146,7 @@ interface TableCellProps {
   onClear: SeatSelectProps['onClear'];
 }
 
-function TableCell({ row, col, students, overflowStudents, overflowSourceAssignments, assignments, classroomId, dayOfWeek, layout, onAssign, onClear }: TableCellProps) {
+function TableCell({ row, col, students, overflowStudents, overflowSourceAssignments, crossAssignments, assignments, classroomId, dayOfWeek, layout, onAssign, onClear }: TableCellProps) {
   if (!hasTable(row, col, layout)) {
     return <div />;
   }
@@ -150,14 +154,14 @@ function TableCell({ row, col, students, overflowStudents, overflowSourceAssignm
   return (
     <div className="rounded-lg border-2 border-border bg-muted/30 p-1 flex flex-col gap-0.5">
       <SeatSelect
-        students={students} overflowStudents={overflowStudents} overflowSourceAssignments={overflowSourceAssignments}
+        students={students} overflowStudents={overflowStudents} overflowSourceAssignments={overflowSourceAssignments} crossAssignments={crossAssignments}
         assignments={assignments} row={row} col={col} period="am"
         classroomId={classroomId} dayOfWeek={dayOfWeek}
         onAssign={onAssign} onClear={onClear}
       />
       <div className="border-t border-border/50" />
       <SeatSelect
-        students={students} overflowStudents={overflowStudents} overflowSourceAssignments={overflowSourceAssignments}
+        students={students} overflowStudents={overflowStudents} overflowSourceAssignments={overflowSourceAssignments} crossAssignments={crossAssignments}
         assignments={assignments} row={row} col={col} period="pm"
         classroomId={classroomId} dayOfWeek={dayOfWeek}
         onAssign={onAssign} onClear={onClear}
@@ -170,6 +174,7 @@ function ClassroomGrid({ classroomId, students: allStudents, dayOfWeek }: { clas
   const students = useMemo(() => allStudents.filter((s) => (s.course ?? 0) === classroomId), [allStudents, classroomId]);
   const { data: assignments = [] } = useSeatingAssignments(classroomId, dayOfWeek);
   const { data: spar1Assignments = [] } = useSeatingAssignments(1, dayOfWeek);
+  const { data: spar2Assignments = [] } = useSeatingAssignments(2, dayOfWeek);
   const assignMut = useAssignSeat();
   const clearMut = useClearSeat();
   const { toast } = useToast();
@@ -203,16 +208,19 @@ function ClassroomGrid({ classroomId, students: allStudents, dayOfWeek }: { clas
     if (!day) return { am: [] as UserType[], pm: [] as UserType[] };
     const amAssigned = getAssignedStudentIds(assignments, 'am');
     const pmAssigned = getAssignedStudentIds(assignments, 'pm');
+    // Spår 1 students placed in the Spår 2 classroom are no longer free in Spår 1.
+    const crossAm = classroomId === 1 ? getAssignedStudentIds(spar2Assignments, 'am') : new Set<number>();
+    const crossPm = classroomId === 1 ? getAssignedStudentIds(spar2Assignments, 'pm') : new Set<number>();
     return {
-      am: students.filter((s) => !!s[day.amKey] && !amAssigned.has(s.id))
+      am: students.filter((s) => !!s[day.amKey] && !amAssigned.has(s.id) && !crossAm.has(s.id))
         .sort((a, b) => a.firstName.localeCompare(b.firstName, 'sv')),
-      pm: students.filter((s) => !!s[day.pmKey] && !pmAssigned.has(s.id))
+      pm: students.filter((s) => !!s[day.pmKey] && !pmAssigned.has(s.id) && !crossPm.has(s.id))
         .sort((a, b) => a.firstName.localeCompare(b.firstName, 'sv')),
     };
-  }, [students, assignments, day]);
+  }, [students, assignments, spar2Assignments, classroomId, day]);
 
   const layout = classroomId === 1 ? SPAR1_LAYOUT : SPAR2_LAYOUT;
-  const props = { students, overflowStudents, overflowSourceAssignments: classroomId === 2 ? spar1Assignments : undefined, assignments, classroomId, dayOfWeek, layout, onAssign: handleAssign, onClear: handleClear };
+  const props = { students, overflowStudents, overflowSourceAssignments: classroomId === 2 ? spar1Assignments : undefined, crossAssignments: classroomId === 1 ? spar2Assignments : undefined, assignments, classroomId, dayOfWeek, layout, onAssign: handleAssign, onClear: handleClear };
 
   const unassignedSidebar = (
     <div className="w-[180px] shrink-0">
@@ -269,7 +277,7 @@ function ClassroomGrid({ classroomId, students: allStudents, dayOfWeek }: { clas
   }
 
   // Spår 2: wider room, 3 rows
-  // Row 1: 3 pairs of facing tables with gaps between pairs (col 1-2, 3-4, 5-6)
+  // Row 1: pairs of facing tables with gaps between pairs (col 1-2, 3-4, 5-6); col 5 is empty
   // Row 2 (middle): table at the right wall (col 6) only
   // Row 3: tables at both walls (col 1, col 6) plus one in the middle (col 3)
   return (

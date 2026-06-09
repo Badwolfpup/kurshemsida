@@ -93,6 +93,10 @@ function CoachBookingView() {
 
   const selectedAdminIdNum = selectedAdminId ? Number(selectedAdminId) : null;
 
+  // Intromöte may only be suggested to the teacher Alexandra.
+  const selectedAdmin = useMemo(() => admins.find((a) => a.id === selectedAdminIdNum) ?? null, [admins, selectedAdminIdNum]);
+  const canBookIntro = selectedAdmin?.firstName.trim().toLowerCase() === 'alexandra';
+
   const today = useMemo(() => startOfDay(new Date()), []);
   const SEVEN_DAYS_AGO = useMemo(() => { const d = new Date(); d.setDate(d.getDate() - 7); return d; }, []);
 
@@ -185,7 +189,7 @@ function CoachBookingView() {
     const endMinTotal = h * 60 + m + 30;
     setBookEndHour(Math.floor(endMinTotal / 60));
     setBookEndMinute(endMinTotal % 60);
-    setBookMeetingType('Intro');
+    setBookMeetingType(canBookIntro ? 'Intro' : 'Followup');
     setBookStudentId(null);
     setBookNote('');
     setShowBookDialog(true);
@@ -366,7 +370,7 @@ function CoachBookingView() {
               <Select value={bookMeetingType} onValueChange={(v) => setBookMeetingType(v as MeetingType)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Intro">Intromöte</SelectItem>
+                  {canBookIntro && <SelectItem value="Intro">Intromöte</SelectItem>}
                   <SelectItem value="Followup">Uppföljning</SelectItem>
                   <SelectItem value="Other">Annat</SelectItem>
                 </SelectContent>
