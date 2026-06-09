@@ -157,25 +157,27 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null }) => 
     return dates;
   };
 
-  const getAttendedDatesInRange = (start: Date, end: Date): Date[] => {
+  const getAttendedDatesInRange = (start: Date, end: Date, scheduledOnly = false): Date[] => {
     if (!selectedUser) return [];
-    const scheduledSet = new Set(
-      getScheduledDatesInRange(start, end).map((d) => d.toISOString().slice(0, 10))
-    );
+    const scheduledSet = scheduledOnly
+      ? new Set(getScheduledDatesInRange(start, end).map((d) => d.toISOString().slice(0, 10)))
+      : null;
     return statsAttendance
       .filter((att) => att.userId === selectedUser.id)
       .flatMap((att) => att.date)
       .map((d) => new Date(d))
-      .filter((d) => d >= start && d <= end && scheduledSet.has(d.toISOString().slice(0, 10)));
+      .filter((d) => d >= start && d <= end && (!scheduledSet || scheduledSet.has(d.toISOString().slice(0, 10))));
   };
 
-  const monthStats = (offset: number): { attended: number; scheduled: number; pct: number } => {
-    if (!selectedUser) return { attended: 0, scheduled: 0, pct: 0 };
+  const monthStats = (offset: number): { attended: number; scheduled: number; pct: number | null } => {
+    if (!selectedUser) return { attended: 0, scheduled: 0, pct: null };
     const start = getFirstDayOfMonth(offset);
     const end = getLastDayOfMonth(offset);
+    // All attended days count regardless of schedule; the percentage uses only scheduled days.
     const attended = getAttendedDatesInRange(start, end).length;
     const scheduled = getScheduledDatesInRange(start, end).length;
-    const pct = scheduled > 0 ? Math.round((attended / scheduled) * 100) : 0;
+    const attendedScheduled = getAttendedDatesInRange(start, end, true).length;
+    const pct = scheduled > 0 ? Math.round((attendedScheduled / scheduled) * 100) : null;
     return { attended, scheduled, pct };
   };
 
@@ -321,7 +323,7 @@ const CoachAttendance: React.FC<CoachAttendanceProps> = ({ seluser = null }) => 
                         <TableRow key={offset}>
                           <TableCell className="font-medium">{getMonthName(offset)}</TableCell>
                           <TableCell className="text-center">{m.attended}</TableCell>
-                          <TableCell className="text-center">{m.pct}%</TableCell>
+                          <TableCell className="text-center">{m.pct === null ? "Ej schemalagd" : `${m.pct}%`}</TableCell>
                         </TableRow>
                       );
                     })}
