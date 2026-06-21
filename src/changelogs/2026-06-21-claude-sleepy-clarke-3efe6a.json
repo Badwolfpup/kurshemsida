@@ -1,0 +1,13 @@
+{
+  "displaydate": null,
+  "entries": {
+    "admin": [
+      "Klassrum: varje bord är numrerat i placeringsvyn för Spår 1 och Spår 2.",
+      "Klassrum – Översikt visar nu hur många bord som är lediga per dag, uppdelat på väggbord och centerbord (helt obokade samt lediga på för-/eftermiddag), istället för antal schemalagda elever.",
+      "Klassrum: elever från alla spår kan nu placeras i vilket klassrum som helst – väljaren visar övriga spår grupperade per spår.",
+      "Klassrum: ny knapp \"Frigör bord\" i Översikt som föreslår om ett bord kan tömmas för hela veckan genom att flytta dess elever till ett annat bord vars tider inte krockar."
+    ],
+    "coach": [],
+    "student": []
+  }
+}
