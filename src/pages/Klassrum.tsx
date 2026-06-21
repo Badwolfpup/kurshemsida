@@ -394,16 +394,25 @@ function computeFreeStats(layout: { row: number; col: number }[], assignments: S
   return stats;
 }
 
+interface FreeDestination {
+  number: number;
+  isWall: boolean;
+}
+
 interface FreeSuggestion {
   freedTable: number;
   freedIsWall: boolean;
   students: string;
-  destinations: number[];
+  destinations: FreeDestination[];
 }
 
-function formatDestinations(dests: number[]): string {
-  if (dests.length <= 1) return String(dests[0] ?? '');
-  return `${dests.slice(0, -1).join(', ')} eller ${dests[dests.length - 1]}`;
+function destinationLabel(d: FreeDestination): string {
+  return `${d.number} (${d.isWall ? 'väggbord' : 'centerbord'})`;
+}
+
+function formatDestinations(dests: FreeDestination[]): string {
+  if (dests.length <= 1) return dests[0] ? destinationLabel(dests[0]) : '';
+  return `${dests.slice(0, -1).map(destinationLabel).join(', ')} eller ${destinationLabel(dests[dests.length - 1])}`;
 }
 
 // A table can be freed for the whole week by moving all its students onto another occupied table
@@ -436,8 +445,8 @@ function findFreeableTables(
       students: t.studentIds.map(nameOf).join(', '),
       destinations: tables
         .filter((d) => d.number !== t.number && disjoint(t.slots, d.slots))
-        .map((d) => d.number)
-        .sort((a, b) => a - b),
+        .map((d) => ({ number: d.number, isWall: d.isWall }))
+        .sort((a, b) => a.number - b.number),
     }))
     .filter((s) => s.destinations.length > 0)
     .sort((a, b) => a.freedTable - b.freedTable);
