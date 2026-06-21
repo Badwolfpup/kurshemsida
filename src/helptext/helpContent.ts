@@ -76,7 +76,8 @@ export const helpContent: Record<string, HelpEntry> = {
     title: "Klassrum",
     content: [
       "Här planerar du bordsplaceringen för Spår 1 och Spår 2.",
-      "• Översiktsfliken visar antal lediga bord och schemalagda elever per dag och block för båda klassrummen.",
+      "• Översiktsfliken visar hur många bord som är lediga per dag, uppdelat på väggbord och centerbord och om bordet är helt obokat eller ledigt på förmiddagen (FM) respektive eftermiddagen (EM).",
+      "• Knappen \"Frigör bord\" i Översikt föreslår om något bord kan tömmas för hela veckan genom att flytta dess elever till ett annat bord vars tider inte krockar.",
       "• Varje bord har två väljare (förmiddag/eftermiddag) där du tilldelar elever till platser.",
       "• Väljarna visar bara elever som är schemalagda den dagen och inte redan placerade.",
       "• Bordstilldelningar sparas per dag (måndag–torsdag) och bevaras mellan sessioner.",

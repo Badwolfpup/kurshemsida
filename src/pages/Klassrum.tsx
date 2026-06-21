@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { LayoutGrid } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useUsers } from '@/hooks/useUsers';
 import { useSeatingAssignments, useAssignSeat, useClearSeat } from '@/hooks/useSeating';
 import { useToast } from '@/hooks/use-toast';
@@ -39,6 +40,11 @@ export const SPAR2_LAYOUT: { row: number; col: number }[] = [
 
 function hasTable(row: number, col: number, layout: { row: number; col: number }[]): boolean {
   return layout.some((t) => t.row === row && t.col === col);
+}
+
+// Tables are numbered per-Spår in layout order (row by row, left to right).
+function getTableNumber(row: number, col: number, layout: { row: number; col: number }[]): number {
+  return layout.findIndex((t) => t.row === row && t.col === col) + 1;
 }
 
 function getAssignment(assignments: SeatingAssignment[], row: number, col: number, period: string): SeatingAssignment | undefined {
@@ -86,6 +92,16 @@ function SeatSelect({ students, overflowStudents, overflowSourceAssignments, cro
     return isScheduled(s);
   }).sort((a, b) => a.firstName.localeCompare(b.firstName, 'sv')) ?? [];
 
+  // Split the available other-track students into one group per Spår, ordered by track number.
+  const overflowByCourse = new Map<number, UserType[]>();
+  for (const s of availableOverflow) {
+    const course = s.course ?? 0;
+    const list = overflowByCourse.get(course);
+    if (list) list.push(s);
+    else overflowByCourse.set(course, [s]);
+  }
+  const overflowGroups = [...overflowByCourse].sort((a, b) => a[0] - b[0]);
+
   const currentName = current
     ? (students.find((s) => s.id === current.studentId) ?? overflowStudents?.find((s) => s.id === current.studentId))
     : undefined;
@@ -113,19 +129,19 @@ function SeatSelect({ students, overflowStudents, overflowSourceAssignments, cro
             {s.firstName} {s.lastName}
           </SelectItem>
         ))}
-        {availableOverflow.length > 0 && (
-          <>
+        {overflowGroups.map(([course, group]) => (
+          <Fragment key={course}>
             <SelectSeparator />
             <SelectGroup>
-              <SelectLabel className="text-xs text-muted-foreground">Spår 1</SelectLabel>
-              {availableOverflow.map((s) => (
+              <SelectLabel className="text-xs text-muted-foreground">Spår {course}</SelectLabel>
+              {group.map((s) => (
                 <SelectItem key={s.id} value={s.id.toString()}>
                   {s.firstName} {s.lastName}
                 </SelectItem>
               ))}
             </SelectGroup>
-          </>
-        )}
+          </Fragment>
+        ))}
       </SelectContent>
     </Select>
   );
@@ -151,21 +167,37 @@ function TableCell({ row, col, students, overflowStudents, overflowSourceAssignm
     return <div />;
   }
 
+  const tableNumber = getTableNumber(row, col, layout);
+  const digits = String(tableNumber).split('');
+
   return (
-    <div className="rounded-lg border-2 border-border bg-muted/30 p-1 flex flex-col gap-0.5">
-      <SeatSelect
-        students={students} overflowStudents={overflowStudents} overflowSourceAssignments={overflowSourceAssignments} crossAssignments={crossAssignments}
-        assignments={assignments} row={row} col={col} period="am"
-        classroomId={classroomId} dayOfWeek={dayOfWeek}
-        onAssign={onAssign} onClear={onClear}
-      />
-      <div className="border-t border-border/50" />
-      <SeatSelect
-        students={students} overflowStudents={overflowStudents} overflowSourceAssignments={overflowSourceAssignments} crossAssignments={crossAssignments}
-        assignments={assignments} row={row} col={col} period="pm"
-        classroomId={classroomId} dayOfWeek={dayOfWeek}
-        onAssign={onAssign} onClear={onClear}
-      />
+    <div className="rounded-lg border-2 border-border bg-muted/30 p-1 flex items-stretch gap-1">
+      {digits.length === 1 ? (
+        <div className="flex items-center justify-center w-4 shrink-0 pr-1 border-r border-border/50 text-xs font-bold text-foreground">
+          {tableNumber}
+        </div>
+      ) : (
+        // Two digits: stacked tightly and centered so they read as one number.
+        <div className="flex flex-col items-center justify-center gap-0.5 leading-none w-4 shrink-0 pr-1 border-r border-border/50 text-xs font-bold text-foreground">
+          <span>{digits[0]}</span>
+          <span>{digits[1]}</span>
+        </div>
+      )}
+      <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+        <SeatSelect
+          students={students} overflowStudents={overflowStudents} overflowSourceAssignments={overflowSourceAssignments} crossAssignments={crossAssignments}
+          assignments={assignments} row={row} col={col} period="am"
+          classroomId={classroomId} dayOfWeek={dayOfWeek}
+          onAssign={onAssign} onClear={onClear}
+        />
+        <div className="border-t border-border/50" />
+        <SeatSelect
+          students={students} overflowStudents={overflowStudents} overflowSourceAssignments={overflowSourceAssignments} crossAssignments={crossAssignments}
+          assignments={assignments} row={row} col={col} period="pm"
+          classroomId={classroomId} dayOfWeek={dayOfWeek}
+          onAssign={onAssign} onClear={onClear}
+        />
+      </div>
     </div>
   );
 }
@@ -179,10 +211,13 @@ function ClassroomGrid({ classroomId, students: allStudents, dayOfWeek }: { clas
   const clearMut = useClearSeat();
   const { toast } = useToast();
 
-  const overflowStudents = useMemo(() => {
-    if (classroomId !== 2) return undefined;
-    return allStudents.filter((s) => (s.course ?? 0) === 1);
-  }, [classroomId, allStudents]);
+  // Students from any other track can also be seated here; they show up grouped by Spår in the select,
+  // and a student already seated in another room is filtered out (works in every direction).
+  const otherAssignments = classroomId === 1 ? spar2Assignments : spar1Assignments;
+  const overflowStudents = useMemo(
+    () => allStudents.filter((s) => (s.course ?? 0) > 0 && s.course !== classroomId),
+    [allStudents, classroomId],
+  );
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises -- handler manages its own errors via try/catch
   const handleAssign: SeatSelectProps['onAssign'] = async (data) => {
@@ -208,19 +243,19 @@ function ClassroomGrid({ classroomId, students: allStudents, dayOfWeek }: { clas
     if (!day) return { am: [] as UserType[], pm: [] as UserType[] };
     const amAssigned = getAssignedStudentIds(assignments, 'am');
     const pmAssigned = getAssignedStudentIds(assignments, 'pm');
-    // Spår 1 students placed in the Spår 2 classroom are no longer free in Spår 1.
-    const crossAm = classroomId === 1 ? getAssignedStudentIds(spar2Assignments, 'am') : new Set<number>();
-    const crossPm = classroomId === 1 ? getAssignedStudentIds(spar2Assignments, 'pm') : new Set<number>();
+    // Students placed in the other classroom are no longer free here.
+    const crossAm = getAssignedStudentIds(otherAssignments, 'am');
+    const crossPm = getAssignedStudentIds(otherAssignments, 'pm');
     return {
       am: students.filter((s) => !!s[day.amKey] && !amAssigned.has(s.id) && !crossAm.has(s.id))
         .sort((a, b) => a.firstName.localeCompare(b.firstName, 'sv')),
       pm: students.filter((s) => !!s[day.pmKey] && !pmAssigned.has(s.id) && !crossPm.has(s.id))
         .sort((a, b) => a.firstName.localeCompare(b.firstName, 'sv')),
     };
-  }, [students, assignments, spar2Assignments, classroomId, day]);
+  }, [students, assignments, otherAssignments, day]);
 
   const layout = classroomId === 1 ? SPAR1_LAYOUT : SPAR2_LAYOUT;
-  const props = { students, overflowStudents, overflowSourceAssignments: classroomId === 2 ? spar1Assignments : undefined, crossAssignments: classroomId === 1 ? spar2Assignments : undefined, assignments, classroomId, dayOfWeek, layout, onAssign: handleAssign, onClear: handleClear };
+  const props = { students, overflowStudents, overflowSourceAssignments: otherAssignments, crossAssignments: otherAssignments, assignments, classroomId, dayOfWeek, layout, onAssign: handleAssign, onClear: handleClear };
 
   const unassignedSidebar = (
     <div className="w-[180px] shrink-0">
@@ -326,10 +361,96 @@ function ClassroomGrid({ classroomId, students: allStudents, dayOfWeek }: { clas
   );
 }
 
-function OverviewTab({ students }: { students: UserType[] }) {
-  const spar1Students = useMemo(() => students.filter((s) => (s.course ?? 0) === 1), [students]);
-  const spar2Students = useMemo(() => students.filter((s) => (s.course ?? 0) === 2), [students]);
+interface FreeStats {
+  total: number;
+  obokad: number; // free both FM and EM
+  fm: number;     // free in the morning
+  em: number;     // free in the afternoon
+}
 
+// Wall tables ("Väggbord") have their back to a wall; center tables ("Centerbord") sit in the middle
+// of the room. Many students prefer a wall seat, so the overview tracks the two groups separately.
+// Spår 1 walls are the outer columns 1 and 4 (so center tables are 2,3,6,7,9,10,13,14);
+// in Spår 2 every table is against a wall.
+function isWallTable(col: number, classroomId: number): boolean {
+  if (classroomId === 2) return true;
+  return col === 1 || col === 4;
+}
+
+function computeFreeStats(layout: { row: number; col: number }[], assignments: SeatingAssignment[], classroomId: number, wall: boolean): FreeStats {
+  const amOccupied = new Set(assignments.filter((a) => a.period === 'am').map((a) => `${a.row}-${a.column}`));
+  const pmOccupied = new Set(assignments.filter((a) => a.period === 'pm').map((a) => `${a.row}-${a.column}`));
+  const stats: FreeStats = { total: 0, obokad: 0, fm: 0, em: 0 };
+  for (const t of layout) {
+    if (isWallTable(t.col, classroomId) !== wall) continue;
+    const key = `${t.row}-${t.col}`;
+    const freeFm = !amOccupied.has(key);
+    const freeEm = !pmOccupied.has(key);
+    stats.total++;
+    if (freeFm) stats.fm++;
+    if (freeEm) stats.em++;
+    if (freeFm && freeEm) stats.obokad++;
+  }
+  return stats;
+}
+
+interface FreeSuggestion {
+  freedTable: number;
+  freedIsWall: boolean;
+  students: string;
+  destinations: number[];
+}
+
+function formatDestinations(dests: number[]): string {
+  if (dests.length <= 1) return String(dests[0] ?? '');
+  return `${dests.slice(0, -1).join(', ')} eller ${dests[dests.length - 1]}`;
+}
+
+// A table can be freed for the whole week by moving all its students onto another occupied table
+// whose weekly slots (day + period) don't overlap. Because disjoint slots make the merge work in
+// either direction, each mergeable table is reported with every table it could consolidate onto.
+function findFreeableTables(
+  layout: { row: number; col: number }[],
+  assignments: SeatingAssignment[],
+  classroomId: number,
+  nameOf: (id: number) => string,
+): FreeSuggestion[] {
+  const tables = layout
+    .map((t) => {
+      const own = assignments.filter((a) => a.row === t.row && a.column === t.col);
+      return {
+        number: getTableNumber(t.row, t.col, layout),
+        isWall: isWallTable(t.col, classroomId),
+        slots: new Set(own.map((a) => `${a.dayOfWeek}-${a.period}`)),
+        studentIds: [...new Set(own.map((a) => a.studentId))],
+      };
+    })
+    .filter((t) => t.slots.size > 0);
+
+  const disjoint = (a: Set<string>, b: Set<string>) => ![...a].some((s) => b.has(s));
+
+  return tables
+    .map((t) => ({
+      freedTable: t.number,
+      freedIsWall: t.isWall,
+      students: t.studentIds.map(nameOf).join(', '),
+      destinations: tables
+        .filter((d) => d.number !== t.number && disjoint(t.slots, d.slots))
+        .map((d) => d.number)
+        .sort((a, b) => a - b),
+    }))
+    .filter((s) => s.destinations.length > 0)
+    .sort((a, b) => a.freedTable - b.freedTable);
+}
+
+function OverviewTab({ students }: { students: UserType[] }) {
+  const [analyzed, setAnalyzed] = useState(false);
+  const studentMap = useMemo(() => new Map(students.map((s): [number, UserType] => [s.id, s])), [students]);
+  const nameOf = (id: number) => {
+    const s = studentMap.get(id);
+    if (!s) return `#${id}`;
+    return s.lastName ? `${s.firstName} ${s.lastName.charAt(0)}.` : s.firstName;
+  };
   const { data: s1d1 = [] } = useSeatingAssignments(1, 1);
   const { data: s1d2 = [] } = useSeatingAssignments(1, 2);
   const { data: s1d3 = [] } = useSeatingAssignments(1, 3);
@@ -339,48 +460,83 @@ function OverviewTab({ students }: { students: UserType[] }) {
   const { data: s2d3 = [] } = useSeatingAssignments(2, 3);
   const { data: s2d4 = [] } = useSeatingAssignments(2, 4);
 
-  const spar1Total = SPAR1_LAYOUT.length;
-  const spar2Total = SPAR2_LAYOUT.length;
+  const spars = [
+    { label: 'Spår 1', classroomId: 1, layout: SPAR1_LAYOUT, assignments: [s1d1, s1d2, s1d3, s1d4] },
+    { label: 'Spår 2', classroomId: 2, layout: SPAR2_LAYOUT, assignments: [s2d1, s2d2, s2d3, s2d4] },
+  ];
 
-  function countFreeSeats(assignments: SeatingAssignment[], total: number, period: string) {
-    const occupied = new Set(assignments.filter((a) => a.period === period).map((a) => `${a.row}-${a.column}`)).size;
-    return Math.max(0, total - occupied);
-  }
-
-  const spar1Assignments = [s1d1, s1d2, s1d3, s1d4];
-  const spar2Assignments = [s2d1, s2d2, s2d3, s2d4];
+  const freeable = spars.map((spar) => ({
+    label: spar.label,
+    suggestions: findFreeableTables(spar.layout, spar.assignments.flat(), spar.classroomId, nameOf),
+  }));
+  const anyFreeable = freeable.some((p) => p.suggestions.length > 0);
 
   return (
     <div className="space-y-6">
-      {[
-        { label: 'Spår 1', total: spar1Total, assignments: spar1Assignments, students: spar1Students },
-        { label: 'Spår 2', total: spar2Total, assignments: spar2Assignments, students: spar2Students },
-      ].map((spar) => (
+      {spars.map((spar) => (
         <div key={spar.label}>
-          <h3 className="text-sm font-semibold mb-2">{spar.label} ({spar.total} bord)</h3>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <h3 className="text-sm font-semibold mb-2">{spar.label} ({spar.layout.length} bord)</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {DAYS.map((day, i) => {
-              const freeAm = countFreeSeats(spar.assignments[i], spar.total, 'am');
-              const freePm = countFreeSeats(spar.assignments[i], spar.total, 'pm');
-              const scheduledAm = spar.students.filter((s) => !!s[day.amKey]).length;
-              const scheduledPm = spar.students.filter((s) => !!s[day.pmKey]).length;
+              const wall = computeFreeStats(spar.layout, spar.assignments[i], spar.classroomId, true);
+              const center = computeFreeStats(spar.layout, spar.assignments[i], spar.classroomId, false);
+              const showCenter = center.total > 0;
+              const rows = [
+                { label: 'Helt obokad', wall: wall.obokad, center: center.obokad },
+                { label: 'Ledig FM', wall: wall.fm, center: center.fm },
+                { label: 'Ledig EM', wall: wall.em, center: center.em },
+              ];
               return (
-                <Card key={day.value} className="p-3 space-y-1.5">
-                  <h4 className="text-sm font-medium">{day.label}</h4>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">FM</span>
-                    <span>{freeAm} lediga / {scheduledAm} schemalagda</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">EM</span>
-                    <span>{freePm} lediga / {scheduledPm} schemalagda</span>
-                  </div>
+                <Card key={day.value} className="p-3">
+                  <h4 className="text-sm font-medium mb-2">{day.label}</h4>
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-muted-foreground border-b border-border">
+                        <th className="text-left font-normal pb-1" />
+                        <th className="text-right font-normal pb-1">Väggbord ({wall.total})</th>
+                        {showCenter && <th className="text-right font-normal pb-1">Centerbord ({center.total})</th>}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((r) => (
+                        <tr key={r.label}>
+                          <td className="text-muted-foreground py-0.5">{r.label}</td>
+                          <td className="text-right tabular-nums py-0.5">{r.wall}</td>
+                          {showCenter && <td className="text-right tabular-nums py-0.5">{r.center}</td>}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </Card>
               );
             })}
           </div>
         </div>
       ))}
+
+      <div className="border-t border-border pt-4">
+        <Button variant="outline" size="sm" onClick={() => setAnalyzed(true)}>
+          Frigör bord
+        </Button>
+        {analyzed && (anyFreeable ? (
+          <div className="mt-3 space-y-3 text-sm">
+            {freeable.filter((p) => p.suggestions.length > 0).map((p) => (
+              <div key={p.label}>
+                <h4 className="font-medium mb-1">{p.label}</h4>
+                <ul className="space-y-1 text-muted-foreground list-disc pl-5">
+                  {p.suggestions.map((s) => (
+                    <li key={s.freedTable}>
+                      Bord {s.freedTable} ({s.freedIsWall ? 'väggbord' : 'centerbord'}) skulle kunna frigöras om {s.students} byter till bord {formatDestinations(s.destinations)}.
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-3 text-sm text-muted-foreground">Inga bord kan frigöras just nu.</p>
+        ))}
+      </div>
     </div>
   );
 }
