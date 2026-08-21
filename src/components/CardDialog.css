@@ -4,7 +4,8 @@
   overflow-y: auto;
 }
 .cd-dialog--wide {
-  max-width: min(80rem, 92vw);
+  max-width: min(160rem, 96vw);
+  max-height: 95vh;
 }
 .cd-section {
   display: flex;
