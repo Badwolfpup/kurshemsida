@@ -409,7 +409,13 @@ export default function CardDialog({ cardTitle, open, onOpenChange }: CardDialog
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={entry.wide ? "cd-dialog cd-dialog--wide" : "cd-dialog"}>
+      <DialogContent
+        className={
+          entry.wide
+            ? "cd-dialog max-w-[96vw] max-h-[95vh]"
+            : "cd-dialog max-w-2xl max-h-[85vh]"
+        }
+      >
         <DialogHeader>
           <DialogTitle className="font-display text-2xl">
             {entry.title}

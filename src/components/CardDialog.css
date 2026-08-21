@@ -1,11 +1,7 @@
+/* Width/height come from Tailwind utilities on DialogContent (tailwind-merge
+   replaces the ui/dialog max-w-lg default; a plain CSS rule here loses that). */
 .cd-dialog {
-  max-width: 42rem;
-  max-height: 85vh;
   overflow-y: auto;
-}
-.cd-dialog--wide {
-  max-width: min(160rem, 96vw);
-  max-height: 95vh;
 }
 .cd-section {
   display: flex;
