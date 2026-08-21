@@ -5,8 +5,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import facilitiesImg from "@/assets/facilities.jpg";
+import classroom1 from "@/assets/classroom/classroom-1.webp";
+import classroom2 from "@/assets/classroom/classroom-2.webp";
+import classroom3 from "@/assets/classroom/classroom-3.webp";
+import classroom4 from "@/assets/classroom/classroom-4.webp";
+import classroom5 from "@/assets/classroom/classroom-5.webp";
+import classroom6 from "@/assets/classroom/classroom-6.webp";
+import classroom7 from "@/assets/classroom/classroom-7.webp";
 import "./CardDialog.css";
+
+const classroomPhotos = [
+  classroom1,
+  classroom2,
+  classroom3,
+  classroom4,
+  classroom5,
+  classroom6,
+  classroom7,
+];
 
 const teachers = [
   {
@@ -112,25 +128,30 @@ function AktiviteterContent() {
 }
 
 function LokalerContent() {
+  const [enlarged, setEnlarged] = React.useState<number | null>(null);
   return (
     <div className="cd-section">
       <p className="cd-intro">
         Vi har dedicerade rum för olika aktiviteter, alla utrustade med nödvändig utrustning.
       </p>
-      <div className="cd-locales">
-        {[
-          { title: "Spår 1" },
-          { title: "Spår 2" },
-          { title: "Spel & Häng - Socialt Rum" },
-        ].map((loc) => (
-          <div key={loc.title} className="cd-locale">
-            <img src={facilitiesImg} alt={loc.title} className="cd-locale-img" />
-            <div className="cd-locale-info">
-              <h4>{loc.title}</h4>
-            </div>
-          </div>
+      <div className="cd-photo-grid">
+        {classroomPhotos.map((src, i) => (
+          <button
+            key={src}
+            type="button"
+            className="cd-photo"
+            onClick={() => setEnlarged(i)}
+            aria-label={`Visa bild ${i + 1} från våra lokaler i större format`}
+          >
+            <img src={src} alt={`Bild ${i + 1} från våra lokaler`} loading="lazy" />
+          </button>
         ))}
       </div>
+      {enlarged !== null && (
+        <div className="cd-lightbox" onClick={() => setEnlarged(null)}>
+          <img src={classroomPhotos[enlarged]} alt={`Bild ${enlarged + 1} från våra lokaler`} />
+        </div>
+      )}
     </div>
   );
 }
@@ -367,11 +388,11 @@ function KodsidorContent() {
 
 const dialogContent: Record<
   string,
-  { title: string; component: () => React.ReactElement }
+  { title: string; component: () => React.ReactElement; wide?: boolean }
 > = {
   "Kodsidor": { title: "Kodsidor", component: KodsidorContent },
   "Våra aktiviteter": { title: "Kursaktiviteter", component: AktiviteterContent },
-  "Våra lokaler": { title: "Våra Lokaler", component: LokalerContent },
+  "Våra lokaler": { title: "Våra Lokaler", component: LokalerContent, wide: true },
   Handledarna: { title: "Våra Lärare", component: HandledarnaContent },
 };
 
@@ -388,7 +409,13 @@ export default function CardDialog({ cardTitle, open, onOpenChange }: CardDialog
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="cd-dialog">
+      <DialogContent
+        className={
+          entry.wide
+            ? "cd-dialog max-w-[96vw] max-h-[95vh]"
+            : "cd-dialog max-w-2xl max-h-[85vh]"
+        }
+      >
         <DialogHeader>
           <DialogTitle className="font-display text-2xl">
             {entry.title}

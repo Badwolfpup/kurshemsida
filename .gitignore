@@ -24,6 +24,7 @@ dist-ssr
 .claude/INTENT.md
 .claude/SETUP_TESTING.md
 .claude/commands/changelog.md
+.claude/security-review-*.html
 
 # Editor directories and files
 .vscode/*
